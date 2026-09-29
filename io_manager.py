@@ -1,5 +1,7 @@
 #import necessary libraries
-import pandas as pd
+import re # Regular expressions for data cleansing
+import contractions # Add on Library to expand contractions in text
+import pandas as pd # For Data manipulation and analysis library
 
 # Load dataset and filling missing comments with empty strings
 df = pd.read_csv('test_processed.csv')
