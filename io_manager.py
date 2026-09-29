@@ -29,3 +29,10 @@ SLANG_DICT = {
     "u": "you",
     "rfc": "request for comments"
 }
+
+# Pre-compile slang pattern
+sorted_slang = sorted(SLANG_DICT.keys(), key=len, reverse=True)
+SLANG_PATTERN = re.compile(
+    r'\b(' + '|'.join(map(re.escape, sorted_slang)) + r')\b', 
+    flags=re.IGNORECASE
+)
