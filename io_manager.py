@@ -106,6 +106,71 @@ def get_input_file():
 
     return UNCLEANED_DIR / filename
 
+
+# -------------------------------------------------------------
+# CSV PROCESSING
+# -------------------------------------------------------------
+def process_csv(input_path, output_path=None):
+    """Read the chosen input CSV, clean comments, and save them to a fresh cleaned CSV."""
+    CLEANED_DIR.mkdir(exist_ok=True, parents=True)
+
+    if not input_path.exists():
+        raise FileNotFoundError(f"File not found: {input_path}")
+
+    if output_path is None:
+        output_path = CLEANED_DIR / f"{input_path.stem}_cleaned.csv"
+
+    df = pd.read_csv(input_path)
+    if "comments" not in df.columns:
+        raise ValueError("The CSV must contain a 'comments' column.")
+
+    df["original_comments"] = df["comments"].fillna("")
+    df["processed_comments"] = df["original_comments"].apply(clean_text)
+    df = df[["User ID", "original_comments", "processed_comments", "timestamp"]]
+    df.to_csv(output_path, index=False)
+
+    return df, output_path
+
+
+def print_wrapped_table(dataframe):
+    """Print a compact table with long comment values wrapped within their columns."""
+    columns = list(dataframe.columns)
+    widths = {}
+    for column in columns:
+        if column in {"comments", "original_comments", "processed_comments"}:
+            widths[column] = 36
+        else:
+            values = dataframe[column].fillna("").astype(str)
+            widest_value = max((len(value) for value in values), default=0)
+            widths[column] = max(len(column), min(widest_value, 24))
+
+    separator = "+-" + "-+-".join("-" * widths[column] for column in columns) + "-+"
+    print(separator)
+    print("| " + " | ".join(column.ljust(widths[column]) for column in columns) + " |")
+    print(separator)
+
+    for row in dataframe.itertuples(index=False, name=None):
+        wrapped_cells = []
+        for column, value in zip(columns, row):
+            value = "" if pd.isna(value) else str(value)
+            wrapped_cells.append(
+                textwrap.wrap(
+                    value,
+                    width=widths[column],
+                    break_long_words=True,
+                    break_on_hyphens=False,
+                ) or [""]
+            )
+
+        row_height = max(len(lines) for lines in wrapped_cells)
+        for line_index in range(row_height):
+            cells = [
+                (lines[line_index] if line_index < len(lines) else "").ljust(widths[column])
+                for column, lines in zip(columns, wrapped_cells)
+            ]
+            print("| " + " | ".join(cells) + " |")
+    print(separator)
+
 # -------------------------------------------------------------
 # WORKFLOW
 # -------------------------------------------------------------
