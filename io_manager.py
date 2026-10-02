@@ -82,3 +82,23 @@ def collect_input(file_path=OUTPUT_FILE):
                 "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M"),
             }
         print("Comment cannot be empty. Please try again.")
+
+# -------------------------------------------------------------
+# WORKFLOW
+# -------------------------------------------------------------
+
+def run_input_workflow():
+
+    record = collect_input()
+
+    if record is not None:
+        print("\nInput accepted:")
+        print(f"User ID: {record['User ID']}")
+        print(f"Timestamp: {record['timestamp']}")
+        print(f"Original Comment: {record['comments']}")
+
+    return record
+
+
+if __name__ == "__main__":
+    run_input_workflow()
