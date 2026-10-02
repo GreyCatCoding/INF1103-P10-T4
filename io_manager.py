@@ -96,15 +96,22 @@ def get_input_file():
     if not csv_files:
         raise FileNotFoundError("No CSV files are available in the uncleaned folder.")
 
-    filename = input("\nEnter CSV filename: ").strip()
+    available_files = {filename.casefold(): filename for filename in csv_files}
+    while True:
+        filename = input("\nEnter CSV filename: ").strip()
+        if not filename:
+            print("Please enter one of the listed filenames.")
+            continue
 
-    if not filename.lower().endswith(".csv"):
-        filename += ".csv"
+        if not filename.lower().endswith(".csv"):
+            filename += ".csv"
 
-    if filename not in csv_files:
-        raise ValueError(f"Select one of the listed CSV files: {', '.join(csv_files)}")
+        selected_file = available_files.get(filename.casefold())
+        if selected_file:
+            return UNCLEANED_DIR / selected_file
 
-    return UNCLEANED_DIR / filename
+        print(f"'{filename}' was not found in the uncleaned folder.")
+        print(f"Available files: {', '.join(csv_files)}")
 
 
 # -------------------------------------------------------------
