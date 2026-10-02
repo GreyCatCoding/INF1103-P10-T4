@@ -2,17 +2,26 @@
 from datetime import datetime # For handling date and time 
 from pathlib import Path # For handling file paths
 import re # Regular expressions for data cleansing
-import contractions # Add on Library to expand contractions in text
 import pandas as pd # For Data manipulation and analysis library
+import textwrap
 
-OUTPUT_FILE = Path(__file__).with_name("user_input_records.csv")
 
-# Load dataset and filling missing comments with empty strings
-df = pd.read_csv('test_processed.csv')
-df['comments'] = df['comments'].fillna('')
+BASE_DIR = Path(__file__).resolve().parent
+UNCLEANED_DIR = BASE_DIR / "uncleaned"
+CLEANED_DIR = BASE_DIR / "cleaned"
 
-# Displaying the first few rows of the DataFrame to verify loading and preprocessing
-print(df.head())
+# -------------------------------------------------------------
+# FILE HANDLING
+# -------------------------------------------------------------
+def ensure_csv(file_path: Path, columns=None):
+    """Create the CSV file if it does not already exist."""
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    if columns is None:
+        columns = ["User ID", "comments", "timestamp"]
+    if not file_path.exists():
+        pd.DataFrame(columns=columns).to_csv(file_path, index=False)
+    return file_path
+
 
 # -------------------------------------------------------------
 # SLANG DICTIONARY & REGEX SETUP
