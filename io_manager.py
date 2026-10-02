@@ -41,6 +41,12 @@ SLANG_PATTERN = re.compile(
     flags=re.IGNORECASE
 )
 
+# Compile remaining regex patterns once for performance
+URL_PATTERN = re.compile(r'https?://\S+|www\.\S+')
+EMAIL_PATTERN = re.compile(r'\S+@\S+')
+PUNCT_PATTERN = re.compile(r'[^a-zA-Z\s]')
+WHITESPACE_PATTERN = re.compile(r'\s+')
+
 # -------------------------------------------------------------
 # USER ID
 # -------------------------------------------------------------
