@@ -60,3 +60,25 @@ def _next_user_id(file_path=OUTPUT_FILE):
     ).dropna()
 
     return f"{int(numeric_ids.max()) + 1 if not numeric_ids.empty else 0:05d}"
+
+# -------------------------------------------------------------
+# COLLECT INPUT
+# -------------------------------------------------------------
+
+def collect_input(file_path=OUTPUT_FILE):
+    """Collect a non-empty comment and generate its ID and timestamp."""
+    while True:
+        try:
+            comment = input("Enter comment: ")
+        except (EOFError, KeyboardInterrupt):
+            print("Input cancelled.")
+            return None
+
+        comment = " ".join(comment.split())
+        if comment:
+            return {
+                "User ID": _next_user_id(file_path),
+                "comments": comment,
+                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M"),
+            }
+        print("Comment cannot be empty. Please try again.")
