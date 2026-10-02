@@ -1,7 +1,11 @@
 #import necessary libraries
+from datetime import datetime # For handling date and time 
+from pathlib import Path # For handling file paths
 import re # Regular expressions for data cleansing
 import contractions # Add on Library to expand contractions in text
 import pandas as pd # For Data manipulation and analysis library
+
+OUTPUT_FILE = Path(__file__).with_name("user_input_records.csv")
 
 # Load dataset and filling missing comments with empty strings
 df = pd.read_csv('test_processed.csv')
@@ -36,3 +40,23 @@ SLANG_PATTERN = re.compile(
     r'\b(' + '|'.join(map(re.escape, sorted_slang)) + r')\b', 
     flags=re.IGNORECASE
 )
+
+# -------------------------------------------------------------
+# USER ID
+# -------------------------------------------------------------
+
+def _next_user_id(file_path=OUTPUT_FILE):
+    if not file_path.exists() or file_path.stat().st_size == 0:
+        return "00000"
+
+    existing = pd.read_csv(file_path)
+
+    if "User ID" not in existing:
+        return "00000"
+
+    numeric_ids = pd.to_numeric(
+        existing["User ID"],
+        errors="coerce"
+    ).dropna()
+
+    return f"{int(numeric_ids.max()) + 1 if not numeric_ids.empty else 0:05d}"
