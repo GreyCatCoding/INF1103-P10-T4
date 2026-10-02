@@ -66,61 +66,45 @@ def clean_text(text):
     text = text.lower()                                                # 1. Lowercase
     text = URL_PATTERN.sub('', text)                                  # 2. Remove URLs
     text = EMAIL_PATTERN.sub('', text)                                # 3. Remove emails
-    text = contractions.fix(text)                                     # 4. Expand contractions (e.g., don't -> do not)
-    text = SLANG_PATTERN.sub(lambda m: SLANG_DICT[m.group(0)], text)  # 5. Expand slang
-    text = PUNCT_PATTERN.sub('', text)                                # 6. Remove punctuation & special chars
-    text = WHITESPACE_PATTERN.sub(' ', text).strip()                  # 7. Normalize spacing
+    text = SLANG_PATTERN.sub(lambda m: SLANG_DICT[m.group(0)], text)  # 4. Expand slang
+    text = PUNCT_PATTERN.sub('', text)                                # 5. Remove punctuation & special chars
+    text = WHITESPACE_PATTERN.sub(' ', text).strip()                  # 6. Normalize spacing
     
     return text
 
-# Apply preprocessing
-df['processed_comments'] = df['comments'].apply(clean_text)
-
-# Save processed data
-df.to_csv('cleaned_data.csv', index=False)
-print("Data processed successfully! Output saved to cleaned_data.csv")
 
 # -------------------------------------------------------------
-# USER ID
+# FILE NAME INPUT
 # -------------------------------------------------------------
+def list_available_csv_files():
+    """Display all CSV files in the uncleaned directory that can be selected."""
+    UNCLEANED_DIR.mkdir(exist_ok=True, parents=True)
+    csv_files = sorted(p.name for p in UNCLEANED_DIR.glob("*.csv"))
+    if not csv_files:
+        print("No CSV files found in the uncleaned folder.")
+        return []
 
-def _next_user_id(file_path=OUTPUT_FILE):
-    if not file_path.exists() or file_path.stat().st_size == 0:
-        return "00000"
+    print("Available uncleaned CSV files:")
+    for file_name in csv_files:
+        print(f"- {file_name}")
+    return csv_files
 
-    existing = pd.read_csv(file_path)
 
-    if "User ID" not in existing:
-        return "00000"
+def get_input_file():
+    """Ask the user to choose an existing CSV from the uncleaned directory."""
+    csv_files = list_available_csv_files()
+    if not csv_files:
+        raise FileNotFoundError("No CSV files are available in the uncleaned folder.")
 
-    numeric_ids = pd.to_numeric(
-        existing["User ID"],
-        errors="coerce"
-    ).dropna()
+    filename = input("\nEnter CSV filename: ").strip()
 
-    return f"{int(numeric_ids.max()) + 1 if not numeric_ids.empty else 0:05d}"
+    if not filename.lower().endswith(".csv"):
+        filename += ".csv"
 
-# -------------------------------------------------------------
-# COLLECT INPUT
-# -------------------------------------------------------------
+    if filename not in csv_files:
+        raise ValueError(f"Select one of the listed CSV files: {', '.join(csv_files)}")
 
-def collect_input(file_path=OUTPUT_FILE):
-    """Collect a non-empty comment and generate its ID and timestamp."""
-    while True:
-        try:
-            comment = input("Enter comment: ")
-        except (EOFError, KeyboardInterrupt):
-            print("Input cancelled.")
-            return None
-
-        comment = " ".join(comment.split())
-        if comment:
-            return {
-                "User ID": _next_user_id(file_path),
-                "comments": comment,
-                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M"),
-            }
-        print("Comment cannot be empty. Please try again.")
+    return UNCLEANED_DIR / filename
 
 # -------------------------------------------------------------
 # WORKFLOW
