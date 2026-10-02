@@ -67,6 +67,10 @@ def clean_text(text):
 # Apply preprocessing
 df['processed_comments'] = df['comments'].apply(clean_text)
 
+# Save processed data
+df.to_csv('cleaned_data.csv', index=False)
+print("Data processed successfully! Output saved to cleaned_data.csv")
+
 # -------------------------------------------------------------
 # USER ID
 # -------------------------------------------------------------
