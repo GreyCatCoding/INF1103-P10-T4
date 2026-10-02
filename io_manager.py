@@ -48,6 +48,24 @@ PUNCT_PATTERN = re.compile(r'[^a-zA-Z\s]')
 WHITESPACE_PATTERN = re.compile(r'\s+')
 
 # -------------------------------------------------------------
+# Text Cleaning & Standardization
+# -------------------------------------------------------------
+def clean_text(text):
+    if not isinstance(text, str) or not text.strip():
+        return ""
+    
+    text = text.lower()                                                # 1. Lowercase
+    text = URL_PATTERN.sub('', text)                                  # 2. Remove URLs
+    text = EMAIL_PATTERN.sub('', text)                                # 3. Remove emails
+    text = contractions.fix(text)                                     # 4. Expand contractions (e.g., don't -> do not)
+    text = SLANG_PATTERN.sub(lambda m: SLANG_DICT[m.group(0)], text)  # 5. Expand slang
+    text = PUNCT_PATTERN.sub('', text)                                # 6. Remove punctuation & special chars
+    text = WHITESPACE_PATTERN.sub(' ', text).strip()                  # 7. Normalize spacing
+    
+    return text
+
+
+# -------------------------------------------------------------
 # USER ID
 # -------------------------------------------------------------
 
