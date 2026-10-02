@@ -64,6 +64,8 @@ def clean_text(text):
     
     return text
 
+# Apply preprocessing
+df['processed_comments'] = df['comments'].apply(clean_text)
 
 # -------------------------------------------------------------
 # USER ID
@@ -120,6 +122,7 @@ def run_input_workflow():
         print(f"User ID: {record['User ID']}")
         print(f"Timestamp: {record['timestamp']}")
         print(f"Original Comment: {record['comments']}")
+        print(f"Processed Comment: {clean_text(record['comments'])}")
 
     return record
 
