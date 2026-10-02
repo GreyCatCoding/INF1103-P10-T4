@@ -176,17 +176,26 @@ def print_wrapped_table(dataframe):
 # -------------------------------------------------------------
 
 def run_input_workflow():
+    """Ask for a CSV filename, process it, and show the cleaned file contents."""
+    input_file = get_input_file()
+    print(f"\nUsing input file: {input_file}")
 
-    record = collect_input()
+    CLEANED_DIR.mkdir(exist_ok=True, parents=True)
 
-    if record is not None:
-        print("\nInput accepted:")
-        print(f"User ID: {record['User ID']}")
-        print(f"Timestamp: {record['timestamp']}")
-        print(f"Original Comment: {record['comments']}")
-        print(f"Processed Comment: {clean_text(record['comments'])}")
+    print("\nProcessing...")
+    raw_df = pd.read_csv(input_file)
+    cleaned_df, output_path = process_csv(input_file)
 
-    return record
+    print("\nUncleaned:")
+    print_wrapped_table(raw_df[["User ID", "comments", "timestamp"]].head(5))
+
+    print("\nCleaned:")
+    print(f"Saved to {output_path}")
+
+    cleaned_preview = pd.read_csv(output_path)
+    cleaned_preview = cleaned_preview[["User ID", "original_comments", "processed_comments", "timestamp"]]
+    print_wrapped_table(cleaned_preview.head(5))
+    return cleaned_df
 
 
 if __name__ == "__main__":
