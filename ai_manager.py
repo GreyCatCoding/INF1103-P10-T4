@@ -157,20 +157,47 @@ def build_prompt(record: dict[str, str]) -> str:
 
 def call_api(prompt: str) -> str | None:
     """POST the prompt to the chosen provider. Return the model's raw text, or None on failure."""
-    # TODO: config = get_provider_config(); return None if it failed
-    # TODO: url = f"{config['base_url']}/chat/completions"
-    # TODO: headers = {"Authorization": f"Bearer {config['api_key']}", "Content-Type": "application/json"}
-    # TODO: body = {
-    #           "model": config["model"],
-    #           "messages": [{"role": "system", "content": SYSTEM_PROMPT},
-    #                        {"role": "user", "content": prompt}],
-    #           "temperature": 0,
-    #           "response_format": {"type": "json_object"},  # drop if a provider rejects it
-    #       }
-    # TODO: requests.post(url, headers=headers, json=body, timeout=TIMEOUT_SECONDS)
-    # TODO: on HTTP error / timeout -> logger.error(...), return None
-    # TODO: return response.json()["choices"][0]["message"]["content"]
-    pass
+
+    # Get provider's URL, model and API key and return None if config is not found
+    config = get_provider_config()
+    if not config:
+        return None
+
+    # Set api url to the chat completions endpoint on provider's server
+    api_url = f"{config['base_url']}/chat/completions"
+
+    # Authenticate with the API key, and say the body is JSON
+    headers = {"Authorization": f"Bearer {config['api_key']}", "Content-Type": "application/json"}
+
+    # Initialise body parameters
+    body ={
+    # Set model to the model in config
+    "model": config['model'],
+
+    "messages":
+        # System message: the moderation rules
+        [{"role": "system", "content": SYSTEM_PROMPT},
+        # User message: the tagged comment from build_prompt()
+        {"role": "user", "content": prompt}],
+
+    # Temperature set to 0 to make outputs deterministic; Same comment gets consistent results
+    "temperature": 0,
+    # Force the model to reply with a JSON object only
+    "response_format": {"type": "json_object"}
+    }
+
+    try:
+        # Post a request to the model api
+        api_response = requests.post(api_url, headers=headers, json=body, timeout=TIMEOUT_SECONDS)
+        api_response.raise_for_status()
+    except requests.exceptions.RequestException as err:
+        # Log error if API request failed and return None; Covers timeouts, connection errors and HTTP errors
+        logger.error("API request failed: %s", err)
+        return None
+    else:
+        # Convert the response JSON into a dict, then pull out the model's reply text
+        api_response_json = api_response.json()
+        return api_response_json["choices"][0]["message"]["content"]
 
 
 def parse_response(raw: str) -> dict | None:
