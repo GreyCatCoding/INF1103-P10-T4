@@ -115,11 +115,32 @@ ALLOWED_TARGETS: set[str] = {"individual", "group", "none"}
 
 def get_provider_config() -> dict[str, str] | None:
     """Return base_url, model and api_key for the provider named in AI_PROVIDER."""
-    # TODO: name = os.environ.get("AI_PROVIDER", DEFAULT_PROVIDER)
-    # TODO: look up PROVIDERS[name]; log + return None if unknown
-    # TODO: read the key from os.environ[config["key_env"]]; log + return None if missing
-    # TODO: return a copy of the config with "api_key" added
-    pass
+
+    # Get AI_PROVIDER from .env (falls back to DEFAULT_PROVIDER if not set)
+    provider_name = os.getenv("AI_PROVIDER", DEFAULT_PROVIDER)
+    if provider_name not in PROVIDERS:
+        # Log error if AI_PROVIDER is unknown, return None
+        logger.error("Unknown AI_PROVIDER: %s", provider_name)
+        return None
+
+    # Get provider's settings from PROVIDERS
+    provider_settings = PROVIDERS[provider_name]
+
+    # Get the name of the provider's API key variable (e.g. GROQ_API_KEY)
+    api_key_name = provider_settings["key_env"]
+
+    # Get api key from .env, by searching api key name (e.g. get value stored in GROQ_API_KEY)
+    api_key = os.getenv(api_key_name)
+    if not api_key:
+        # Log error if API key is missing, and tell user to set api key name in .env
+        logger.error("Missing API key: set %s in .env", api_key_name)
+        return None
+
+    # Create separate provider_config dictionary
+    provider_config = provider_settings.copy()
+    # Add actual api key into provider_config dictionary
+    provider_config["api_key"] = api_key
+    return provider_config
 
 
 # ---------------------------------------------------------------------------
