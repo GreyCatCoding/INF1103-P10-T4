@@ -19,10 +19,10 @@ logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
-# 1. CONFIG — the only section you touch to add or swap a provider
+# 1. CONFIG
 # ---------------------------------------------------------------------------
 
-# Model names are placeholders: check each provider's docs before use.
+# Model name placeholders
 PROVIDERS: dict[str, dict[str, str]] = {
     "deepseek": {
         "base_url": "https://api.deepseek.com",
@@ -144,7 +144,7 @@ def get_provider_config() -> dict[str, str] | None:
 
 
 # ---------------------------------------------------------------------------
-# 3. PIPELINE STEPS (spec signatures)
+# 3. PIPELINE STEPS
 # ---------------------------------------------------------------------------
 
 def build_prompt(record: dict[str, str]) -> str:
@@ -180,7 +180,7 @@ def call_api(prompt: str) -> str | None:
         # User message: the tagged comment from build_prompt()
         {"role": "user", "content": prompt}],
 
-    # Temperature set to 0 to make outputs deterministic; Same comment gets consistent results
+    # Temperature set to 0 for the same comment to get consistent results
     "temperature": 0,
     # Force the model to reply with a JSON object only
     "response_format": {"type": "json_object"}
@@ -189,6 +189,7 @@ def call_api(prompt: str) -> str | None:
     try:
         # Post a request to the model api
         api_response = requests.post(api_url, headers=headers, json=body, timeout=TIMEOUT_SECONDS)
+        # Raise an exception if an HTTP request fails
         api_response.raise_for_status()
     except requests.exceptions.RequestException as err:
         # Log error if API request failed and return None; Covers timeouts, connection errors and HTTP errors
@@ -223,18 +224,39 @@ def validate_response(data: dict) -> bool:
 
 
 # ---------------------------------------------------------------------------
-# 4. PUBLIC ENTRY POINT — the only function main.py calls
+# 4. PUBLIC ENTRY POINT
 # ---------------------------------------------------------------------------
 
 def analyse_record(record: dict[str, str]) -> dict | None:
     """build -> call -> parse -> validate, with retries. Returns result dict or None."""
-    # TODO: prompt = build_prompt(record)
-    # TODO: for attempt in range(MAX_RETRIES + 1):
-    #           raw = call_api(prompt)          -> continue if None
-    #           data = parse_response(raw)      -> continue if None
-    #           if validate_response(data):     -> return {**record, **data}
-    # TODO: logger.warning(...) and return None after all attempts fail
-    pass
+
+    # Get prompt from build_prompt()
+    prompt = build_prompt(record)
+    # First try plus MAX_RETRIES retries
+    for attempt in range(MAX_RETRIES + 1):
+        # Get raw response from API using prompt
+        raw_response = call_api(prompt)
+        if not raw_response:
+            logger.info("Attempt %s: Call API failed", attempt + 1)
+            # Try calling API again on the next attempt
+            continue
+
+        # Parse raw response
+        data = parse_response(raw_response)
+        if not data:
+            logger.info("Attempt %s: Parse response failed", attempt + 1)
+            # Get new reply from the API on the next attempt
+            continue
+
+        if validate_response(data):
+            # Merge record dictionary and data dictionary; return original record with AI verdict
+            return {**record, **data}
+        logger.info("Attempt %s: Reply failed validation", attempt + 1)
+
+    # All attempts failed, log which record and give up
+    logger.warning("Failed to analyse record from %s after %s attempts", record["username"], MAX_RETRIES + 1)
+    return None
+            
 
 if __name__ == "__main__":
     from dotenv import load_dotenv
