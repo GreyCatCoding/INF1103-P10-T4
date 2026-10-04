@@ -23,6 +23,8 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 # Model names are placeholders: check each provider's docs before use.
+# key = str
+# value = dict[str, str] (a nested dictionary where key and value are both strings)
 PROVIDERS: dict[str, dict[str, str]] = {
     "deepseek": {
         "base_url": "https://api.deepseek.com",
@@ -39,9 +41,14 @@ PROVIDERS: dict[str, dict[str, str]] = {
         "model": "MODEL_NAME_HERE",
         "key_env": "GROQ_API_KEY",
     },
+    "gemini": {
+        "base_url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent",
+        "model": "gemini-3.5-flash-lite",
+        "key_env": "GEMINI_API_KEY",
+    },
 }
 
-DEFAULT_PROVIDER: str = "deepseek"
+DEFAULT_PROVIDER: str = "gemini"
 TIMEOUT_SECONDS: int = 30
 MAX_RETRIES: int = 1
 
@@ -128,15 +135,15 @@ def get_provider_config() -> dict[str, str] | None:
 
 def build_prompt(record: dict[str, str]) -> str:
     """Wrap the record's comment in <comment> tags, as SYSTEM_PROMPT expects."""
-    # TODO: comment = record["comment"]
-    # TODO: comment = comment.replace("</comment>", "")   # stop a comment closing the tag early
-    # TODO: return f"<comment>{comment}</comment>"
-    pass
+    comment = record["comment"]
+    comment = comment.replace("</comment>", "")   # stop a comment closing the tag early
+    return f"<comment>{comment}</comment>"
+    
 
 
 def call_api(prompt: str) -> str | None:
     """POST the prompt to the chosen provider. Return the model's raw text, or None on failure."""
-    # TODO: config = get_provider_config(); return None if it failed
+    # TODO:config = get_provider_config(); return None if it failed
     # TODO: url = f"{config['base_url']}/chat/completions"
     # TODO: headers = {"Authorization": f"Bearer {config['api_key']}", "Content-Type": "application/json"}
     # TODO: body = {
@@ -152,15 +159,68 @@ def call_api(prompt: str) -> str | None:
     pass
 
 
-def parse_response(raw: str) -> dict | None:
+def parse_response(comment: str) -> dict | None:
     """Convert the model's JSON string into a dict. None if it isn't valid JSON."""
     # TODO: strip ```json fences if present
     # TODO: json.loads(...) inside try/except json.JSONDecodeError
-    pass
+    comment = comment.strip()
+
+    try:
+        if comment.startswith("```json"): # strip the opening ```json fence
+
+            comment = comment[len("```json"):].strip("`") # removes the surrounding backticks
+
+        return json.loads(comment) # return cleaned JSON as dict
+    
+    except (json.JSONDecodeError, TypeError):
+
+        return None
+    
+        
 
 
 def validate_response(data: dict) -> bool:
     """Check the dict matches the six-key schema in SYSTEM_PROMPT before it is passed to logic_manager."""
+    #if any required field is missing, return False
+    if not all(field in data # for each required field in dict
+               for field in REQUIRED_FIELDS):# for each required field in REQUIRED_FIELDS
+        return False
+    
+    # if not means the field is either missing or of the wrong type
+    if not isinstance(data.get("harmful"), bool): 
+        logger.error("harmful data is not boolean",data)
+        return False
+    if not isinstance(data.get("category"), str) or data.get("category") not in ALLOWED_CATEGORIES:
+        logger.error("category data is not valid",data)
+        return False
+    if not isinstance(data.get("severity"), int) or not (0 <= data.get("severity") <= 4):
+        logger.error("severity data is not valid",data)
+        return False
+    if not isinstance(data.get("target"), str) or data.get("target") not in ALLOWED_TARGETS:
+        logger.error("target data is not valid",data)
+        return False
+    if not isinstance(data.get("confidence"), (int, float)) or not (0 <= data.get("confidence") <= 1):
+        logger.error("confidence data is not valid",data)
+        return False
+    if not isinstance(data.get("reason"), str) or not data.get("reason").strip():
+        logger.error("reason data is not valid",data)
+        return False
+
+    # if data indicates not harmful, check for any contradictions
+    if data.get("harmful") is False:    
+        if data.get("category") != "none" or data.get("severity") != 0 or data.get("target") != "none":
+            return False
+    #if data indicates harmful check for any contradictions
+    if data.get("harmful") is True:
+        if data.get("category") == "none" or not (1 <= data.get("severity") <= 4):
+            return False
+
+    return True
+
+
+
+        
+
     # TODO: all REQUIRED_FIELDS present (missing any -> return False)
     # TODO: harmful is a bool
     # TODO: category is in ALLOWED_CATEGORIES
@@ -171,7 +231,9 @@ def validate_response(data: dict) -> bool:
     # TODO: if harmful is False -> category == "none", severity == 0, target == "none"
     # TODO: if harmful is True  -> category != "none", severity from 1 to 4
     # TODO: everything passed -> return True
-    pass
+
+         
+    #pass
 
 
 # ---------------------------------------------------------------------------
