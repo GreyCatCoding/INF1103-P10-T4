@@ -218,15 +218,20 @@ def parse_response(raw_response: str) -> dict | None:
         return None
 
 
-    
-        
 
 
 def validate_response(data: dict) -> bool:
     """Check the dict matches the six-key schema in SYSTEM_PROMPT before it is passed to logic_manager."""
-    #if any required field is missing, return False
-    if not all(field in data # for each required field in dict
-               for field in REQUIRED_FIELDS):# for each required field in REQUIRED_FIELDS
+
+    # Valid JSON can still be a number, list or string; only a dict can hold the six keys
+    if not isinstance(data, dict):
+        logger.error("Reply is not a JSON object: %s", data)
+        return False
+
+    # If any required field is missing, log which ones and return False
+    missing_fields = REQUIRED_FIELDS - data.keys()
+    if missing_fields:
+        logger.error("Missing fields %s: %s", missing_fields, data)
         return False
     
     # if not means the field is either missing or of the wrong type
@@ -256,13 +261,15 @@ def validate_response(data: dict) -> bool:
         logger.error("Reason data is not valid: %s",data)
         return False
 
-    # if data indicates not harmful, check for any contradictions
-    if data.get("harmful") is False:    
+    # If data indicates not harmful, check for any contradictions
+    if data.get("harmful") is False:
         if data.get("category") != "none" or data.get("severity") != 0 or data.get("target") != "none":
+            logger.error("Not harmful but category/severity/target say otherwise: %s", data)
             return False
-    #if data indicates harmful check for any contradictions
+    # If data indicates harmful, check for any contradictions
     if data.get("harmful") is True:
         if data.get("category") == "none" or not (1 <= data.get("severity") <= 4):
+            logger.error("Harmful but category is none or severity is 0: %s", data)
             return False
 
     return True
