@@ -134,6 +134,7 @@ def get_provider_config() -> dict[str, str] | None:
 # ---------------------------------------------------------------------------
 
 def build_prompt(record: dict[str, str]) -> str:
+    # record is a dictionary of strings and string values
     """Wrap the record's comment in <comment> tags, as SYSTEM_PROMPT expects."""
     comment = record["comment"]
     comment = comment.replace("</comment>", "")   # stop a comment closing the tag early
@@ -188,22 +189,22 @@ def validate_response(data: dict) -> bool:
     
     # if not means the field is either missing or of the wrong type
     if not isinstance(data.get("harmful"), bool): 
-        logger.error("harmful data is not boolean",data)
+        logger.error("harmful data is not boolean: %s",data)
         return False
     if not isinstance(data.get("category"), str) or data.get("category") not in ALLOWED_CATEGORIES:
-        logger.error("category data is not valid",data)
+        logger.error("category data is not valid: %s",data)
         return False
     if not isinstance(data.get("severity"), int) or not (0 <= data.get("severity") <= 4):
-        logger.error("severity data is not valid",data)
+        logger.error("severity data is not valid: %d",data)
         return False
     if not isinstance(data.get("target"), str) or data.get("target") not in ALLOWED_TARGETS:
-        logger.error("target data is not valid",data)
+        logger.error("target data is not valid: %s",data)
         return False
     if not isinstance(data.get("confidence"), (int, float)) or not (0 <= data.get("confidence") <= 1):
-        logger.error("confidence data is not valid",data)
+        logger.error("confidence data is not valid: %f",data)
         return False
     if not isinstance(data.get("reason"), str) or not data.get("reason").strip():
-        logger.error("reason data is not valid",data)
+        logger.error("reason data is not valid: %s",data)
         return False
 
     # if data indicates not harmful, check for any contradictions
