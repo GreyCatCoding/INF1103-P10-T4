@@ -148,6 +148,7 @@ def get_provider_config() -> dict[str, str] | None:
 # ---------------------------------------------------------------------------
 
 def build_prompt(record: dict[str, str]) -> str:
+    # record is a dictionary of strings and string values
     """Wrap the record's comment in <comment> tags, as SYSTEM_PROMPT expects."""
     comment = record["comment"]
     comment = comment.replace("</comment>", "")   # stop a comment closing the tag early
@@ -229,10 +230,10 @@ def validate_response(data: dict) -> bool:
     
     # if not means the field is either missing or of the wrong type
     if not isinstance(data.get("harmful"), bool): 
-        logger.error("Harmful data is not boolean: %s",data)
+        logger.error("harmful data is not boolean: %s",data)
         return False
     if not isinstance(data.get("category"), str) or data.get("category") not in ALLOWED_CATEGORIES:
-        logger.error("Category data is not valid: %s",data)
+        logger.error("category data is not valid: %s",data)
         return False
 
     # bools are ruled out completely
@@ -242,7 +243,7 @@ def validate_response(data: dict) -> bool:
         return False
 
     if not isinstance(data.get("target"), str) or data.get("target") not in ALLOWED_TARGETS:
-        logger.error("Target data is not valid: %s",data)
+        logger.error("target data is not valid: %s",data)
         return False
 
     confidence = data.get("confidence")
@@ -251,7 +252,7 @@ def validate_response(data: dict) -> bool:
         return False
 
     if not isinstance(data.get("reason"), str) or not data.get("reason").strip():
-        logger.error("Reason data is not valid: %s",data)
+        logger.error("reason data is not valid: %s",data)
         return False
 
     # if data indicates not harmful, check for any contradictions
