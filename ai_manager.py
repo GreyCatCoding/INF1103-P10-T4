@@ -19,12 +19,10 @@ logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
-# 1. CONFIG — the only section you touch to add or swap a provider
+# 1. CONFIG
 # ---------------------------------------------------------------------------
 
-# Model names are placeholders: check each provider's docs before use.
-# key = str
-# value = dict[str, str] (a nested dictionary where key and value are both strings)
+# Model name placeholders
 PROVIDERS: dict[str, dict[str, str]] = {
     "deepseek": {
         "base_url": "https://api.deepseek.com",
@@ -40,11 +38,6 @@ PROVIDERS: dict[str, dict[str, str]] = {
         "base_url": "https://api.groq.com/openai/v1",
         "model": "MODEL_NAME_HERE",
         "key_env": "GROQ_API_KEY",
-    },
-    "gemini": {
-        "base_url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent",
-        "model": "gemini-3.5-flash-lite",
-        "key_env": "GEMINI_API_KEY",
     },
 }
 
@@ -122,15 +115,36 @@ ALLOWED_TARGETS: set[str] = {"individual", "group", "none"}
 
 def get_provider_config() -> dict[str, str] | None:
     """Return base_url, model and api_key for the provider named in AI_PROVIDER."""
-    # TODO: name = os.environ.get("AI_PROVIDER", DEFAULT_PROVIDER)
-    # TODO: look up PROVIDERS[name]; log + return None if unknown
-    # TODO: read the key from os.environ[config["key_env"]]; log + return None if missing
-    # TODO: return a copy of the config with "api_key" added
-    pass
+
+    # Get AI_PROVIDER from .env (falls back to DEFAULT_PROVIDER if not set)
+    provider_name = os.getenv("AI_PROVIDER", DEFAULT_PROVIDER)
+    if provider_name not in PROVIDERS:
+        # Log error if AI_PROVIDER is unknown, return None
+        logger.error("Unknown AI_PROVIDER: %s", provider_name)
+        return None
+
+    # Get provider's settings from PROVIDERS
+    provider_settings = PROVIDERS[provider_name]
+
+    # Get the name of the provider's API key variable (e.g. GROQ_API_KEY)
+    api_key_name = provider_settings["key_env"]
+
+    # Get api key from .env, by searching api key name (e.g. get value stored in GROQ_API_KEY)
+    api_key = os.getenv(api_key_name)
+    if not api_key:
+        # Log error if API key is missing, and tell user to set api key name in .env
+        logger.error("Missing API key: set %s in .env", api_key_name)
+        return None
+
+    # Create separate provider_config dictionary
+    provider_config = provider_settings.copy()
+    # Add actual api key into provider_config dictionary
+    provider_config["api_key"] = api_key
+    return provider_config
 
 
 # ---------------------------------------------------------------------------
-# 3. PIPELINE STEPS (spec signatures)
+# 3. PIPELINE STEPS
 # ---------------------------------------------------------------------------
 
 def build_prompt(record: dict[str, str]) -> str:
@@ -143,26 +157,52 @@ def build_prompt(record: dict[str, str]) -> str:
 
 def call_api(prompt: str) -> str | None:
     """POST the prompt to the chosen provider. Return the model's raw text, or None on failure."""
-    # TODO:config = get_provider_config(); return None if it failed
-    # TODO: url = f"{config['base_url']}/chat/completions"
-    # TODO: headers = {"Authorization": f"Bearer {config['api_key']}", "Content-Type": "application/json"}
-    # TODO: body = {
-    #           "model": config["model"],
-    #           "messages": [{"role": "system", "content": SYSTEM_PROMPT},
-    #                        {"role": "user", "content": prompt}],
-    #           "temperature": 0,
-    #           "response_format": {"type": "json_object"},  # drop if a provider rejects it
-    #       }
-    # TODO: requests.post(url, headers=headers, json=body, timeout=TIMEOUT_SECONDS)
-    # TODO: on HTTP error / timeout -> logger.error(...), return None
-    # TODO: return response.json()["choices"][0]["message"]["content"]
-    pass
+
+    # Get provider's URL, model and API key and return None if config is not found
+    config = get_provider_config()
+    if not config:
+        return None
+
+    # Set api url to the chat completions endpoint on provider's server
+    api_url = f"{config['base_url']}/chat/completions"
+
+    # Authenticate with the API key, and say the body is JSON
+    headers = {"Authorization": f"Bearer {config['api_key']}", "Content-Type": "application/json"}
+
+    # Initialise body parameters
+    body ={
+    # Set model to the model in config
+    "model": config['model'],
+
+    "messages":
+        # System message: the moderation rules
+        [{"role": "system", "content": SYSTEM_PROMPT},
+        # User message: the tagged comment from build_prompt()
+        {"role": "user", "content": prompt}],
+
+    # Temperature set to 0 for the same comment to get consistent results
+    "temperature": 0,
+    # Force the model to reply with a JSON object only
+    "response_format": {"type": "json_object"}
+    }
+
+    try:
+        # Post a request to the model api
+        api_response = requests.post(api_url, headers=headers, json=body, timeout=TIMEOUT_SECONDS)
+        # Raise an exception if an HTTP request fails
+        api_response.raise_for_status()
+    except requests.exceptions.RequestException as err:
+        # Log error if API request failed and return None; Covers timeouts, connection errors and HTTP errors
+        logger.error("API request failed: %s", err)
+        return None
+    else:
+        # Convert the response JSON into a dict, then pull out the model's reply text
+        api_response_json = api_response.json()
+        return api_response_json["choices"][0]["message"]["content"]
 
 
 def parse_response(comment: str) -> dict | None:
     """Convert the model's JSON string into a dict. None if it isn't valid JSON."""
-    # TODO: strip ```json fences if present
-    # TODO: json.loads(...) inside try/except json.JSONDecodeError
     comment = comment.strip()
 
     try:
@@ -188,22 +228,22 @@ def validate_response(data: dict) -> bool:
     
     # if not means the field is either missing or of the wrong type
     if not isinstance(data.get("harmful"), bool): 
-        logger.error("harmful data is not boolean",data)
+        logger.error("Harmful data is not boolean: %s",data)
         return False
     if not isinstance(data.get("category"), str) or data.get("category") not in ALLOWED_CATEGORIES:
-        logger.error("category data is not valid",data)
+        logger.error("Category data is not valid: %s",data)
         return False
     if not isinstance(data.get("severity"), int) or not (0 <= data.get("severity") <= 4):
-        logger.error("severity data is not valid",data)
+        logger.error("Severity data is not valid: %s",data)
         return False
     if not isinstance(data.get("target"), str) or data.get("target") not in ALLOWED_TARGETS:
-        logger.error("target data is not valid",data)
+        logger.error("Target data is not valid: %s",data)
         return False
     if not isinstance(data.get("confidence"), (int, float)) or not (0 <= data.get("confidence") <= 1):
-        logger.error("confidence data is not valid",data)
+        logger.error("Confidence data is not valid: %s",data)
         return False
     if not isinstance(data.get("reason"), str) or not data.get("reason").strip():
-        logger.error("reason data is not valid",data)
+        logger.error("Reason data is not valid: %s",data)
         return False
 
     # if data indicates not harmful, check for any contradictions
@@ -219,36 +259,40 @@ def validate_response(data: dict) -> bool:
 
 
 
-        
-
-    # TODO: all REQUIRED_FIELDS present (missing any -> return False)
-    # TODO: harmful is a bool
-    # TODO: category is in ALLOWED_CATEGORIES
-    # TODO: severity is an int from 0 to 4 (and not a bool)
-    # TODO: target is in ALLOWED_TARGETS
-    # TODO: confidence is an int or float from 0 to 1 (and not a bool)
-    # TODO: reason is a non-empty string
-    # TODO: if harmful is False -> category == "none", severity == 0, target == "none"
-    # TODO: if harmful is True  -> category != "none", severity from 1 to 4
-    # TODO: everything passed -> return True
-
-         
-    #pass
-
-
 # ---------------------------------------------------------------------------
-# 4. PUBLIC ENTRY POINT — the only function main.py calls
+# 4. PUBLIC ENTRY POINT
 # ---------------------------------------------------------------------------
 
 def analyse_record(record: dict[str, str]) -> dict | None:
     """build -> call -> parse -> validate, with retries. Returns result dict or None."""
-    # TODO: prompt = build_prompt(record)
-    # TODO: for attempt in range(MAX_RETRIES + 1):
-    #           raw = call_api(prompt)          -> continue if None
-    #           data = parse_response(raw)      -> continue if None
-    #           if validate_response(data):     -> return {**record, **data}
-    # TODO: logger.warning(...) and return None after all attempts fail
-    pass
+
+    # Get prompt from build_prompt()
+    prompt = build_prompt(record)
+    # First try plus MAX_RETRIES retries
+    for attempt in range(MAX_RETRIES + 1):
+        # Get raw response from API using prompt
+        raw_response = call_api(prompt)
+        if not raw_response:
+            logger.info("Attempt %s: Call API failed", attempt + 1)
+            # Try calling API again on the next attempt
+            continue
+
+        # Parse raw response
+        data = parse_response(raw_response)
+        if not data:
+            logger.info("Attempt %s: Parse response failed", attempt + 1)
+            # Get new reply from the API on the next attempt
+            continue
+
+        if validate_response(data):
+            # Merge record dictionary and data dictionary; return original record with AI verdict
+            return {**record, **data}
+        logger.info("Attempt %s: Reply failed validation", attempt + 1)
+
+    # All attempts failed, log which record and give up
+    logger.warning("Failed to analyse record from %s after %s attempts", record["username"], MAX_RETRIES + 1)
+    return None
+            
 
 if __name__ == "__main__":
     from dotenv import load_dotenv
