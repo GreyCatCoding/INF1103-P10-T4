@@ -233,15 +233,22 @@ def validate_response(data: dict) -> bool:
     if not isinstance(data.get("category"), str) or data.get("category") not in ALLOWED_CATEGORIES:
         logger.error("Category data is not valid: %s",data)
         return False
-    if not isinstance(data.get("severity"), int) or not (0 <= data.get("severity") <= 4):
-        logger.error("Severity data is not valid: %s",data)
+
+    # bools are ruled out completely
+    severity = data.get("severity")
+    if isinstance(severity, bool) or not isinstance(severity, int) or not (0 <= severity <= 4):
+        logger.error("Severity data is not valid: %s", data)
         return False
+
     if not isinstance(data.get("target"), str) or data.get("target") not in ALLOWED_TARGETS:
         logger.error("Target data is not valid: %s",data)
         return False
-    if not isinstance(data.get("confidence"), (int, float)) or not (0 <= data.get("confidence") <= 1):
-        logger.error("Confidence data is not valid: %s",data)
+
+    confidence = data.get("confidence")
+    if isinstance(confidence, bool) or not isinstance(confidence, (int, float)) or not (0 <= confidence <= 1):
+        logger.error("Confidence data is not valid: %s", data)
         return False
+
     if not isinstance(data.get("reason"), str) or not data.get("reason").strip():
         logger.error("Reason data is not valid: %s",data)
         return False
