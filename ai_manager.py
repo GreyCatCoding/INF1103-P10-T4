@@ -41,7 +41,7 @@ PROVIDERS: dict[str, dict[str, str]] = {
     },
 }
 
-DEFAULT_PROVIDER: str = "gemini"
+DEFAULT_PROVIDER: str = "deepseek"
 TIMEOUT_SECONDS: int = 30
 MAX_RETRIES: int = 1
 
@@ -171,20 +171,19 @@ def call_api(prompt: str) -> str | None:
     headers = {"Authorization": f"Bearer {config['api_key']}", "Content-Type": "application/json"}
 
     # Initialise body parameters
-    body ={
-    # Set model to the model in config
-    "model": config['model'],
-
-    "messages":
-        # System message: the moderation rules
-        [{"role": "system", "content": SYSTEM_PROMPT},
-        # User message: the tagged comment from build_prompt()
-        {"role": "user", "content": prompt}],
-
-    # Temperature set to 0 for the same comment to get consistent results
-    "temperature": 0,
-    # Force the model to reply with a JSON object only
-    "response_format": {"type": "json_object"}
+    body = {
+        # Set model to the model in config
+        "model": config["model"],
+        "messages": [
+            # System message: the moderation rules
+            {"role": "system", "content": SYSTEM_PROMPT},
+            # User message: the tagged comment from build_prompt()
+            {"role": "user", "content": prompt},
+        ],
+        # Temperature set to 0 for the same comment to get consistent results
+        "temperature": 0,
+        # Force the model to reply with a JSON object only
+        "response_format": {"type": "json_object"},
     }
 
     try:
@@ -192,14 +191,16 @@ def call_api(prompt: str) -> str | None:
         api_response = requests.post(api_url, headers=headers, json=body, timeout=TIMEOUT_SECONDS)
         # Raise an exception if an HTTP request fails
         api_response.raise_for_status()
-    except requests.exceptions.RequestException as err:
-        # Log error if API request failed and return None; Covers timeouts, connection errors and HTTP errors
-        logger.error("API request failed: %s", err)
-        return None
-    else:
         # Convert the response JSON into a dict, then pull out the model's reply text
-        api_response_json = api_response.json()
-        return api_response_json["choices"][0]["message"]["content"]
+        return api_response.json()["choices"][0]["message"]["content"]
+    except requests.exceptions.RequestException as err:
+        # Covers timeouts, connection errors and HTTP errors
+        logger.error("API request failed: %s", err)
+    except (ValueError, KeyError, IndexError, TypeError) as err:
+        # Covers a reply that isn't JSON, or JSON missing "choices"/"message"/"content"
+        logger.error("Unexpected API response shape: %s", err)
+    # Only reached if one of the excepts above ran
+    return None
 
 
 def parse_response(comment: str) -> dict | None:
@@ -234,15 +235,22 @@ def validate_response(data: dict) -> bool:
     if not isinstance(data.get("category"), str) or data.get("category") not in ALLOWED_CATEGORIES:
         logger.error("category data is not valid: %s",data)
         return False
-    if not isinstance(data.get("severity"), int) or not (0 <= data.get("severity") <= 4):
-        logger.error("severity data is not valid: %d",data)
+
+    # bools are ruled out completely
+    severity = data.get("severity")
+    if isinstance(severity, bool) or not isinstance(severity, int) or not (0 <= severity <= 4):
+        logger.error("Severity data is not valid: %s", data)
         return False
+
     if not isinstance(data.get("target"), str) or data.get("target") not in ALLOWED_TARGETS:
         logger.error("target data is not valid: %s",data)
         return False
-    if not isinstance(data.get("confidence"), (int, float)) or not (0 <= data.get("confidence") <= 1):
-        logger.error("confidence data is not valid: %f",data)
+
+    confidence = data.get("confidence")
+    if isinstance(confidence, bool) or not isinstance(confidence, (int, float)) or not (0 <= confidence <= 1):
+        logger.error("Confidence data is not valid: %s", data)
         return False
+
     if not isinstance(data.get("reason"), str) or not data.get("reason").strip():
         logger.error("reason data is not valid: %s",data)
         return False
