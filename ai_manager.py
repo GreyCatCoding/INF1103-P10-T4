@@ -41,7 +41,7 @@ PROVIDERS: dict[str, dict[str, str]] = {
     },
 }
 
-DEFAULT_PROVIDER: str = "gemini"
+DEFAULT_PROVIDER: str = "deepseek"
 TIMEOUT_SECONDS: int = 30
 MAX_RETRIES: int = 1
 
