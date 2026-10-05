@@ -148,7 +148,6 @@ def get_provider_config() -> dict[str, str] | None:
 # ---------------------------------------------------------------------------
 
 def build_prompt(record: dict[str, str]) -> str:
-    # record is a dictionary of strings and string values
     """Wrap the record's comment in <comment> tags, as SYSTEM_PROMPT expects."""
     comment = record["comment"]
     comment = comment.replace("</comment>", "")   # stop a comment closing the tag early
@@ -203,20 +202,22 @@ def call_api(prompt: str) -> str | None:
     return None
 
 
-def parse_response(comment: str) -> dict | None:
+def parse_response(raw_response: str) -> dict | None:
     """Convert the model's JSON string into a dict. None if it isn't valid JSON."""
-    comment = comment.strip()
+    raw_response = raw_response.strip()
+
+   
+    if raw_response.startswith("```"): # remove a markdown fence if the model added one
+        raw_response = raw_response.strip("`") # removes the surrounding backticks
+        if raw_response.startswith("json"):
+            raw_response = raw_response[len("json"):] # remove the language label
 
     try:
-        if comment.startswith("```json"): # strip the opening ```json fence
-
-            comment = comment[len("```json"):].strip("`") # removes the surrounding backticks
-
-        return json.loads(comment) # return cleaned JSON as dict
-    
+        return json.loads(raw_response) # json.loads ignores leftover whitespace
     except (json.JSONDecodeError, TypeError):
-
         return None
+
+
     
         
 
@@ -230,10 +231,10 @@ def validate_response(data: dict) -> bool:
     
     # if not means the field is either missing or of the wrong type
     if not isinstance(data.get("harmful"), bool): 
-        logger.error("harmful data is not boolean: %s",data)
+        logger.error("Harmful data is not boolean: %s",data)
         return False
     if not isinstance(data.get("category"), str) or data.get("category") not in ALLOWED_CATEGORIES:
-        logger.error("category data is not valid: %s",data)
+        logger.error("Category data is not valid: %s",data)
         return False
 
     # bools are ruled out completely
@@ -243,7 +244,7 @@ def validate_response(data: dict) -> bool:
         return False
 
     if not isinstance(data.get("target"), str) or data.get("target") not in ALLOWED_TARGETS:
-        logger.error("target data is not valid: %s",data)
+        logger.error("Target data is not valid: %s",data)
         return False
 
     confidence = data.get("confidence")
@@ -252,7 +253,7 @@ def validate_response(data: dict) -> bool:
         return False
 
     if not isinstance(data.get("reason"), str) or not data.get("reason").strip():
-        logger.error("reason data is not valid: %s",data)
+        logger.error("Reason data is not valid: %s",data)
         return False
 
     # if data indicates not harmful, check for any contradictions
