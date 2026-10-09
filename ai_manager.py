@@ -314,6 +314,12 @@ def validate_response(data: dict) -> bool:
 def analyse_record(record: dict[str, str]) -> dict | None:
     """build -> call -> parse -> validate, with retries. Returns result dict or None."""
 
+    # Get the comments field from the io_manager, and skip record if it does not have a usable comments
+    comment = record[COMMENTS_FIELD]
+    if not isinstance(comment, str) or not comment.strip():
+        logger.error("Record %s has no usable '%s'", record.get(ID_FIELD), COMMENTS_FIELD)
+        return None
+
     # Get prompt from build_prompt()
     prompt = build_prompt(record)
     # First try plus MAX_RETRIES retries
