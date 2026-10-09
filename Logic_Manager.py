@@ -1,3 +1,5 @@
+from ai_manager import analyse_record
+
 CATEGORIES = {
     "harassment": "insults, threats or mockery aimed at a specific person",
     "hate": "attacks on a group based on race, religion, nationality, gender, sexuality or disability",
@@ -243,7 +245,6 @@ def get_category_description(category):
 # ==========================================
 
 # Trial: Output given by ai_manager
-"""
 MOCK_RESULTS = [
     {"User ID": 0, "username": "amy", "processed_comments": "great game last night!", "harmful": False, "category": "none", "severity": 0, "target": "none", "confidence": 0.97, "reason": "Positive comment about a game."},
     {"User ID": 1, "username": "ben", "processed_comments": "u r a pathetic l0ser", "harmful": True, "category": "harassment", "severity": 2, "target": "individual", "confidence": 0.93, "reason": "Direct personal insult using disguised spelling."},
@@ -266,7 +267,6 @@ MOCK_RESULTS = [
     {"User ID": 18, "username": "sam", "processed_comments": "you're the reason this team keeps losing, go hurt yourself", "harmful": True, "category": "self_harm", "severity": 4, "target": "individual", "confidence": 0.91, "reason": "Encourages another user to harm themselves."},
     {"User ID": 19, "username": "tia", "processed_comments": "see you all at the tournament saturday", "harmful": False, "category": "none", "severity": 0, "target": "none", "confidence": 0.98, "reason": "Event reminder."},
 ] 
-"""
 
 if __name__ == "__main__":
 
@@ -274,7 +274,7 @@ if __name__ == "__main__":
 
     for report in reports:
 
-        print("=" * 68)
+        print("=" * 120)
         print("User ID:", report["User ID"]) 
         print("Username:", report["username"])
 
@@ -293,5 +293,5 @@ if __name__ == "__main__":
         else:
             print("Human Review: Review not Required")
 
-    print("=" * 68)
+    print("=" * 120)
     print("Total Reports:", len(reports))
