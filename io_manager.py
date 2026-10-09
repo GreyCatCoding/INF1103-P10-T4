@@ -1,13 +1,13 @@
-# import necessary libraries
-from datetime import datetime  # For handling date and time
-from pathlib import Path  # For handling file paths
-import re  # Regular expressions for data cleansing
-import pandas as pd  # For Data manipulation and analysis library
-import textwrap
+# =============================================================
+# LIBRARIES & DIRECTORY SETUP
+# =============================================================
+from pathlib import Path  # Standard library for object-oriented filesystem paths
+import re  # Regular expressions library for text manipulation and cleaning
+import pandas as pd  # Data manipulation library for loading, transforming, and saving CSV/JSON
 
-BASE_DIR = Path(__file__).resolve().parent
-UNCLEANED_DIR = BASE_DIR / "uncleaned"
-CLEANED_DIR = BASE_DIR / "cleaned"
+BASE_DIR = Path(__file__).resolve().parent # Define the root directory relative to where this script is located
+UNCLEANED_DIR = BASE_DIR / "uncleaned" # Directory for Uncleaned CSV files
+CLEANED_DIR = BASE_DIR / "cleaned" # Directory for Cleaned CSV and JSON files
 
 # -------------------------------------------------------------
 # FILE HANDLING
