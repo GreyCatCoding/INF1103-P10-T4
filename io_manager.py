@@ -73,47 +73,34 @@ def clean_text(text):
     return text
 
 
-# -------------------------------------------------------------
-# FILE NAME INPUT
-# -------------------------------------------------------------
-def list_available_csv_files():
-    """Display all CSV files in the uncleaned directory that can be selected."""
-    UNCLEANED_DIR.mkdir(exist_ok=True, parents=True)
-    csv_files = sorted(p.name for p in UNCLEANED_DIR.glob("*.csv"))
+# =============================================================
+# USER INPUT & FILE SELECTION
+# =============================================================
+def get_input_file() -> Path:
+    """Scans the 'uncleaned' directory, displays available CSV files,
+    and prompts the user to select one (case-insensitive, auto-appends .csv extension)."""
+    UNCLEANED_DIR.mkdir(exist_ok=True, parents=True)                        # Ensure the input directory exists before trying to scan it
+    csv_files = sorted(p.name for p in UNCLEANED_DIR.glob("*.csv"))         # Collect all .csv files in the directory and sort them alphabetically
+
+    # Raise an explicit error if no CSV files are found to process
     if not csv_files:
-        print("No CSV files found in the uncleaned folder.")
-        return []
+        raise FileNotFoundError("No CSV files found in the 'uncleaned' folder.")
+    print("Available uncleaned CSV files:")                                 # Display the list of available files to the user
+    for file in csv_files:
+        print(f"- {file}")
+    file_map = {f.casefold(): f for f in csv_files}                         # Build a lookup map where lowercase filenames point to actual filenames for case-insensitive matching
 
-    print("Available uncleaned CSV files:")
-    for file_name in csv_files:
-        print(f"- {file_name}")
-    return csv_files
-
-
-def get_input_file():
-    """Ask the user to choose an existing CSV from the uncleaned directory."""
-    csv_files = list_available_csv_files()
-    if not csv_files:
-        raise FileNotFoundError(
-            "No CSV files are available in the uncleaned folder."
-        )
-
-    available_files = {filename.casefold(): filename for filename in csv_files}
+    # Loop until the user provides a valid filename
     while True:
         filename = input("\nEnter CSV filename: ").strip()
-        if not filename:
-            print("Please enter one of the listed filenames.")
-            continue
-
-        if not filename.lower().endswith(".csv"):
+        # Automatically append .csv extension if the user omitted it
+        if not filename.endswith(".csv"):
             filename += ".csv"
+        selected = file_map.get(filename.casefold())                        # Check if user input matches any file in our lookup map
+        if selected:
+            return UNCLEANED_DIR / selected                                 # Return absolute Path object
 
-        selected_file = available_files.get(filename.casefold())
-        if selected_file:
-            return UNCLEANED_DIR / selected_file
-
-        print(f"'{filename}' was not found in the uncleaned folder.")
-        print(f"Available files: {', '.join(csv_files)}")
+        print(f"'{filename}' not found. Available: {', '.join(csv_files)}") # Warn user and show available options if match fails
 
 
 # -------------------------------------------------------------
