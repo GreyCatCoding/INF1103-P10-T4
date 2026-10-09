@@ -314,8 +314,8 @@ def analyse_record(record: dict[str, str]) -> dict | None:
     prompt = build_prompt(record)
     # First try plus MAX_RETRIES retries
     for attempt in range(MAX_RETRIES + 1):
-        # Get raw response from API using prompt
-        raw_response = call_api(prompt)
+        # Get raw response from the main provider or OpenRouter if the main provider fails
+        raw_response = call_with_fallback(prompt)
         if not raw_response:
             logger.info("Attempt %s: Call API failed", attempt + 1)
             # Try calling API again on the next attempt
