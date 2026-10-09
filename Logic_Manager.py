@@ -188,6 +188,30 @@ def generate_report(data):
         "ai_reason": data["reason"],
     }
 
+# ==========================================
+# 6. PROCESS MULTIPLE RECORDS
+# ==========================================
+
+def process_reports(records):
+
+    results = []
+
+    for record in records:
+        try:
+            result = generate_report(record)
+            results.append(result)
+
+        except ValueError as error:
+            results.append({
+                "username": record.get("username", "unknown")
+                    if isinstance(record, dict) else "unknown",
+                "priority": None,
+                "recommended_action": "Manual review required",
+                "human_review_required": True,
+                "error": str(error),
+            })
+
+    return results
 
 Recieved_data = {
     "harmful": True,
