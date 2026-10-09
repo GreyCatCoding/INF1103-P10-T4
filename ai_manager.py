@@ -116,14 +116,16 @@ ALLOWED_TARGETS: set[str] = {"individual", "group", "none"}
 # 2. PROVIDER SELECTION
 # ---------------------------------------------------------------------------
 
-def get_provider_config() -> dict[str, str] | None:
-    """Return base_url, model and api_key for the provider named in AI_PROVIDER."""
+def get_provider_config(provider_name: str | None = None) -> dict[str, str] | None:
+    """Return base_url, model and api_key for provider_name (default to AI_PROVIDER in .env)."""
 
-    # Get AI_PROVIDER from .env (falls back to DEFAULT_PROVIDER if not set)
-    provider_name = os.getenv("AI_PROVIDER", DEFAULT_PROVIDER)
+    # If no provider was passed in, get AI_PROVIDER from .env (falls back to DEFAULT_PROVIDER if not set)
+    if provider_name is None:
+        provider_name = os.getenv("AI_PROVIDER", DEFAULT_PROVIDER)
+
     if provider_name not in PROVIDERS:
-        # Log error if AI_PROVIDER is unknown, return None
-        logger.error("Unknown AI_PROVIDER: %s", provider_name)
+        # Log error if the provider is unknown, return None
+        logger.error("Unknown provider: %s", provider_name)
         return None
 
     # Get provider's settings from PROVIDERS
