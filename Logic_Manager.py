@@ -160,15 +160,34 @@ def get_recommended_action(priority, review_required):
     return ACTIONS[priority]
 
 
+# ==========================================
+# 5. GENERATE REPORT
+# ==========================================
+
 def generate_report(data):
-    
+
     priority = get_priority(data)
 
+    review_required = needs_human_review(
+        data, priority
+    )
+
+    action = get_recommended_action(
+        priority, review_required
+    )
+
     return {
+        "username": data["username"],
+        "comment": data["comment"],
+        "category": data["category"],
+        "severity": data["severity"],
+        "confidence": data["confidence"],
         "priority": priority,
-        "human_review_required": priority in {"P1", "P2"},
-        **data
+        "recommended_action": action,
+        "human_review_required": review_required,
+        "ai_reason": data["reason"],
     }
+
 
 Recieved_data = {
     "harmful": True,
