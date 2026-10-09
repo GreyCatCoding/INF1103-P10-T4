@@ -24,6 +24,11 @@ logger = logging.getLogger(__name__)
 
 # Model name placeholders
 PROVIDERS: dict[str, dict[str, str]] = {
+    "openrouter": {
+        "base_url": "https://openrouter.ai/api/v1",
+        "model": "nvidia/nemotron-3-super-120b-a12b:free",
+        "key_env": "OPENROUTER_API_KEY",
+    },
     "groq": {
         "base_url": "https://api.groq.com/openai/v1",
         "model": "MODEL_NAME_HERE",
@@ -31,8 +36,16 @@ PROVIDERS: dict[str, dict[str, str]] = {
     },
 }
 
+# Set default provider to groq and fallback to openrouter if default provider fails
 DEFAULT_PROVIDER: str = "groq"
-TIMEOUT_SECONDS: int = 30
+FALLBACK_PROVIDER: str = "openrouter"
+# Openrouter tries inkling-small-free and openrouter/free in order if main openrouter model is busy
+OPENROUTER_BACKUP_MODELS: list[str] = [
+    "thinkingmachines/inkling-small:free",
+    "openrouter/free",
+]
+# Adjusted timeout seconds to accomodate for slower models in case of fallback
+TIMEOUT_SECONDS: int = 60
 MAX_RETRIES: int = 1
 
 SYSTEM_PROMPT: str = """
