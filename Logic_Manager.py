@@ -19,16 +19,61 @@ Recieved_data = {
     "category": "violence",
     "severity": 4,
     "target": "individual",
-    "confidence": 0.95
+    "confidence": 2
 }
 
-def get_priority(data):
+def validate_data(Received_data): # Check that the AI output contains valid information
 
-    harmful = data.get("harmful", False)
-    category = data.get("category", "none").lower()
-    severity = data.get("severity", 0)
-    target = data.get("target", "none").lower()
-    confidence = data.get("confidence", 0.0)
+    if not isinstance(Received_data, dict):
+        raise ValueError("AI output must be a dictionary")
+
+    required_fields = {
+        "harmful", "category", "severity",
+        "target", "confidence"
+    }
+
+    for field in required_fields:
+        if field not in Received_data:
+            raise ValueError(f"Missing field: {field}")
+
+    if type(Received_data["harmful"]) is not bool:
+        raise ValueError("harmful must be True or False")
+
+    if not isinstance(Received_data["category"], str):
+        raise ValueError("category must be a string")
+
+    if not isinstance(Received_data["target"], str):
+        raise ValueError("target must be a string")
+
+    if type(Received_data["severity"]) is not int:
+        raise ValueError("severity must be an integer")
+
+    if not 0 <= Received_data["severity"] <= 4:
+        raise ValueError("severity must be between 0 and 4")
+
+    if type(Received_data["confidence"]) not in (int, float):
+        raise ValueError("confidence must be numeric")
+
+    if not 0 <= Received_data["confidence"] <= 1:
+        raise ValueError("confidence must be between 0 and 1")
+
+    if (
+        Received_data["category"].lower() not in CATEGORIES
+        and Received_data["category"].lower() != "none"
+    ):
+        raise ValueError("unknown category")
+
+    return True
+
+def get_priority(Received_data):
+
+    validate_data(Received_data)
+
+    harmful = Received_data.get("harmful", False)
+    category = Received_data.get("category", "none").lower()
+    severity = Received_data.get("severity", 0)
+    target = Received_data.get("target", "none").lower()
+    confidence = Received_data.get("confidence", 0.0)
 
     # -------------------------
     # P4 - Not harmful / low confidence
