@@ -64,36 +64,38 @@ def get_input_file() -> Path:
         print(f"'{filename}' not found. Available: {', '.join(csv_files)}") # Warn user and show available options if match fails
 
 
-# -------------------------------------------------------------
+# =============================================================
 # CSV & JSON PROCESSING
-# -------------------------------------------------------------
-def process_csv(input_path, output_path=None):
-    """Read input CSV, clean comments, and save output as both CSV and JSON."""
-    CLEANED_DIR.mkdir(exist_ok=True, parents=True)
+# =============================================================
+def process_csv(input_path: Path, output_path: Path = None):
+    """Reads a CSV file, cleans the 'comments' column, creates both original and processed comment columns,
+    and exports the result to both CSV and JSON in the 'cleaned' directory."""
+    CLEANED_DIR.mkdir(exist_ok=True, parents=True)                              # Ensure the output directory exists
 
-    if not input_path.exists():
-        raise FileNotFoundError(f"File not found: {input_path}")
+    csv_output = (
+        Path(output_path)
+        if output_path
+        else CLEANED_DIR / f"{input_path.stem}_cleaned.csv"
+    )                                                                           # Use specified output path or generate default path using input file name stem
 
-    if output_path is None:
-        csv_output_path = CLEANED_DIR / f"{input_path.stem}_cleaned.csv"   # Explicit CSV output path
-        json_output_path = CLEANED_DIR / f"{input_path.stem}_cleaned.json" # Generated JSON output path
-    else:
-        csv_output_path = Path(output_path)                               # Explicit path conversion
-        json_output_path = csv_output_path.with_suffix(".json")           # Derive JSON path from custom output path
-
-    df = pd.read_csv(input_path)
+    json_output = csv_output.with_suffix(".json")                               # Automatically derive the matching JSON path from the CSV output path
+    df = pd.read_csv(input_path)                                                # Read source CSV file into a pandas DataFrame
+    # Validate that required target column exists
     if "comments" not in df.columns:
         raise ValueError("The CSV must contain a 'comments' column.")
+    df["original_comments"] = df["comments"].fillna("")                         # Fill NaN values with empty strings to avoid errors during text manipulation
+    df["processed_comments"] = df["original_comments"].apply(clean_text)        # Apply the clean_text function to every comment row
 
-    df["original_comments"] = df["comments"].fillna("")
-    df["processed_comments"] = df["original_comments"].apply(clean_text)
-    df = df[["User ID", "original_comments", "processed_comments", "timestamp"]]
+    expected_cols = ["User ID","username","original_comments","processed_comments","timestamp",]     # Define columns to keep for the main DataFrame and CSV export
+    df = df[[c for c in expected_cols if c in df.columns]]
+    df.to_csv(csv_output, index=False)     # Export complete cleaned DataFrame to CSV
 
-    # Export to CSV and JSON
-    df.to_csv(csv_output_path, index=False)                                # Updated variable name
-    df.to_json(json_output_path, orient="records", indent=4)               # Exports DataFrame to formatted JSON
+    # Define specific subset of columns required for JSON export
+    json_cols = ["User ID", "username", "processed_comments"]
+    json_df = df[[c for c in json_cols if c in df.columns]]
+    json_df.to_json(json_output, orient="records", indent=4) # Export filtered DataFrame to JSON formatted as an array of record objects
 
-    return df, csv_output_path, json_output_path                           # Returns both file paths for confirmation
+    return (df,csv_output,json_output,)  # Return structured data frame along with saved file paths
 
 
 def print_wrapped_table(dataframe):
