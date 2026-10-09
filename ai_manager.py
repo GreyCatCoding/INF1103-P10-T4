@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 # 1. CONFIG
 # ---------------------------------------------------------------------------
 
-# Model name placeholders
+# Model provider settings
 PROVIDERS: dict[str, dict[str, str]] = {
     "openrouter": {
         "base_url": "https://openrouter.ai/api/v1",
@@ -31,7 +31,7 @@ PROVIDERS: dict[str, dict[str, str]] = {
     },
     "groq": {
         "base_url": "https://api.groq.com/openai/v1",
-        "model": "MODEL_NAME_HERE",
+        "model": "openai/gpt-oss-safeguard-20b",
         "key_env": "GROQ_API_KEY",
     },
 }
