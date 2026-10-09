@@ -14,6 +14,11 @@ def main():
     # user input for the csv file
     rows = io_manager.run_input_workflow().to_dict("records") # Convert the io manager output to a list of dictionaries (records)
 
+    for record in rows: # for each record in the list of dictionaries
+        record["comment"] = record["processed_comments"] # save processed comment into comment field
+        ai_manager.analyse_record(record) # ai manager to analyze record
+        time.sleep(60) #prevent overloading of ai_manager API
+
 
     
     
