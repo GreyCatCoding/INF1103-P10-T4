@@ -125,6 +125,29 @@ def get_priority(data):
     return "P3"
 
 
+# ==========================================
+# 3. DETERMINE HUMAN REVIEW
+# ==========================================
+
+def needs_human_review(data, priority):
+
+    confidence = data["confidence"]
+    severity = data["severity"]
+
+    # Uncertain AI assessment
+    if confidence < 0.70:
+        return True
+
+    # Severe content
+    if severity >= 3:
+        return True
+
+    # High-priority moderation
+    if priority in {"P1", "P2"}:
+        return True
+
+    return False
+
 def generate_report(data):
     
     priority = get_priority(data)
