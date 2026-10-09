@@ -98,53 +98,17 @@ def process_csv(input_path: Path, output_path: Path = None):
     return (df,csv_output,json_output,)  # Return structured data frame along with saved file paths
 
 
-def print_wrapped_table(dataframe):
-    """Print a compact table with long comment values wrapped within their columns."""
-    columns = list(dataframe.columns)
-    widths = {}
-    for column in columns:
-        if column in {"comments", "original_comments", "processed_comments"}:
-            widths[column] = 36
-        else:
-            values = dataframe[column].fillna("").astype(str)
-            widest_value = max((len(value) for value in values), default=0)
-            widths[column] = max(len(column), min(widest_value, 24))
-
-    separator = (
-        "+-" + "-+-".join("-" * widths[column] for column in columns) + "-+"
-    )
-    print(separator)
-    print(
-        "| "
-        + " | ".join(column.ljust(widths[column]) for column in columns)
-        + " |"
-    )
-    print(separator)
-
-    for row in dataframe.itertuples(index=False, name=None):
-        wrapped_cells = []
-        for column, value in zip(columns, row):
-            value = "" if pd.isna(value) else str(value)
-            wrapped_cells.append(
-                textwrap.wrap(
-                    value,
-                    width=widths[column],
-                    break_long_words=True,
-                    break_on_hyphens=False,
-                )
-                or [""]
-            )
-
-        row_height = max(len(lines) for lines in wrapped_cells)
-        for line_index in range(row_height):
-            cells = [
-                (
-                    lines[line_index] if line_index < len(lines) else ""
-                ).ljust(widths[column])
-                for column, lines in zip(columns, wrapped_cells)
-            ]
-            print("| " + " | ".join(cells) + " |")
-    print(separator)
+# =============================================================
+# TERMINAL TABLE DISPLAY
+# =============================================================
+def print_table(df: pd.DataFrame, max_width: int = 36):
+    """Prints a neatly formatted ASCII representation of a DataFrame to the console
+    using pandas built-in option controls without requiring manual table drawing loops."""
+    # Set temporary display options for column width and total output width
+    with pd.option_context(
+        "display.max_colwidth", max_width, "display.width", 1000
+    ):
+        print(df.to_string(index=False))  # Convert DataFrame to clean string without index numbers
 
 
 # -------------------------------------------------------------
