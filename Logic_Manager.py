@@ -183,6 +183,7 @@ def generate_report(data):
         "username": data["username"],
         "comment": data["processed_comments"],
         "category": data["category"],
+        "category_description": get_category_description(data["category"]),
         "severity": data["severity"],
         "confidence": data["confidence"],
         "priority": priority,
@@ -221,10 +222,28 @@ def process_reports(records):
 
 
 # ==========================================
-# 7. TEST WITH MOCK AI RESULTS
+# 7. CATEGORIES DICTIONARY
+# ==========================================
+
+def get_category_description(category):
+
+    category = category.lower()
+
+    if category == "none":
+        return "No harmful content detected"
+
+    elif category in CATEGORIES:
+        return CATEGORIES[category]
+
+    else:
+        raise ValueError("Unknown category")
+
+# ==========================================
+# 8. TEST WITH MOCK AI RESULTS
 # ==========================================
 
 # Trial: Output given by ai_manager
+"""
 MOCK_RESULTS = [
     {"User ID": 0, "username": "amy", "processed_comments": "great game last night!", "harmful": False, "category": "none", "severity": 0, "target": "none", "confidence": 0.97, "reason": "Positive comment about a game."},
     {"User ID": 1, "username": "ben", "processed_comments": "u r a pathetic l0ser", "harmful": True, "category": "harassment", "severity": 2, "target": "individual", "confidence": 0.93, "reason": "Direct personal insult using disguised spelling."},
@@ -246,7 +265,8 @@ MOCK_RESULTS = [
     {"User ID": 17, "username": "ray", "processed_comments": "send me pics of you ;)", "harmful": True, "category": "sexual", "severity": 2, "target": "individual", "confidence": 0.85, "reason": "Unsolicited sexual request aimed at a user."},
     {"User ID": 18, "username": "sam", "processed_comments": "you're the reason this team keeps losing, go hurt yourself", "harmful": True, "category": "self_harm", "severity": 4, "target": "individual", "confidence": 0.91, "reason": "Encourages another user to harm themselves."},
     {"User ID": 19, "username": "tia", "processed_comments": "see you all at the tournament saturday", "harmful": False, "category": "none", "severity": 0, "target": "none", "confidence": 0.98, "reason": "Event reminder."},
-]
+] 
+"""
 
 if __name__ == "__main__":
 
@@ -263,6 +283,7 @@ if __name__ == "__main__":
             print("Action:", report["recommended_action"])
         else:
             print("Category:", report["category"])
+            print("Category Description:", report["category_description"])
             print("Priority:", report["priority"])
             print("Action:", report["recommended_action"])
             print("AI Reason:", report["ai_reason"])
