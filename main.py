@@ -11,6 +11,8 @@ logging.basicConfig(level=logging.INFO)
 
 
 def main():
+    # user input for the csv file
+    rows = io_manager.run_input_workflow().to_dict("records") # Convert the io manager output to a list of dictionaries (records)
 
 
     
