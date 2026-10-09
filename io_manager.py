@@ -20,22 +20,19 @@ sorted_slang = sorted(SLANG_DICT.keys(), key=len, reverse=True)
 SLANG_PATTERN = re.compile(r"\b(" + "|".join(map(re.escape, sorted_slang)) + r")\b",flags=re.IGNORECASE,) # Pre-compile a case-insensitive regex pattern matching any slang word surrounded by word boundaries (\b)
 URL_EMAIL_PUNCT = re.compile(r"https?://\S+|www\.\S+|\S+@\S+|[^a-zA-Z\s]")      # Combined pre-compiled regex to clear URLs, email addresses, and non-alphabetic/non-whitespace characters in one pass
 
-# -------------------------------------------------------------
-# Text Cleaning & Standardization
-# -------------------------------------------------------------
-def clean_text(text):
+# =============================================================
+# TEXT CLEANING & STANDARDIZATION
+# =============================================================
+def clean_text(text: str) -> str:
+    """Standardizes comment text by converting to lowercase, expanding slang,
+    stripping URLs, emails, special characters, and normalizing extra spaces."""
+    # Guard clause: Return an empty string if input is not valid text or consists only of whitespace
     if not isinstance(text, str) or not text.strip():
         return ""
-
-    text = text.lower()  # 1. Lowercase
-    text = URL_PATTERN.sub("", text)  # 2. Remove URLs
-    text = EMAIL_PATTERN.sub("", text)  # 3. Remove emails
-    text = SLANG_PATTERN.sub(lambda m: SLANG_DICT[m.group(0)], text)  # 4. Expand slang
-    text = PUNCT_PATTERN.sub("", text)  # 5. Remove punctuation & special chars
-    text = WHITESPACE_PATTERN.sub(" ", text).strip()  # 6. Normalize spacing
-
-    return text
-
+    text = text.lower()                                                      # Convert entire string to lowercase for uniform processing
+    text = SLANG_PATTERN.sub(lambda m: SLANG_DICT[m.group(0).lower()], text) # Expand slang using SLANG_DICT; .lower() prevents KeyError if matched text was capitalized
+    text = URL_EMAIL_PUNCT.sub("", text)                                     # Remove URLs, emails, punctuation, and non-alphabetical characters
+    return " ".join(text.split())                                            # Split on whitespace and rejoin with a single space to collapse multiple spaces/newlines
 
 # =============================================================
 # USER INPUT & FILE SELECTION
