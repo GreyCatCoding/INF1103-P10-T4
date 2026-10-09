@@ -17,28 +17,51 @@ HIGH_RISK_CATEGORIES = {
     "self_harm"
 }
 
+ACTIONS = {
+    "P1": "Remove user with human confirmation",
+    "P2": "Remove content with human confirmation",
+    "P3": "Warn user and/or prompt human review",
+    "P4": "Monitor user",
+}
+
+
+# ==========================================
+# 1. VALIDATE AI OUTPUT
+# ==========================================
+
 def validate_data(data): # Check that the AI output contains valid information
 
     if not isinstance(data, dict):
         raise ValueError("AI output must be a dictionary")
 
     required_fields = {
-        "harmful", "category", "severity",
-        "target", "confidence"
+        "username",
+        "comment",
+        "harmful",
+        "category",
+        "severity",
+        "target",
+        "confidence",
+        "reason",
     }
 
     for field in required_fields:
         if field not in data:
             raise ValueError(f"Missing field: {field}")
 
+    for field in ["username", "comment", "category",
+                  "target", "reason"]:
+        if not isinstance(data[field], str):
+            raise ValueError(f"{field} must be a string")
+
+    if not data["username"].strip():
+        raise ValueError("username cannot be empty")
+
+    if not data["comment"].strip():
+        raise ValueError("comment cannot be empty")
+
     if type(data["harmful"]) is not bool:
-        raise ValueError("harmful must be True or False")
-
-    if not isinstance(data["category"], str):
-        raise ValueError("category must be a string")
-
-    if not isinstance(data["target"], str):
-        raise ValueError("target must be a string")
+        raise ValueError("harmful must be boolean")
 
     if type(data["severity"]) is not int:
         raise ValueError("severity must be an integer")
@@ -52,88 +75,65 @@ def validate_data(data): # Check that the AI output contains valid information
     if not 0 <= data["confidence"] <= 1:
         raise ValueError("confidence must be between 0 and 1")
 
-    if (
-        data["category"].lower() not in CATEGORIES
-        and data["category"].lower() != "none"
-    ):
-        raise ValueError("unknown category")
+    category = data["category"].lower()
+
+    if category not in CATEGORIES and category != "none":
+        raise ValueError("Unknown category")
+
+    if data["target"].lower() not in {
+        "individual", "group", "none"
+    }:
+        raise ValueError("Unknown target")
 
     return True
 
-def get_priority(data, previous_violations=0):
+
+# ==========================================
+# 2. DETERMINE PRIORITY
+# ==========================================
+
+def get_priority(data):
 
     validate_data(data)
 
-    # previous_violations is a variable where it identify repeat offenders
-    if type(previous_violations) is not int or previous_violations < 0:
-        raise ValueError("previous_violations must be non-negative")   
+    harmful = data["harmful"]
+    category = data["category"].lower()
+    severity = data["severity"]
+    target = data["target"].lower()
+    confidence = data["confidence"]
 
-    harmful = data.get("harmful", False)
-    category = data.get("category", "none").lower()
-    severity = data.get("severity", 0)
-    target = data.get("target", "none").lower()
-    confidence = data.get("confidence", 0.0)
-
-    # -------------------------
-    # P4 - Not harmful / low confidence
-    # -------------------------
+    # P4: No harmful content detected
     if not harmful or severity == 0:
         return "P4"
 
-    # If AI is not confident enough,
-    # avoid automatically assigning a high priority
-    if confidence < 0.60:
-        return "P4"
-
-    # -------------------------
-    # P1 - Severe
-    # -------------------------
+    # P1: Severe high-risk harmful content
     if (
         severity == 4
         and confidence >= 0.80
         and (
             category in HIGH_RISK_CATEGORIES
-            or target in ["individual", "group"]
-            or previous_violations >= 3
+            or target in {"individual", "group"}
         )
     ):
         return "P1"
 
-    # -------------------------
-    # P2 - Clearly harmful
-    # -------------------------
-    elif (
-        severity >= 3
-        and confidence >= 0.70
-    ):
+    # P2: Clearly harmful content
+    if severity >= 3 and confidence >= 0.70:
         return "P2"
 
-    # -------------------------
-    # P3 - Harmful but lower severity
-    # -------------------------
-    elif (
-        severity >= 1
-        and harmful
-    ):
-        return "P3"
-
-    # -------------------------
-    # P4 - Default
-    # -------------------------
-    else:
-        return "P4"
+    # P3: Lower severity harmful content
+    return "P3"
 
 
-def generate_report(data, previous_violations=0):
+def generate_report(data):
     
-    priority = get_priority(data, previous_violations)
+    priority = get_priority(data)
 
     return {
         "priority": priority,
         "human_review_required": priority in {"P1", "P2"},
         **data
     }
-
 
 Recieved_data = {
     "harmful": True,
@@ -142,7 +142,6 @@ Recieved_data = {
     "target": "individual",
     "confidence": 0.95
 }
-
 
 result = generate_report(Recieved_data)
 
