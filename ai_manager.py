@@ -48,6 +48,10 @@ OPENROUTER_BACKUP_MODELS: list[str] = [
 TIMEOUT_SECONDS: int = 60
 MAX_RETRIES: int = 1
 
+# Initialise keys processed_comments and User ID from io_manager
+COMMENTS_FIELD: str = "processed_comments"
+ID_FIELD: int = "User ID"
+
 SYSTEM_PROMPT: str = """
 You are a content moderator for a social media platform. You will receive one comment inside <comment></comment> tags. Classify it and reply with a single JSON object. Do not add any text, explanation or markdown outside the JSON.
 
@@ -154,7 +158,7 @@ def get_provider_config(provider_name: str | None = None) -> dict[str, str] | No
 
 def build_prompt(record: dict[str, str]) -> str:
     """Wrap the record's comment in <comment> tags, as SYSTEM_PROMPT expects."""
-    comment = record["comment"]
+    comment = record[COMMENTS_FIELD]
     comment = comment.replace("</comment>", "")   # stop a comment closing the tag early
     return f"<comment>{comment}</comment>"
     
