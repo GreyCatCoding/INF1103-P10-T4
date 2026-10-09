@@ -1,0 +1,21 @@
+# Version control and environment
+.git/
+.gitignore
+.env
+
+# Python bytecode and runtime caches
+__pycache__/
+pytest_cache/
+*.py
+*.pyc
+*.pyo
+*.pyd
+
+# Testing, virtual environments, and local IDE settings
+tests/
+.pytest_cache/
+.vscode/
+.idea/
+venv/
+.venv/
+env/
