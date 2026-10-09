@@ -354,10 +354,8 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
     fake_records = [
-        {"User ID": 0, "original_comments": "great game last night!",
-         "processed_comments": "great game last night!", "timestamp": "2026-01-01 00:00"},
-        {"User ID": 1, "original_comments": "u r a pathetic l0ser",
-         "processed_comments": "u r a pathetic l0ser", "timestamp": "2026-01-01 00:01"},
+        {"User ID": 0, "username": "amy", "processed_comments": "great game last night!"},
+        {"User ID": 1, "username": "ben", "processed_comments": "u r a pathetic l0ser"},
     ]
 
     for record in fake_records:
