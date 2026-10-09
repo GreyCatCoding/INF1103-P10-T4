@@ -148,6 +148,18 @@ def needs_human_review(data, priority):
 
     return False
 
+# ==========================================
+# 4. RECOMMENDED ACTION
+# ==========================================
+
+def get_recommended_action(priority, review_required):
+
+    if review_required and priority in {"P3", "P4"}:
+        return "Send to human moderator for review"
+
+    return ACTIONS[priority]
+
+
 def generate_report(data):
     
     priority = get_priority(data)
