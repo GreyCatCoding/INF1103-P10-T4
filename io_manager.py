@@ -1,0 +1,134 @@
+# =============================================================
+# LIBRARIES & DIRECTORY SETUP
+# =============================================================
+from pathlib import Path  # Standard library for object-oriented filesystem paths
+import re  # Regular expressions library for text manipulation and cleaning
+import pandas as pd  # Data manipulation library for loading, transforming, and saving CSV/JSON
+
+BASE_DIR = Path(__file__).resolve().parent # Define the root directory relative to where this script is located
+UNCLEANED_DIR = BASE_DIR / "uncleaned" # Directory for Uncleaned CSV files
+CLEANED_DIR = BASE_DIR / "cleaned" # Directory for Cleaned CSV and JSON files
+
+# =============================================================
+# SLANG DICTIONARY & REGEX PRE-COMPILATION
+# =============================================================
+SLANG_DICT = {
+    "lol": "laugh out loud","sybau": "shut your bitch ass up","imo": "in my opinion","imho": "in my humble opinion",
+    "tbh": "to be honest","smh": "shaking my head","fk": "fuck","btw": "by the way","idk": "i do not know","omg": "oh my god",
+    "ur": "your","r": "are","u": "you","rfc": "request for comments",}
+sorted_slang = sorted(SLANG_DICT.keys(), key=len, reverse=True)
+SLANG_PATTERN = re.compile(r"\b(" + "|".join(map(re.escape, sorted_slang)) + r")\b",flags=re.IGNORECASE,) # Pre-compile a case-insensitive regex pattern matching any slang word surrounded by word boundaries (\b)
+URL_EMAIL_PUNCT = re.compile(r"https?://\S+|www\.\S+|\S+@\S+|[^a-zA-Z\s]")      # Combined pre-compiled regex to clear URLs, email addresses, and non-alphabetic/non-whitespace characters in one pass
+
+# =============================================================
+# TEXT CLEANING & STANDARDIZATION
+# =============================================================
+def clean_text(text: str) -> str:
+    """Standardizes comment text by converting to lowercase, expanding slang,
+    stripping URLs, emails, special characters, and normalizing extra spaces."""
+    # Guard clause: Return an empty string if input is not valid text or consists only of whitespace
+    if not isinstance(text, str) or not text.strip():
+        return ""
+    text = text.lower()                                                      # Convert entire string to lowercase for uniform processing
+    text = SLANG_PATTERN.sub(lambda m: SLANG_DICT[m.group(0).lower()], text) # Expand slang using SLANG_DICT; .lower() prevents KeyError if matched text was capitalized
+    text = URL_EMAIL_PUNCT.sub("", text)                                     # Remove URLs, emails, punctuation, and non-alphabetical characters
+    return " ".join(text.split())                                            # Split on whitespace and rejoin with a single space to collapse multiple spaces/newlines
+
+# =============================================================
+# USER INPUT & FILE SELECTION
+# =============================================================
+def get_input_file() -> Path:
+    """Scans the 'uncleaned' directory, displays available CSV files,
+    and prompts the user to select one (case-insensitive, auto-appends .csv extension)."""
+    UNCLEANED_DIR.mkdir(exist_ok=True, parents=True)                        # Ensure the input directory exists before trying to scan it
+    csv_files = sorted(p.name for p in UNCLEANED_DIR.glob("*.csv"))         # Collect all .csv files in the directory and sort them alphabetically
+
+    # Raise an explicit error if no CSV files are found to process
+    if not csv_files:
+        raise FileNotFoundError("No CSV files found in the 'uncleaned' folder.")
+    print("Available uncleaned CSV files:")                                 # Display the list of available files to the user
+    for file in csv_files:
+        print(f"- {file}")
+    file_map = {f.casefold(): f for f in csv_files}                         # Build a lookup map where lowercase filenames point to actual filenames for case-insensitive matching
+
+    # Loop until the user provides a valid filename
+    while True:
+        filename = input("\nEnter CSV filename: ").strip()
+        # Automatically append .csv extension if the user omitted it
+        if not filename.endswith(".csv"):
+            filename += ".csv"
+        selected = file_map.get(filename.casefold())                        # Check if user input matches any file in our lookup map
+        if selected:
+            return UNCLEANED_DIR / selected                                 # Return absolute Path object
+
+        print(f"'{filename}' not found. Available: {', '.join(csv_files)}") # Warn user and show available options if match fails
+
+
+# =============================================================
+# CSV & JSON PROCESSING
+# =============================================================
+def process_csv(input_path: Path, output_path: Path = None):
+    """Reads a CSV file, cleans the 'comments' column, creates both original and processed comment columns,
+    and exports the result to both CSV and JSON in the 'cleaned' directory."""
+    CLEANED_DIR.mkdir(exist_ok=True, parents=True)                              # Ensure the output directory exists
+
+    csv_output = (
+        Path(output_path)
+        if output_path
+        else CLEANED_DIR / f"{input_path.stem}_cleaned.csv"
+    )                                                                           # Use specified output path or generate default path using input file name stem
+
+    json_output = csv_output.with_suffix(".json")                               # Automatically derive the matching JSON path from the CSV output path
+    df = pd.read_csv(input_path)                                                # Read source CSV file into a pandas DataFrame
+    # Validate that required target column exists
+    if "comments" not in df.columns:
+        raise ValueError("The CSV must contain a 'comments' column.")
+    df["original_comments"] = df["comments"].fillna("")                         # Fill NaN values with empty strings to avoid errors during text manipulation
+    df["processed_comments"] = df["original_comments"].apply(clean_text)        # Apply the clean_text function to every comment row
+
+    expected_cols = ["User ID","username","original_comments","processed_comments","timestamp",]     # Define columns to keep for the main DataFrame and CSV export
+    df = df[[c for c in expected_cols if c in df.columns]]
+    df.to_csv(csv_output, index=False)     # Export complete cleaned DataFrame to CSV
+
+    # Define specific subset of columns required for JSON export
+    json_cols = ["User ID", "username", "processed_comments"]
+    json_df = df[[c for c in json_cols if c in df.columns]]
+    json_df.to_json(json_output, orient="records", indent=4) # Export filtered DataFrame to JSON formatted as an array of record objects
+
+    return (df,csv_output,json_output,)  # Return structured data frame along with saved file paths
+
+
+# =============================================================
+# TERMINAL TABLE DISPLAY
+# =============================================================
+def print_table(df: pd.DataFrame, max_width: int = 36):
+    """Prints a neatly formatted ASCII representation of a DataFrame to the console
+    using pandas built-in option controls without requiring manual table drawing loops."""
+    # Set temporary display options for column width and total output width
+    with pd.option_context(
+        "display.max_colwidth", max_width, "display.width", 1000
+    ):
+        print(df.to_string(index=False))  # Convert DataFrame to clean string without index numbers
+
+
+# =============================================================
+# MAIN WORKFLOW EXECUTION
+# =============================================================
+def run_input_workflow():
+    """Coordinates file selection, cleans data, saves outputs, and prints before/after summaries."""
+    input_file = get_input_file()                                # Prompt user for input file path
+    print(f"\nProcessing {input_file.name}...")
+    raw_df = pd.read_csv(input_file)                             # Load raw file for uncleaned preview display
+    cleaned_df, csv_path, json_path = process_csv(input_file)    # Run the main text processing and export routine
+
+    print("\n--- Uncleaned Data Preview (Top 5) ---")    # Print first 5 rows of uncleaned data
+    print_table(raw_df.head(5))
+    print(f"\nSaved CSV to: {csv_path}")
+    print(f"Saved JSON to: {json_path}")
+    print("\n--- Cleaned Data Preview (Top 5) ---")
+    print_table(cleaned_df.head(5))
+
+    return cleaned_df
+
+if __name__ == "__main__":
+    run_input_workflow()
