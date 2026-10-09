@@ -1,3 +1,6 @@
+import json
+
+
 CATEGORIES = {
     "harassment": "insults, threats or mockery aimed at a specific person",
     "hate": "attacks on a group based on race, religion, nationality, gender, sexuality or disability",
@@ -128,6 +131,7 @@ def generate_report(data, previous_violations=0):
     return {
         "priority": priority,
         "human_review_required": priority in {"P1", "P2"},
+        **data
     }
 
 
@@ -142,4 +146,4 @@ Recieved_data = {
 
 result = generate_report(Recieved_data)
 
-print(result)
+print(json.dumps(result, indent=4))
