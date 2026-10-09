@@ -137,7 +137,7 @@ def needs_human_review(data, priority):
 
     # Uncertain AI assessment
     if confidence < 0.70:
-        return "True"
+        return True
 
     # Severe content
     if severity >= 3:
@@ -261,13 +261,16 @@ if __name__ == "__main__":
         if "error" in report:
             print("Error:", report["error"])
             print("Action:", report["recommended_action"])
-            print("Human Review:", report["human_review_required"])
         else:
             print("Category:", report["category"])
             print("Priority:", report["priority"])
             print("Action:", report["recommended_action"])
-            print("Human Review:", report["human_review_required"])
             print("AI Reason:", report["ai_reason"])
+
+        if report["human_review_required"]:
+            print("Human Review: Review Required")
+        else:
+            print("Human Review: Review not Required")
 
     print("=" * 68)
     print("Total Reports:", len(reports))
