@@ -111,30 +111,23 @@ def print_table(df: pd.DataFrame, max_width: int = 36):
         print(df.to_string(index=False))  # Convert DataFrame to clean string without index numbers
 
 
-# -------------------------------------------------------------
-# WORKFLOW
-# -------------------------------------------------------------
+# =============================================================
+# MAIN WORKFLOW EXECUTION
+# =============================================================
 def run_input_workflow():
-    """Ask for a CSV filename, process it, and save output as CSV & JSON."""
-    input_file = get_input_file()
-    print(f"\nUsing input file: {input_file}")
+    """Coordinates file selection, cleans data, saves outputs, and prints before/after summaries."""
+    input_file = get_input_file()                                # Prompt user for input file path
+    print(f"\nProcessing {input_file.name}...")
+    raw_df = pd.read_csv(input_file)                             # Load raw file for uncleaned preview display
+    cleaned_df, csv_path, json_path = process_csv(input_file)    # Run the main text processing and export routine
 
-    CLEANED_DIR.mkdir(exist_ok=True, parents=True)
+    print("\n--- Uncleaned Data Preview (Top 5) ---")    # Print first 5 rows of uncleaned data
+    print_table(raw_df.head(5))
+    print(f"\nSaved CSV to: {csv_path}")
+    print(f"Saved JSON to: {json_path}")
+    print("\n--- Cleaned Data Preview (Top 5) ---")
+    print_table(cleaned_df.head(5))
 
-    print("\nProcessing...")
-    raw_df = pd.read_csv(input_file)
-    cleaned_df, csv_path, json_path = process_csv(input_file)              # Unpacks new json_path return value
-
-    print("\nUncleaned:")
-    print_wrapped_table(raw_df[["User ID", "comments", "timestamp"]].head(5))
-
-    print("\nCleaned:")
-    print(f"Saved CSV to: {csv_path}")                                    # Updated label to specify CSV
-    print(f"Saved JSON to: {json_path}")                                  # Displays location of newly created JSON file
-
-    cleaned_preview = pd.read_csv(csv_path)                               # csv_path variable
-    cleaned_preview = cleaned_preview[["User ID", "original_comments", "processed_comments", "timestamp"]]
-    print_wrapped_table(cleaned_preview.head(5))
     return cleaned_df
 
 if __name__ == "__main__":
