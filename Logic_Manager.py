@@ -19,7 +19,7 @@ Recieved_data = {
     "category": "violence",
     "severity": 4,
     "target": "individual",
-    "confidence": 2
+    "confidence": 0.95
 }
 
 def validate_data(Received_data): # Check that the AI output contains valid information
@@ -65,9 +65,13 @@ def validate_data(Received_data): # Check that the AI output contains valid info
 
     return True
 
-def get_priority(Received_data):
+def get_priority(Received_data, previous_violations=0):
 
     validate_data(Received_data)
+
+    # previous_violations is a variable where it identify repeat offenders
+    if type(previous_violations) is not int or previous_violations < 0:
+        raise ValueError("previous_violations must be non-negative")   
 
     harmful = Received_data.get("harmful", False)
     category = Received_data.get("category", "none").lower()
@@ -94,7 +98,7 @@ def get_priority(Received_data):
         and confidence >= 0.80
         and (
             category in HIGH_RISK_CATEGORIES
-            or target in ["individual", "group"]
+            or previous_violations >= 3
         )
     ):
         return "P1"
