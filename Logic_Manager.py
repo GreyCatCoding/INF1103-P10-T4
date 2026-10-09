@@ -1,6 +1,3 @@
-import json
-
-
 CATEGORIES = {
     "harassment": "insults, threats or mockery aimed at a specific person",
     "hate": "attacks on a group based on race, religion, nationality, gender, sexuality or disability",
@@ -213,14 +210,51 @@ def process_reports(records):
 
     return results
 
-Recieved_data = {
-    "harmful": True,
-    "category": "violence",
-    "severity": 4,
-    "target": "individual",
-    "confidence": 0.95
-}
 
-result = generate_report(Recieved_data)
+# ==========================================
+# 7. TEST WITH MOCK AI RESULTS
+# ==========================================
 
-print(json.dumps(result, indent=4))
+# Trial: Output given by ai_manager
+MOCK_RESULTS = [
+    {"username": "amy", "comment": "great game last night!", "harmful": False, "category": "none", "severity": 0, "target": "none", "confidence": 0.97, "reason": "Positive comment about a game."},
+    {"username": "ben", "comment": "u r a pathetic l0ser", "harmful": True, "category": "harassment", "severity": 2, "target": "individual", "confidence": 0.93, "reason": "Direct personal insult using disguised spelling."},
+    {"username": "cal", "comment": "earn $500 a day, DM me now", "harmful": True, "category": "spam", "severity": 1, "target": "none", "confidence": 0.95, "reason": "Unsolicited money-making offer."},
+    {"username": "dee", "comment": "anyone know when the patch drops?", "harmful": False, "category": "none", "severity": 0, "target": "none", "confidence": 0.98, "reason": "Neutral question."},
+    {"username": "eli", "comment": "nobody wants you here, just quit already", "harmful": True, "category": "harassment", "severity": 3, "target": "individual", "confidence": 0.88, "reason": "Targeted hostility telling a user to leave."},
+    {"username": "fay", "comment": "this update is trash lol", "harmful": False, "category": "none", "severity": 0, "target": "none", "confidence": 0.84, "reason": "Criticism of a product, not a person."},
+    {"username": "gus", "comment": "click here for free skins >>> bit.ly/fr33sk1ns", "harmful": True, "category": "spam", "severity": 2, "target": "none", "confidence": 0.96, "reason": "Suspicious link promising free items."},
+    {"username": "hana", "comment": "people from that country are all scammers", "harmful": True, "category": "hate", "severity": 3, "target": "group", "confidence": 0.90, "reason": "Negative generalisation about a nationality."},
+    {"username": "ivan", "comment": "i'm gonna destroy you in the next match", "harmful": False, "category": "none", "severity": 0, "target": "none", "confidence": 0.72, "reason": "Competitive trash talk about a game, not a real threat."},
+    {"username": "jo", "comment": "ur so dumb it's actually impressive", "harmful": True, "category": "harassment", "severity": 1, "target": "individual", "confidence": 0.61, "reason": "Mild insult; could be playful banter."},
+    {"username": "kai", "comment": "know where you live. watch yourself.", "harmful": True, "category": "violence", "severity": 4, "target": "individual", "confidence": 0.94, "reason": "Implied threat of violence referencing the user's home."},
+    {"username": "lea", "comment": "thanks for the help everyone!", "harmful": False, "category": "none", "severity": 0, "target": "none", "confidence": 0.99, "reason": "Friendly thanks."},
+    {"username": "max", "comment": "buy followers cheap!!! 1000 for $5", "harmful": True, "category": "spam", "severity": 1, "target": "none", "confidence": 0.97, "reason": "Advertising fake followers."},
+    {"username": "nia", "comment": "go back to where you came from", "harmful": True, "category": "hate", "severity": 3, "target": "group", "confidence": 0.86, "reason": "Exclusionary statement targeting people by origin."},
+    {"username": "omar", "comment": "that ref was blind, worst call ever", "harmful": False, "category": "none", "severity": 0, "target": "none", "confidence": 0.89, "reason": "Frustration at a decision, no personal attack."},
+    {"username": "pia", "comment": "lol ok boomer", "harmful": True, "category": "harassment", "severity": 1, "target": "individual", "confidence": 0.55, "reason": "Dismissive remark; borderline."},
+    {"username": "quinn", "comment": "women can't play this game properly", "harmful": True, "category": "hate", "severity": 2, "target": "group", "confidence": 0.83, "reason": "Demeaning generalisation about women."},
+    {"username": "ray", "comment": "send me pics of you ;)", "harmful": True, "category": "sexual", "severity": 2, "target": "individual", "confidence": 0.85, "reason": "Unsolicited sexual request aimed at a user."},
+    {"username": "sam", "comment": "you're the reason this team keeps losing, go hurt yourself", "harmful": True, "category": "self_harm", "severity": 4, "target": "individual", "confidence": 0.91, "reason": "Encourages another user to harm themselves."},
+    {"username": "tia", "comment": "see you all at the tournament saturday", "harmful": False, "category": "none", "severity": 0, "target": "none", "confidence": 0.98, "reason": "Event reminder."},
+]
+
+if __name__== "__main__":
+
+    reports = process_reports(MOCK_RESULTS)
+
+    for report in reports:
+        print("=" * 68)
+        print("Username:", report["username"])
+        print("Categoty:", report["category"])
+        print("Priority:", report["priority"])
+        print("Action:", report["recommended_action"])
+        print("Human Review:", report["human_review_required"])
+
+        if "error" in report:
+            print("Error:", report["error"])
+        else:
+            print("AI Reason:", report["ai_reason"])
+
+    print("=" * 68)
+    print("Total Reports:", len(reports))
