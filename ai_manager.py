@@ -215,6 +215,20 @@ def call_api(prompt: str, provider_name: str | None = None) -> str | None:
     return None
 
 
+def call_with_fallback(prompt: str) -> str | None:
+    """Try the main provider first; Try openrouter's free models if main provider fails."""
+    raw_response = call_api(prompt)
+    if raw_response:
+        return raw_response
+
+    # If model is currently openrouter model, then fallback to nothing
+    if os.getenv("AI_PROVIDER", DEFAULT_PROVIDER) == FALLBACK_PROVIDER:
+        return None
+
+    logger.warning("Main provider failed, falling back to %s", FALLBACK_PROVIDER)
+    return call_api(prompt, FALLBACK_PROVIDER)
+
+
 def parse_response(raw_response: str) -> dict | None:
     """Convert the model's JSON string into a dict. None if it isn't valid JSON."""
     raw_response = raw_response.strip()
