@@ -24,16 +24,6 @@ logger = logging.getLogger(__name__)
 
 # Model name placeholders
 PROVIDERS: dict[str, dict[str, str]] = {
-    "deepseek": {
-        "base_url": "https://api.deepseek.com",
-        "model": "deepseek-chat",
-        "key_env": "DEEPSEEK_API_KEY",
-    },
-    "openai": {
-        "base_url": "https://api.openai.com/v1",
-        "model": "MODEL_NAME_HERE",
-        "key_env": "OPENAI_API_KEY",
-    },
     "groq": {
         "base_url": "https://api.groq.com/openai/v1",
         "model": "MODEL_NAME_HERE",
@@ -41,7 +31,7 @@ PROVIDERS: dict[str, dict[str, str]] = {
     },
 }
 
-DEFAULT_PROVIDER: str = "deepseek"
+DEFAULT_PROVIDER: str = "groq"
 TIMEOUT_SECONDS: int = 30
 MAX_RETRIES: int = 1
 
