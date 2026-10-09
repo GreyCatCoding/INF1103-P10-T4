@@ -14,17 +14,9 @@ HIGH_RISK_CATEGORIES = {
     "self_harm"
 }
 
-Recieved_data = {
-    "harmful": True,
-    "category": "violence",
-    "severity": 4,
-    "target": "individual",
-    "confidence": 0.95
-}
+def validate_data(data): # Check that the AI output contains valid information
 
-def validate_data(Received_data): # Check that the AI output contains valid information
-
-    if not isinstance(Received_data, dict):
+    if not isinstance(data, dict):
         raise ValueError("AI output must be a dictionary")
 
     required_fields = {
@@ -33,51 +25,51 @@ def validate_data(Received_data): # Check that the AI output contains valid info
     }
 
     for field in required_fields:
-        if field not in Received_data:
+        if field not in data:
             raise ValueError(f"Missing field: {field}")
 
-    if type(Received_data["harmful"]) is not bool:
+    if type(data["harmful"]) is not bool:
         raise ValueError("harmful must be True or False")
 
-    if not isinstance(Received_data["category"], str):
+    if not isinstance(data["category"], str):
         raise ValueError("category must be a string")
 
-    if not isinstance(Received_data["target"], str):
+    if not isinstance(data["target"], str):
         raise ValueError("target must be a string")
 
-    if type(Received_data["severity"]) is not int:
+    if type(data["severity"]) is not int:
         raise ValueError("severity must be an integer")
 
-    if not 0 <= Received_data["severity"] <= 4:
+    if not 0 <= data["severity"] <= 4:
         raise ValueError("severity must be between 0 and 4")
 
-    if type(Received_data["confidence"]) not in (int, float):
+    if type(data["confidence"]) not in (int, float):
         raise ValueError("confidence must be numeric")
 
-    if not 0 <= Received_data["confidence"] <= 1:
+    if not 0 <= data["confidence"] <= 1:
         raise ValueError("confidence must be between 0 and 1")
 
     if (
-        Received_data["category"].lower() not in CATEGORIES
-        and Received_data["category"].lower() != "none"
+        data["category"].lower() not in CATEGORIES
+        and data["category"].lower() != "none"
     ):
         raise ValueError("unknown category")
 
     return True
 
-def get_priority(Received_data, previous_violations=0):
+def get_priority(data, previous_violations=0):
 
-    validate_data(Received_data)
+    validate_data(data)
 
     # previous_violations is a variable where it identify repeat offenders
     if type(previous_violations) is not int or previous_violations < 0:
         raise ValueError("previous_violations must be non-negative")   
 
-    harmful = Received_data.get("harmful", False)
-    category = Received_data.get("category", "none").lower()
-    severity = Received_data.get("severity", 0)
-    target = Received_data.get("target", "none").lower()
-    confidence = Received_data.get("confidence", 0.0)
+    harmful = data.get("harmful", False)
+    category = data.get("category", "none").lower()
+    severity = data.get("severity", 0)
+    target = data.get("target", "none").lower()
+    confidence = data.get("confidence", 0.0)
 
     # -------------------------
     # P4 - Not harmful / low confidence
@@ -98,6 +90,7 @@ def get_priority(Received_data, previous_violations=0):
         and confidence >= 0.80
         and (
             category in HIGH_RISK_CATEGORIES
+            or target in ["individual", "group"]
             or previous_violations >= 3
         )
     ):
@@ -128,4 +121,25 @@ def get_priority(Received_data, previous_violations=0):
         return "P4"
 
 
-print(get_priority(Recieved_data))
+def generate_report(data, previous_violations=0):
+    
+    priority = get_priority(data, previous_violations)
+
+    return {
+        "priority": priority,
+        "human_review_required": priority in {"P1", "P2"},
+    }
+
+
+Recieved_data = {
+    "harmful": True,
+    "category": "violence",
+    "severity": 4,
+    "target": "individual",
+    "confidence": 0.95
+}
+
+
+result = generate_report(Recieved_data)
+
+print(result)
