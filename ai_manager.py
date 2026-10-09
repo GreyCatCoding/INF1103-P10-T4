@@ -22,27 +22,30 @@ logger = logging.getLogger(__name__)
 # 1. CONFIG
 # ---------------------------------------------------------------------------
 
-# Model name placeholders
+# Model provider settings
 PROVIDERS: dict[str, dict[str, str]] = {
-    "deepseek": {
-        "base_url": "https://api.deepseek.com",
-        "model": "deepseek-chat",
-        "key_env": "DEEPSEEK_API_KEY",
-    },
-    "openai": {
-        "base_url": "https://api.openai.com/v1",
-        "model": "MODEL_NAME_HERE",
-        "key_env": "OPENAI_API_KEY",
+    "openrouter": {
+        "base_url": "https://openrouter.ai/api/v1",
+        "model": "nvidia/nemotron-3-super-120b-a12b:free",
+        "key_env": "OPENROUTER_API_KEY",
     },
     "groq": {
         "base_url": "https://api.groq.com/openai/v1",
-        "model": "MODEL_NAME_HERE",
+        "model": "openai/gpt-oss-safeguard-20b",
         "key_env": "GROQ_API_KEY",
     },
 }
 
-DEFAULT_PROVIDER: str = "deepseek"
-TIMEOUT_SECONDS: int = 30
+# Set default provider to groq and fallback to openrouter if default provider fails
+DEFAULT_PROVIDER: str = "groq"
+FALLBACK_PROVIDER: str = "openrouter"
+# Openrouter tries inkling-small-free and openrouter/free in order if main openrouter model is busy
+OPENROUTER_BACKUP_MODELS: list[str] = [
+    "thinkingmachines/inkling-small:free",
+    "openrouter/free",
+]
+# Adjusted timeout seconds to accomodate for slower models in case of fallback
+TIMEOUT_SECONDS: int = 60
 MAX_RETRIES: int = 1
 
 SYSTEM_PROMPT: str = """
@@ -113,14 +116,16 @@ ALLOWED_TARGETS: set[str] = {"individual", "group", "none"}
 # 2. PROVIDER SELECTION
 # ---------------------------------------------------------------------------
 
-def get_provider_config() -> dict[str, str] | None:
-    """Return base_url, model and api_key for the provider named in AI_PROVIDER."""
+def get_provider_config(provider_name: str | None = None) -> dict[str, str] | None:
+    """Return base_url, model and api_key for provider_name (default to AI_PROVIDER in .env)."""
 
-    # Get AI_PROVIDER from .env (falls back to DEFAULT_PROVIDER if not set)
-    provider_name = os.getenv("AI_PROVIDER", DEFAULT_PROVIDER)
+    # If no provider was passed in, get AI_PROVIDER from .env (falls back to DEFAULT_PROVIDER if not set)
+    if provider_name is None:
+        provider_name = os.getenv("AI_PROVIDER", DEFAULT_PROVIDER)
+
     if provider_name not in PROVIDERS:
-        # Log error if AI_PROVIDER is unknown, return None
-        logger.error("Unknown AI_PROVIDER: %s", provider_name)
+        # Log error if the provider is unknown, return None
+        logger.error("Unknown provider: %s", provider_name)
         return None
 
     # Get provider's settings from PROVIDERS
@@ -155,11 +160,11 @@ def build_prompt(record: dict[str, str]) -> str:
     
 
 
-def call_api(prompt: str) -> str | None:
+def call_api(prompt: str, provider_name: str | None = None) -> str | None:
     """POST the prompt to the chosen provider. Return the model's raw text, or None on failure."""
 
     # Get provider's URL, model and API key and return None if config is not found
-    config = get_provider_config()
+    config = get_provider_config(provider_name)
     if not config:
         return None
 
@@ -185,13 +190,21 @@ def call_api(prompt: str) -> str | None:
         "response_format": {"type": "json_object"},
     }
 
+    # Give openrouter backup models to try if the main one is busy
+    if "openrouter.ai" in config["base_url"]:
+        body["models"] = OPENROUTER_BACKUP_MODELS
+
     try:
         # Post a request to the model api
         api_response = requests.post(api_url, headers=headers, json=body, timeout=TIMEOUT_SECONDS)
         # Raise an exception if an HTTP request fails
         api_response.raise_for_status()
-        # Convert the response JSON into a dict, then pull out the model's reply text
-        return api_response.json()["choices"][0]["message"]["content"]
+        # Convert the response JSON into a dict
+        response_json = api_response.json()
+        # Log which which model gave response
+        logger.info("Model used: %s", response_json.get("model"))
+        # Extract the model's reply text
+        return response_json["choices"][0]["message"]["content"]
     except requests.exceptions.RequestException as err:
         # Covers timeouts, connection errors and HTTP errors
         logger.error("API request failed: %s", err)
@@ -200,6 +213,20 @@ def call_api(prompt: str) -> str | None:
         logger.error("Unexpected API response shape: %s", err)
     # Only reached if one of the excepts above ran
     return None
+
+
+def call_with_fallback(prompt: str) -> str | None:
+    """Try the main provider first; Try openrouter's free models if main provider fails."""
+    raw_response = call_api(prompt)
+    if raw_response:
+        return raw_response
+
+    # If model is currently openrouter model, then fallback to nothing
+    if os.getenv("AI_PROVIDER", DEFAULT_PROVIDER) == FALLBACK_PROVIDER:
+        return None
+
+    logger.warning("Main provider failed, falling back to %s", FALLBACK_PROVIDER)
+    return call_api(prompt, FALLBACK_PROVIDER)
 
 
 def parse_response(raw_response: str) -> dict | None:
@@ -287,8 +314,8 @@ def analyse_record(record: dict[str, str]) -> dict | None:
     prompt = build_prompt(record)
     # First try plus MAX_RETRIES retries
     for attempt in range(MAX_RETRIES + 1):
-        # Get raw response from API using prompt
-        raw_response = call_api(prompt)
+        # Get raw response from the main provider or OpenRouter if the main provider fails
+        raw_response = call_with_fallback(prompt)
         if not raw_response:
             logger.info("Attempt %s: Call API failed", attempt + 1)
             # Try calling API again on the next attempt
