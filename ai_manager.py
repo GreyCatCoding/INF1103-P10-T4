@@ -48,6 +48,10 @@ OPENROUTER_BACKUP_MODELS: list[str] = [
 TIMEOUT_SECONDS: int = 60
 MAX_RETRIES: int = 1
 
+# Initialise keys processed_comments and User ID from io_manager
+COMMENTS_FIELD: str = "processed_comments"
+ID_FIELD: str = "User ID"
+
 SYSTEM_PROMPT: str = """
 You are a content moderator for a social media platform. You will receive one comment inside <comment></comment> tags. Classify it and reply with a single JSON object. Do not add any text, explanation or markdown outside the JSON.
 
@@ -152,9 +156,9 @@ def get_provider_config(provider_name: str | None = None) -> dict[str, str] | No
 # 3. PIPELINE STEPS
 # ---------------------------------------------------------------------------
 
-def build_prompt(record: dict[str, str]) -> str:
+def build_prompt(record: dict) -> str:
     """Wrap the record's comment in <comment> tags, as SYSTEM_PROMPT expects."""
-    comment = record["comment"]
+    comment = record[COMMENTS_FIELD]
     comment = comment.replace("</comment>", "")   # stop a comment closing the tag early
     return f"<comment>{comment}</comment>"
     
@@ -307,8 +311,14 @@ def validate_response(data: dict) -> bool:
 # 4. PUBLIC ENTRY POINT
 # ---------------------------------------------------------------------------
 
-def analyse_record(record: dict[str, str]) -> dict | None:
+def analyse_record(record: dict) -> dict | None:
     """build -> call -> parse -> validate, with retries. Returns result dict or None."""
+
+    # Get the comments field from the io_manager, and skip record if it does not have a usable comments
+    comment = record.get(COMMENTS_FIELD)
+    if not isinstance(comment, str) or not comment.strip():
+        logger.error("Record %s has no usable '%s'", record.get(ID_FIELD), COMMENTS_FIELD)
+        return None
 
     # Get prompt from build_prompt()
     prompt = build_prompt(record)
@@ -333,8 +343,8 @@ def analyse_record(record: dict[str, str]) -> dict | None:
             return {**record, **data}
         logger.info("Attempt %s: Reply failed validation", attempt + 1)
 
-    # All attempts failed, log which record and give up
-    logger.warning("Failed to analyse record from %s after %s attempts", record["username"], MAX_RETRIES + 1)
+    # If all attempts failed, log which record and give up
+    logger.warning("Failed to analyse record %s after %s attempts", record.get(ID_FIELD), MAX_RETRIES + 1)
     return None
             
 
@@ -344,9 +354,8 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
     fake_records = [
-        {"username": "amy", "comment": "great game last night!"},
-        {"username": "ben", "comment": "u r a pathetic l0ser"},
-        {"username": "cal", "comment": "earn $500 a day, DM me now"},
+        {"User ID": 0, "username": "amy", "processed_comments": "great game last night!"},
+        {"User ID": 1, "username": "ben", "processed_comments": "u r a pathetic l0ser"},
     ]
 
     for record in fake_records:
