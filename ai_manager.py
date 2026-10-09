@@ -160,11 +160,11 @@ def build_prompt(record: dict[str, str]) -> str:
     
 
 
-def call_api(prompt: str) -> str | None:
+def call_api(prompt: str, provider_name: str | None = None) -> str | None:
     """POST the prompt to the chosen provider. Return the model's raw text, or None on failure."""
 
     # Get provider's URL, model and API key and return None if config is not found
-    config = get_provider_config()
+    config = get_provider_config(provider_name)
     if not config:
         return None
 
@@ -190,13 +190,21 @@ def call_api(prompt: str) -> str | None:
         "response_format": {"type": "json_object"},
     }
 
+    # Give openrouter backup models to try if the main one is busy
+    if "openrouter.ai" in config["base_url"]:
+        body["models"] = OPENROUTER_BACKUP_MODELS
+
     try:
         # Post a request to the model api
         api_response = requests.post(api_url, headers=headers, json=body, timeout=TIMEOUT_SECONDS)
         # Raise an exception if an HTTP request fails
         api_response.raise_for_status()
-        # Convert the response JSON into a dict, then pull out the model's reply text
-        return api_response.json()["choices"][0]["message"]["content"]
+        # Convert the response JSON into a dict
+        response_json = api_response.json()
+        # Log which which model gave response
+        logger.info("Model used: %s", response_json.get("model"))
+        # Extract the model's reply text
+        return response_json["choices"][0]["message"]["content"]
     except requests.exceptions.RequestException as err:
         # Covers timeouts, connection errors and HTTP errors
         logger.error("API request failed: %s", err)
