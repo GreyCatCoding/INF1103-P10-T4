@@ -90,19 +90,19 @@ def query(df, category=None, action=None):
         
     return filtered_df
 
-print("=== Data Filter System ===")
-print("Leave a field blank and press Enter to skip filtering by that criteria.\n")
+# print("=== Data Filter System ===")
+# print("Leave a field blank and press Enter to skip filtering by that criteria.\n")
     
-cat_input = input("Enter Category (e.g., harassment, spam, hate, violent, sexual, self harm): ").strip()
-act_input = input("Enter Action (e.g., P1, P2, P3, P4): ").strip()
+# cat_input = input("Enter Category (e.g., harassment, spam, hate, violent, sexual, self harm): ").strip()
+# act_input = input("Enter Action (e.g., P1, P2, P3, P4): ").strip()
     
-category = cat_input if cat_input else None
-action = act_input if act_input else None
+# category = cat_input if cat_input else None
+# action = act_input if act_input else None
     
-results = query(df, category=category, action=action)
+# results = query(df, category=category, action=action)
     
-print("\n--- Filter Results ---")
-if results.empty:
-    print("No matching records found.")
-else:
-    print(results.to_string(index=False))
+# print("\n--- Filter Results ---")
+# if results.empty:
+#     print("No matching records found.")
+# else:
+#     print(results.to_string(index=False))
