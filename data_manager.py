@@ -42,3 +42,32 @@ def save(json_filepath: str, csv_filepath: str) -> None:
         writer.writeheader()
         for row in data:
             writer.writerow(row)
+
+def load(csv_filepath: str) -> list:
+    """
+    Loads data from a CSV file into a list of dictionaries with proper data types.
+    
+    Args:
+        csv_filepath (str): Path to the source CSV file.
+        
+    Returns:
+        list: A list of dictionaries representing the records.
+        
+    Raises:
+        FileNotFoundError: If the CSV file does not exist.
+    """
+    if not os.path.exists(csv_filepath):
+        raise FileNotFoundError(f"The CSV file '{csv_filepath}' was not found.")
+
+    data = []
+    with open(csv_filepath, 'r', encoding='utf-8') as csv_file:
+        reader = csv.DictReader(csv_file)
+        
+        for row in reader:
+            # Convert specific fields to their proper data types
+            if "User ID" in row:
+                row["User ID"] = int(row["User ID"])
+            
+            data.append(row)
+            
+    return data
