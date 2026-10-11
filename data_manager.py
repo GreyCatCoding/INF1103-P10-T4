@@ -4,19 +4,21 @@
 # we need to have query() function to filter the data based on categories and actions (Brian)
 # we need to have error handling for file not found, invalid data, etc. (Brian)
 # provide the data with datatype like int, str, list, etc. (Brian)
-
+import pandas as pd
 import csv
 import json
 import os
 
+# Example Usage:
+# Load your JSON data
+df = pd.read_json("data_manager_test.json") #For testing purposes, will update as we go
+
 def save(json_filepath: str, csv_filepath: str) -> None:
     """
     Saves data from a JSON file into a CSV file.
-    
     Args:
         json_filepath (str): Path to the source JSON file.
         csv_filepath (str): Path to the destination CSV file.
-        
     Raises:
         FileNotFoundError: If the JSON file does not exist.
         ValueError: If the JSON data is invalid or empty.
@@ -46,13 +48,10 @@ def save(json_filepath: str, csv_filepath: str) -> None:
 def load(csv_filepath: str) -> list:
     """
     Loads data from a CSV file into a list of dictionaries with proper data types.
-    
     Args:
         csv_filepath (str): Path to the source CSV file.
-        
     Returns:
         list: A list of dictionaries representing the records.
-        
     Raises:
         FileNotFoundError: If the CSV file does not exist.
     """
@@ -71,3 +70,39 @@ def load(csv_filepath: str) -> list:
             data.append(row)
             
     return data
+
+def query(df, category=None, action=None):
+    """
+    Filters the DataFrame based on category and/or action.
+    Case-insensitive and matches exact string or partial matches.
+    """
+    filtered_df = df.copy()
+    
+    if category:
+        filtered_df = filtered_df[
+            filtered_df['Categories'].str.lower() == category.strip().lower()
+        ]
+        
+    if action:
+        filtered_df = filtered_df[
+            filtered_df['Actions'].str.lower() == action.strip().lower()
+        ]
+        
+    return filtered_df
+
+# print("=== Data Filter System ===")
+# print("Leave a field blank and press Enter to skip filtering by that criteria.\n")
+    
+# cat_input = input("Enter Category (e.g., harassment, spam, hate, violent, sexual, self harm): ").strip()
+# act_input = input("Enter Action (e.g., P1, P2, P3, P4): ").strip()
+    
+# category = cat_input if cat_input else None
+# action = act_input if act_input else None
+    
+# results = query(df, category=category, action=action)
+    
+# print("\n--- Filter Results ---")
+# if results.empty:
+#     print("No matching records found.")
+# else:
+#     print(results.to_string(index=False))
