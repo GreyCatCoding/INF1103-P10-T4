@@ -4,6 +4,7 @@
 from pathlib import Path  # Standard library for object-oriented filesystem paths
 import re  # Regular expressions library for text manipulation and cleaning
 import pandas as pd  # Data manipulation library for loading, transforming, and saving CSV/JSON
+import data_manager
 
 BASE_DIR = Path(__file__).resolve().parent # Define the root directory relative to where this script is located
 UNCLEANED_DIR = BASE_DIR / "uncleaned" # Directory for Uncleaned CSV files
@@ -130,5 +131,29 @@ def run_input_workflow():
 
     return cleaned_df
 
-if __name__ == "__main__":
-    run_input_workflow()
+
+def run_output_workflow(df):
+    """Shows the data manager's table, then lets the user filter it."""
+    print("\nInitial DataFrame:")
+    print_table(df)
+
+    
+    while True:
+        print("\n=== Data Filter System ===")
+        print("Leave a field blank to skip it. Type 'exit' to quit.\n")
+
+        category = input("Enter Category (e.g., harassment, spam, hate, violence, sexual, self_harm): ").strip()
+        if category.lower() == "exit":
+            break
+        action = input("Enter Action (e.g., P1, P2, P3, P4): ").strip()
+        if action.lower() == "exit":
+            break
+
+        results = data_manager.query(df, category=category or None, action=action or None)
+
+        print("\n--- Filter Results ---")
+        if results.empty:
+            print("No matching records found.")
+        else:
+            print_table(results)
+
