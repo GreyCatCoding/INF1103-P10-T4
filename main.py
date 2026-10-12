@@ -4,18 +4,16 @@ import Logic_Manager
 import data_manager
 import logging
 import time
-
-
 from dotenv import load_dotenv
 
-# Load API keys from .env so ai_manager can read them with os.getenv
+"""Load API keys from .env so ai_manager can read them with os.getenv"""
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
 
 
 def main():
-    # IO (input)
-    # user input for the csv file
+    #IO (input)
+    #user input for the csv file
     rows = io_manager.run_input_workflow().to_dict("records") # Convert the io manager output to a list of dictionaries (records)
     records_for_logic_manager = [] # to store records that passed AI analysis
 
@@ -28,6 +26,7 @@ def main():
             records_for_logic_manager.append(record)  # AI failed: append the original record to the records_for_logic_manager list
 
         time.sleep(60) #prevent overloading of ai_manager API
+
     # LOGIC 
     reports = Logic_Manager.process_reports(records_for_logic_manager) # process all records for logic manager
 
@@ -39,4 +38,4 @@ def main():
     io_manager.run_output_workflow(df)        # data manager sends back processed csv to io manager for output  
 
 if __name__ == "__main__":
-    main()
+        main() # run the main workflow for the current file
