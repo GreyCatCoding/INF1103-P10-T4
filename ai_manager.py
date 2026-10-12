@@ -205,15 +205,20 @@ def call_api(prompt: str, provider_name: str | None = None) -> str | None:
         api_response.raise_for_status()
         # Convert the response JSON into a dict
         response_json = api_response.json()
-        # Log which which model gave response
+        # Log which model gave the response
         logger.info("Model used: %s", response_json.get("model"))
         # Extract the model's reply text
-        return response_json["choices"][0]["message"]["content"]
+        content = response_json["choices"][0]["message"]["content"]
+        # Log error in case provider returns None or a list here instead of text
+        if not isinstance(content, str):
+            logger.error("Model reply is not text: %s", content)
+            return None
+        return content
     except requests.exceptions.RequestException as err:
         # Covers timeouts, connection errors and HTTP errors
         logger.error("API request failed: %s", err)
-    except (ValueError, KeyError, IndexError, TypeError) as err:
-        # Covers a reply that isn't JSON, or JSON missing "choices"/"message"/"content"
+    except (ValueError, KeyError, IndexError, TypeError, AttributeError) as err:
+        # Covers a reply that isn't JSON, JSON missing "choices"/"message"/"content" or a JSON list where an object was expected
         logger.error("Unexpected API response shape: %s", err)
     # Only reached if one of the excepts above ran
     return None
