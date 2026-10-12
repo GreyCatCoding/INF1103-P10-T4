@@ -1,0 +1,109 @@
+# CI/CD pipeline for the AI Content Moderation System (INF1103 P10-T4)
+# CI  = every push and pull request is checked automatically
+# CD  = every merge into main publishes a ready-to-run Docker image
+
+name: CI/CD
+
+on:
+  push:
+    branches: ["**"]        # run on every branch you push
+  pull_request:
+    branches: [main]        # and on every PR into main
+
+jobs:
+  # ---------------------------------------------------------
+  # 1) Project rules + automated tests (no live API needed)
+  # ---------------------------------------------------------
+  checks:
+    name: Rules and tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11 (same as the Dockerfile)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: "C1: no class definitions anywhere"
+        run: |
+          if grep -rnE "^\s*class\s" --include="*.py" .; then
+            echo "::error::Class definitions found - breaks hard constraint C1"
+            exit 1
+          fi
+          echo "OK - no classes found"
+
+      - name: "print() and input() only in io_manager.py"
+        run: |
+          python - <<'EOF'
+          import ast, pathlib, sys
+          bad = []
+          for f in pathlib.Path(".").rglob("*.py"):
+              if f.name == "io_manager.py" or "tests" in f.parts or ".venv" in f.parts:
+                  continue
+              for node in ast.walk(ast.parse(f.read_text())):
+                  if isinstance(node, ast.Call) and getattr(node.func, "id", "") in {"print", "input"}:
+                      bad.append(f"{f}:{node.lineno} {node.func.id}()")
+          if bad:
+              print("::error::print()/input() found outside io_manager.py")
+              print("\n".join(bad))
+              sys.exit(1)
+          print("OK - all print()/input() calls are in io_manager.py")
+          EOF
+
+      - name: Run automated tests
+        run: python -m pytest -v
+
+  # ---------------------------------------------------------
+  # 2) Prove it builds and the tests pass inside Docker (C5)
+  # ---------------------------------------------------------
+  docker:
+    name: Docker build and test
+    needs: checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      - name: Build the image
+        run: docker build -t moderation:ci .
+
+      - name: Check the app code is inside the image
+        run: docker run --rm moderation:ci ls main.py io_manager.py ai_manager.py Logic_Manager.py data_manager.py
+
+      - name: Run the tests inside the container
+        run: docker run --rm moderation:ci python -m pytest -v
+
+  # ---------------------------------------------------------
+  # 3) CD: publish the image when main changes
+  # ---------------------------------------------------------
+  publish:
+    name: Publish Docker image
+    needs: docker
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push the image
+        run: |
+          IMAGE=ghcr.io/$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          docker build -t "$IMAGE:latest" -t "$IMAGE:${{ github.sha }}" .
+          docker push --all-tags "$IMAGE"
+          echo "Published $IMAGE:latest"
