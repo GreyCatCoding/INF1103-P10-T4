@@ -30,65 +30,22 @@ def load_reports(csv_filepath: str) -> pd.DataFrame:
         raise FileNotFoundError(f"The CSV file '{csv_filepath}' was not found.")
     return pd.read_csv(csv_filepath).fillna("")
 
+def query(df, category=None, action=None):
+
+#Filters the DataFrame based on category and/or action.
+#Case-insensitive and matches exact string or partial matches.
+
+    filtered_df = df.copy()
+
+    if category:
+# Normalize the category string for comparison
+        choice_of_category = category.strip().lower().replace(" ", "_")
+        filtered_df = filtered_df[filtered_df["category"].astype(str).str.lower() == choice_of_category] # filter by category as a normalized string
+
+    if action:
+        filtered_df = filtered_df[filtered_df["priority"].astype(str).str.lower() == action.strip().lower()]
 
 
-
-def save(json_filepath: str, csv_filepath: str) -> None:
-    """
-    Saves data from a JSON file into a CSV file.
-    Args:
-        json_filepath (str): Path to the source JSON file.
-        csv_filepath (str): Path to the destination CSV file.
-    Raises:
-        FileNotFoundError: If the JSON file does not exist.
-        ValueError: If the JSON data is invalid or empty.
-    """
-    if not os.path.exists(json_filepath):
-        raise FileNotFoundError(f"The JSON file '{json_filepath}' was not found.")
-    
-    with open(json_filepath, 'r', encoding='utf-8') as json_file:
-        data = json.load(json_file)
-        
-    if not isinstance(data, list):
-        raise ValueError("Invalid data format: JSON root must be a list of records.")
-        
-    if not data:
-        raise ValueError("The JSON file is empty. No data to save.")
-
-    # Extract CSV headers from the keys of the first dictionary
-    fieldnames = list(data[0].keys())
-
-    # Write data to CSV file
-    with open(csv_filepath, 'w', newline='', encoding='utf-8') as csv_file:
-        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
-        writer.writeheader()
-        for row in data:
-            writer.writerow(row)
-
-def load(csv_filepath: str) -> list:
-    """
-    Loads data from a CSV file into a list of dictionaries with proper data types.
-    Args:
-        csv_filepath (str): Path to the source CSV file.
-    Returns:
-        list: A list of dictionaries representing the records.
-    Raises:
-        FileNotFoundError: If the CSV file does not exist.
-    """
-    if not os.path.exists(csv_filepath):
-        raise FileNotFoundError(f"The CSV file '{csv_filepath}' was not found.")
-
-    data = []
-    with open(csv_filepath, 'r', encoding='utf-8') as csv_file:
-        reader = csv.DictReader(csv_file)
-        
-        for row in reader:
-            # Convert specific fields to their proper data types
-            if "User ID" in row:
-                row["User ID"] = int(row["User ID"])
-            
-            data.append(row)
-            
-    return data
+    return filtered_df
 
 
