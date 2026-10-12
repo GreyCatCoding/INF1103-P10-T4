@@ -19,6 +19,19 @@ def to_dataframe(reports: list) -> pd.DataFrame:
     # Converts the logic manager's list of report dicts into a DataFrame for display and filtering
     return pd.DataFrame(reports).reindex(columns=DISPLAY_COLUMNS).fillna("")
 
+def save_reports(df: pd.DataFrame, csv_filepath: str) -> None:
+    #Saves the DataFrame to a CSV file.
+    df.to_csv(csv_filepath, index=False)
+
+
+def load_reports(csv_filepath: str) -> pd.DataFrame:
+#Loads a previously saved CSV into a DataFrame.
+    if not os.path.exists(csv_filepath):
+        raise FileNotFoundError(f"The CSV file '{csv_filepath}' was not found.")
+    return pd.read_csv(csv_filepath).fillna("")
+
+
+
 
 def save(json_filepath: str, csv_filepath: str) -> None:
     """
