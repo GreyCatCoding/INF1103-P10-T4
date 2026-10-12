@@ -240,11 +240,3 @@ def get_category_description(category):
     else:
         raise ValueError("Unknown category")
 
-# ==========================================
-# 8. MAIN
-# ==========================================
-
-
-if __name__ == "__main__":
-
-    reports = process_reports()
