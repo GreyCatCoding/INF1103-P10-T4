@@ -1,8 +1,6 @@
-# we need to have the following in json file, ID, Username, Comments, Categories, Actions
-# we need to have save() function to save the json file into csv (Glenden)
-# we need to have load() function to load the csv file (Glenden)
-# we need to have query() function to filter the data based on categories and actions (Brian)
-# we need to have error handling for file not found, invalid data, etc. (Brian)
+# =============================================================
+# LIBRARIES & DIRECTORY SETUP
+# =============================================================
 from pathlib import Path
 import pandas as pd
 
@@ -13,9 +11,15 @@ CLEANED_DIR = BASE_DIR / "cleaned"
 # Columns to display in the DataFrame 
 DISPLAY_COLUMNS = ["User ID", "username", "comment", "category", "category_description", "priority", "recommended_action", "ai_reason"]
 
+# =============================================================
+# DATA VALIDATION & FILE LOADING
+# =============================================================
 def validate_csv_structure(file_path: Path) -> None:
-    """Validates that a CSV file exists and is not empty.
-    Raises ValueError or FileNotFoundError if invalid."""
+    """Validates that a CSV file exists, is non-empty, and contains readable data.
+    Raises:
+        FileNotFoundError: If the file does not exist.
+        ValueError: If the file is 0 bytes or contains no readable rows/headers.
+    """
     if not file_path.exists():
         raise FileNotFoundError(f"File '{file_path.name}' does not exist.")
 
@@ -26,14 +30,26 @@ def validate_csv_structure(file_path: Path) -> None:
     if df_preview.empty and len(df_preview.columns) == 0:
         raise ValueError(f"The file '{file_path.name}' contains no readable data.")
 
+
 def get_available_cleaned_files() -> list[str]:
-    """Returns a sorted list of available cleaned CSV filenames."""
+    """Scans the 'cleaned' directory and returns a sorted list of CSV filenames.
+    Returns:
+        list[str]: Alphabetically sorted list of .csv filenames.
+    """
     CLEANED_DIR.mkdir(exist_ok=True, parents=True)
     return sorted(p.name for p in CLEANED_DIR.glob("*.csv"))
 
+
 def load_cleaned_file(filename: str) -> tuple[pd.DataFrame, Path]:
-    """Resolves and loads a cleaned CSV file by filename.
-    Raises FileNotFoundError or ValueError on invalid inputs."""
+    """Resolves and loads a CSV file from the 'cleaned' directory.
+    Args:
+        filename (str): The filename provided by the user.
+    Returns:
+        tuple[pd.DataFrame, Path]: Loaded DataFrame and its resolved absolute Path. 
+    Raises:
+        FileNotFoundError: If the file is not found.
+        ValueError: If the file fails structural validation.
+    """
     CLEANED_DIR.mkdir(exist_ok=True, parents=True)
 
     if not filename.endswith(".csv"):
@@ -45,15 +61,34 @@ def load_cleaned_file(filename: str) -> tuple[pd.DataFrame, Path]:
     df = pd.read_csv(file_path).fillna("")
     return df, file_path
 
-def to_dataframe(reports: list) -> pd.DataFrame:
-    """Converts a list of report dicts into a formatted DataFrame."""
+
+# =============================================================
+# DATAFRAME & PERSISTENCE MANAGEMENT
+# =============================================================
+def to_dataframe(reports: list[dict]) -> pd.DataFrame:
+    """Converts a list of report dictionaries from Logic_Manager into a standardized DataFrame.
+    Args:
+        reports (list[dict]): Raw records processed by the logic layer.
+    Returns:
+        pd.DataFrame: Reindexed and sanitized DataFrame ready for storage/display.
+    """
     return pd.DataFrame(reports).reindex(columns=DISPLAY_COLUMNS).fillna("")
 
+
 def save_reports(df: pd.DataFrame, file_target: str | Path) -> Path:
-    """Saves or overwrites a DataFrame as a CSV file in the 'cleaned' directory."""
+    """Saves or overwrites a DataFrame to a CSV file inside the 'cleaned' directory.
+    
+    Args:
+        df (pd.DataFrame): The DataFrame to save.
+        file_target (str | Path): Path or filename target.
+        
+    Returns:
+        Path: Absolute path of the saved CSV file.
+    """
     CLEANED_DIR.mkdir(exist_ok=True, parents=True)
     path_obj = Path(file_target)
 
+    # Output to 'cleaned' folder if relative path given
     output_path = CLEANED_DIR / path_obj.name if not path_obj.is_absolute() else path_obj
 
     if output_path.suffix != ".csv":
@@ -62,15 +97,36 @@ def save_reports(df: pd.DataFrame, file_target: str | Path) -> Path:
     df.to_csv(output_path, index=False)
     return output_path
 
-def query(df: pd.DataFrame, category: str = None, action: str = None) -> pd.DataFrame:
-    """Filters the DataFrame by category OR action/priority."""
+
+# =============================================================
+# DATA FILTERING & QUERY SYSTEM
+# =============================================================
+def query(
+    df: pd.DataFrame, 
+    category: str | None = None, 
+    action: str | None = None
+) -> pd.DataFrame:
+    """Filters a DataFrame based on Category OR Action (priority).
+    
+    Args:
+        df (pd.DataFrame): The target DataFrame to filter.
+        category (str | None): Category filter term (e.g., 'harassment', 'spam').
+        action (str | None): Action/Priority filter term (e.g., 'P1', 'P2').
+        
+    Returns:
+        pd.DataFrame: A new DataFrame containing only matching records.
+    """
     filtered_df = df.copy()
 
     if category:
         choice_of_category = category.strip().lower().replace(" ", "_")
-        filtered_df = filtered_df[filtered_df["category"].astype(str).str.lower() == choice_of_category]
+        filtered_df = filtered_df[
+            filtered_df["category"].astype(str).str.lower() == choice_of_category
+        ]
 
     if action:
-        filtered_df = filtered_df[filtered_df["priority"].astype(str).str.lower() == action.strip().lower()]
+        filtered_df = filtered_df[
+            filtered_df["priority"].astype(str).str.lower() == action.strip().lower()
+        ]
 
     return filtered_df
