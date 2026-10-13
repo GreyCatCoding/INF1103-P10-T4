@@ -74,7 +74,7 @@ jobs:
         run: docker build -t moderation:ci .
 
       - name: Check the app code is inside the image
-        run: docker run --rm moderation:ci ls main.py io_manager.py ai_manager.py Logic_Manager.py data_manager.py
+        run: docker run --rm moderation:ci ls main.py io_manager.py ai_manager.py logic_manager.py data_manager.py
 
   # ---------------------------------------------------------
   # 3) CD: publish the image when main changes
