@@ -37,37 +37,8 @@ def clean_text(text: str) -> str:
 # =============================================================
 # USER INPUT & FILE SELECTION
 # =============================================================
-def validate_csv_structure(file_path: Path, required_columns: list) -> bool:     #Helper to check if a CSV file is empty or missing required columns.
-    try:
-        # Check if file size is 0 bytes
-        if file_path.stat().st_size == 0:
-            print(f"\n[Error] The file '{file_path.name}' is empty (0 bytes).")
-            return False
-
-        df_preview = pd.read_csv(file_path, nrows=1)                            # Read only headers/first row to validate structure
-        if df_preview.empty and len(df_preview.columns) == 0:                   # Check if file has no data/rows at all
-            print(f"\n[Error] The file '{file_path.name}' contains no readable data.")
-            return False
-        
-        # Validate required column presence (case-insensitive)
-        existing_cols = [c.lower() for c in df_preview.columns]
-        missing_cols = [col for col in required_columns if col.lower() not in existing_cols]
-
-        if missing_cols:
-            print(f"\n[Error] '{file_path.name}' is missing required column(s): {', '.join(missing_cols)}")
-            print(f"Found columns: {', '.join(df_preview.columns)}")
-            return False
-        return True
-    except pd.errors.EmptyDataError:
-        print(f"\n[Error] '{file_path.name}' is completely empty or corrupted.")
-        return False
-    except Exception as e:
-        print(f"\n[Error] Could not read '{file_path.name}': {e}")
-        return False
-
-def get_input_file() -> Path:
-    """Scans 'uncleaned' directory, displays available CSV files, validates required 
-    columns ('username' and 'comments') and non-emptiness, and lets the user retry on fault."""
+def get_input_file() -> Path | None:
+    """Scans 'uncleaned' directory, displays available CSV files, and prompts selection."""
     UNCLEANED_DIR.mkdir(exist_ok=True, parents=True)
 
     while True:
@@ -75,10 +46,7 @@ def get_input_file() -> Path:
 
         if not csv_files:
             print("\nNo CSV files found in the 'uncleaned' directory.")
-            retry = input("Press Enter to refresh or type 'back' to return: ").strip().lower()
-            if retry == "back":
-                return None
-            continue
+            return None
 
         print("\nAvailable uncleaned CSV files:")
         for file in csv_files:
@@ -101,32 +69,29 @@ def get_input_file() -> Path:
 
         selected_path = UNCLEANED_DIR / selected
 
-        # FAULT CHECK: Check for non-empty file and required columns ('username' & 'comments')
-        # (Supports both 'comments' and 'comment')
+        # Inline column check for raw CSVs
         try:
-            df_check = pd.read_csv(selected_path, nrows=1)
-            cols = [c.lower() for c in df_check.columns]
-            
-            # Flexible check for 'comment' or 'comments' and 'username'
-            has_comments = "comments" in cols or "comment" in cols
-            has_username = "username" in cols
+            df_preview = pd.read_csv(selected_path, nrows=1)
+            cols = [c.lower() for c in df_preview.columns]
 
-            if not validate_csv_structure(selected_path, []):
-                print("Please select a valid CSV file.\n")
-                continue
+            has_username = "username" in cols
+            has_comments = "comments" in cols or "comment" in cols
 
             if not has_username or not has_comments:
                 missing = []
                 if not has_username: missing.append("'username'")
                 if not has_comments: missing.append("'comments' (or 'comment')")
                 print(f"\n[Error] '{selected}' is missing required column(s): {', '.join(missing)}")
-                print("Please select a file with valid columns.\n")
+                print("Please select a valid CSV file.\n")
                 continue
 
             return selected_path
 
         except pd.errors.EmptyDataError:
-            print(f"\n[Error] '{selected}' is empty. Please select a valid file.\n")
+            print(f"\n[Error] '{selected}' is empty. Please select a valid CSV file.\n")
+            continue
+        except Exception as e:
+            print(f"\n[Error] Failed to read '{selected}': {e}\n")
             continue
 
 def get_cleaned_file() -> Path:
@@ -197,22 +162,6 @@ def process_csv(input_path: Path, output_path: Path = None):
 
     return (df,csv_output,json_output,)                                         # Return structured data frame along with saved file paths
 
-def display_existing_cleaned_file():                                            # loads function previously saved cleaned CSV file and previews its data
-    """Lets the user choose an already cleaned CSV file and previews its data."""
-    cleaned_file_path = get_cleaned_file()
-    
-    # SAFETY CHECK: If user typed 'back', safely return None
-    if cleaned_file_path is None:
-        return None, None
-
-    print(f"\nLoading {cleaned_file_path.name}...")
-    cleaned_df = pd.read_csv(cleaned_file_path)
-
-    print("\n--- Cleaned Data Preview (Top 5) ---")
-    print_table(cleaned_df.head(5))
-
-    return cleaned_df, cleaned_file_path
-
 # =============================================================
 # TERMINAL TABLE DISPLAY
 # =============================================================
@@ -225,6 +174,33 @@ def print_table(df: pd.DataFrame, max_width: int = 36):
     ):
         print(df.to_string(index=False))  # Convert DataFrame to clean string without index numbers
 
+def display_existing_cleaned_file() -> tuple[pd.DataFrame | None, Path | None]:
+    """Handles prompt loop for selecting and displaying an existing cleaned CSV."""
+    while True:
+        csv_files = data_manager.get_available_cleaned_files()
+
+        if not csv_files:
+            print("\nNo cleaned CSV files found in the 'cleaned' directory.")
+            return None, None
+
+        print("\nAvailable cleaned CSV files:")
+        for file in csv_files:
+            print(f"- {file}")
+
+        filename = input("\nEnter cleaned CSV filename (or type 'back' to return): ").strip()
+        if filename.lower() == "back":
+            return None, None
+
+        try:
+            cleaned_df, cleaned_file_path = data_manager.load_cleaned_file(filename)
+            print(f"\nLoading {cleaned_file_path.name}...")
+            print("\n--- Cleaned Data Preview (Top 5) ---")
+            print_table(cleaned_df.head(5))
+            return cleaned_df, cleaned_file_path
+
+        except (FileNotFoundError, ValueError, pd.errors.EmptyDataError) as e:
+            print(f"\n[Error] {e}")
+            print("Please select a valid, non-empty cleaned CSV file.\n")
 
 # =============================================================
 # MAIN WORKFLOW EXECUTION
@@ -249,7 +225,6 @@ def run_input_workflow():
     print_table(cleaned_df.head(5))
 
     return cleaned_df, csv_path
-
 
 def run_output_workflow(df: pd.DataFrame) -> None:
     """Displays the DataFrame and offers an option to start filtering or exit directly."""
@@ -303,7 +278,6 @@ def main_menu(process_callback=None):
 
         if choice == "1":
             cleaned_df, csv_path = run_input_workflow()
-            # If user typed 'back', cleaned_df is None, so execution loops back to menu
             if cleaned_df is not None:
                 if process_callback:
                     final_df = process_callback(cleaned_df, csv_path)
@@ -313,7 +287,6 @@ def main_menu(process_callback=None):
 
         elif choice == "2":
             cleaned_df, csv_path = display_existing_cleaned_file()
-            # If user typed 'back', cleaned_df is None, so execution loops back to menu
             if cleaned_df is not None:
                 run_output_workflow(cleaned_df)
 
