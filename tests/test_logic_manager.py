@@ -1,3 +1,4 @@
+import pytest
 import Logic_Manager
 
 """Fake ai_manager.analyse_record() outputs, for testing logic_manager without the API.
@@ -25,6 +26,42 @@ MOCK_RESULTS = [
     {"User ID": 18, "username": "sam", "processed_comments": "you're the reason this team keeps losing, go hurt yourself", "harmful": True, "category": "self_harm", "severity": 4, "target": "individual", "confidence": 0.91, "reason": "Encourages another user to harm themselves."},
     {"User ID": 19, "username": "tia", "processed_comments": "see you all at the tournament saturday", "harmful": False, "category": "none", "severity": 0, "target": "none", "confidence": 0.98, "reason": "Event reminder."},
 ]
+
+def test_validate_data():
+    record = MOCK_RESULTS[0]
+    assert Logic_Manager.validate_data(record) is True
+
+
+def test_get_priority():
+    record = MOCK_RESULTS[18]
+    assert Logic_Manager.get_priority(record) == "P1"
+
+
+def test_needs_human_review():
+    record = MOCK_RESULTS[18]
+    assert Logic_Manager.needs_human_review(record, "P1") is True
+
+
+def test_get_recommended_action():
+    action = Logic_Manager.get_recommended_action("P1", True)
+    assert action == "Remove user with human confirmation"
+
+
+def test_generate_report():
+    record = MOCK_RESULTS[18]
+    report = Logic_Manager.generate_report(record)
+    assert report["priority"] == "P1"
+
+
+def test_process_reports():
+    reports = Logic_Manager.process_reports(MOCK_RESULTS)
+    assert len(reports) == 20
+
+
+def test_get_category_description():
+    description = Logic_Manager.get_category_description("spam")
+    assert description == "scams, get-rich-quick offers or unsolicited promotion"
+
 
 reports = Logic_Manager.process_reports(MOCK_RESULTS) # process all records for logic manager
 
