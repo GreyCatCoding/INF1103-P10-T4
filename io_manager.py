@@ -19,8 +19,7 @@ SLANG_DICT = {
     "ur": "your","r": "are","u": "you","rfc": "request for comments",}
 sorted_slang = sorted(SLANG_DICT.keys(), key=len, reverse=True)
 SLANG_PATTERN = re.compile(r"\b(" + "|".join(map(re.escape, sorted_slang)) + r")\b",flags=re.IGNORECASE,) # Pre-compile a case-insensitive regex pattern matching any slang word surrounded by word boundaries (\b)
-URL_EMAIL_PUNCT = re.compile(r"https?://\S+|www\.\S+|\S+@\S+|[^a-zA-Z\s]")      # Combined pre-compiled regex to clear URLs, email addresses, and non-alphabetic/non-whitespace characters in one pass
-
+URL_EMAIL_PUNCT = re.compile(r"https?://\S+|www\.\S+|\S+@\S+|[^a-zA-Z0-9$*@!\s]")      # Combined pre-compiled regex to clear URLs, email addresses, and punctuation, keeping letters, digits and $*@! used in disguised words
 # =============================================================
 # TEXT CLEANING & STANDARDIZATION
 # =============================================================
