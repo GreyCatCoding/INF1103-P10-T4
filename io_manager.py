@@ -95,9 +95,9 @@ def get_input_file() -> Path | None:
             print(f"\n[Error] Failed to read '{selected}': {e}\n")
             continue
 
-def get_cleaned_file() -> Path:
-    """Scans 'cleaned' directory, validates file structure/non-emptiness, 
-    and lets the user retry on fault."""
+def get_cleaned_file() -> tuple[pd.DataFrame, Path] | tuple[None, None]:
+    """Scans 'cleaned' directory, handles user input selection, 
+    and catches validation faults when loading."""
     CLEANED_DIR.mkdir(exist_ok=True, parents=True)
 
     while True:
@@ -105,34 +105,25 @@ def get_cleaned_file() -> Path:
 
         if not csv_files:
             print("\nNo cleaned CSV files found in the 'cleaned' directory.")
-            return None
+            return None, None
 
         print("\nAvailable cleaned CSV files:")
         for file in csv_files:
             print(f"- {file}")
 
-        file_map = {f.casefold(): f for f in csv_files}
-
         filename = input("\nEnter cleaned CSV filename (or type 'back' to return): ").strip()
         if filename.lower() == "back":
-            return None
+            return None, None
 
-        if not filename.endswith(".csv"):
-            filename += ".csv"
+        try:
+            # Calls data_manager to validate and load the file safely
+            cleaned_df, cleaned_path = data_manager.load_cleaned_file(filename)
+            return cleaned_df, cleaned_path
 
-        selected = file_map.get(filename.casefold())
-
-        if not selected:
-            print(f"\n[Error] '{filename}' not found. Please try again.")
-            continue
-
-        selected_path = CLEANED_DIR / selected
-
-        # FAULT CHECK: Validate that file is not empty
-        if not validate_csv_structure(selected_path, []):
+        except (FileNotFoundError, ValueError, pd.errors.EmptyDataError) as e:
+            print(f"\n[Error] {e}")
             print("Please select a valid, non-empty cleaned CSV file.\n")
             continue
-        return selected_path
 # =============================================================
 # CSV & JSON PROCESSING
 # =============================================================
@@ -170,9 +161,7 @@ def print_table(df: pd.DataFrame, max_width: int = 36):
     """Prints a neatly formatted ASCII representation of a DataFrame to the console
     using pandas built-in option controls without requiring manual table drawing loops."""
     # Set temporary display options for column width and total output width
-    with pd.option_context(
-        "display.max_colwidth", max_width, "display.width", 1000
-    ):
+    with pd.option_context("display.max_colwidth", max_width, "display.width", 1000):
         print(df.to_string(index=False))  # Convert DataFrame to clean string without index numbers
 
 def display_existing_cleaned_file() -> tuple[pd.DataFrame | None, Path | None]:
