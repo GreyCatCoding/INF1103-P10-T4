@@ -1,3 +1,4 @@
+import pytest
 import Logic_Manager
 
 """Fake ai_manager.analyse_record() outputs, for testing logic_manager without the API.
