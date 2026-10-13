@@ -209,11 +209,25 @@ def get_recommended_action(priority, review_required):
 
     return ACTIONS[priority]
 
-def route(data, priority):
-    review_required = needs_human_review(data, priority)
-    action = get_recommended_action(priority, review_required)
+def route(record: dict) -> dict:
+    """
+    Determine the moderation route for a record.
+    Returns its priority, destination queue, and recommended action.
+    """
 
-    return action, review_required
+    decision = evaluate(record)
+
+    if decision["human_review_required"]:
+        queue = "human_review"
+    else:
+        queue = "standard"
+
+    return {
+        "priority": decision["priority"],
+        "queue": queue,
+        "recommended_action": decision["recommended_action"],
+        "human_review_required": decision["human_review_required"],
+    }
 
 
 # ==========================================
@@ -228,6 +242,8 @@ def generate_report(data):
     action = decision["recommended_action"]
     review_required = decision["human_review_required"]
 
+    routing = route(data)
+
     return {
         "User ID": data["User ID"],
         "username": data["username"],
@@ -238,6 +254,7 @@ def generate_report(data):
         "confidence": data["confidence"],
         "risk_score": score(data),
         "priority": priority,
+        "queue": routing["queue"],
         "recommended_action": action,
         "human_review_required": review_required,
         "ai_reason": data["reason"],

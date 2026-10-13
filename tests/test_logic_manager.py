@@ -51,6 +51,8 @@ def test_generate_report():
     record = MOCK_RESULTS[18]
     report = Logic_Manager.generate_report(record)
     assert report["priority"] == "P1"
+    assert "queue" in report
+    assert report["queue"] in {"human_review", "standard"}
 
 
 def test_process_reports():
@@ -75,12 +77,14 @@ def test_evaluate():
 def test_route():
     record = MOCK_RESULTS[18]
 
-    priority = Logic_Manager.evaluate(record)["priority"]
+    decision = Logic_Manager.evaluate(record)
+    result = Logic_Manager.route(record)
 
-    action, review_required = Logic_Manager.route(record, priority)
-
-    assert review_required == Logic_Manager.needs_human_review(record, priority)
-    assert action == Logic_Manager.get_recommended_action(priority, review_required)
+    assert isinstance(result, dict)
+    assert result["priority"] == decision["priority"]
+    assert result["queue"] == "human_review"
+    assert result["recommended_action"] == decision["recommended_action"]
+    assert result["human_review_required"] is True
 
 def test_score_not_harmful_is_zero():
     assert Logic_Manager.score(MOCK_RESULTS[0]) == 0.0
@@ -106,7 +110,3 @@ def test_process_reports_ranked_highest_first():
     assert scores == sorted(scores, reverse=True)
 
 reports = Logic_Manager.process_reports(MOCK_RESULTS) # process all records for logic manager
-
-# Test Result
-for report in reports:
-    print(report)
