@@ -12,7 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent
 CLEANED_DIR = BASE_DIR / "cleaned"
 
 # Columns to display in the DataFrame 
-DISPLAY_COLUMNS = ["User ID", "username", "comment", "category", "priority"]
+DISPLAY_COLUMNS = ["User ID", "username", "comment", "category", "category_description", "priority", "recommended_action", "ai_reason"]
 
 
 def to_dataframe(reports: list) -> pd.DataFrame:
