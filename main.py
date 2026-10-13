@@ -11,31 +11,35 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 
 
-def main():
-    #IO (input)
-    #user input for the csv file
-    rows = io_manager.run_input_workflow().to_dict("records") # Convert the io manager output to a list of dictionaries (records)
-    records_for_logic_manager = [] # to store records that passed AI analysis
+def process_ai_and_logic(cleaned_df, csv_path):
+    """Handles the AI analysis, Logic Manager, and Data Manager pipeline."""
+    rows = cleaned_df.to_dict("records")
+    records_for_logic_manager = []
 
-    # AI 
-    for record in rows: # for each record in the list of dictionaries
-        result = ai_manager.analyse_record(record) # ai manager to analyze record
+    # AI Analysis
+    for record in rows:
+        result = ai_manager.analyse_record(record)
         if result:
-            records_for_logic_manager.append(result)  # AI succeeded: append the analyzed record to the records_for_logic_manager list
+            records_for_logic_manager.append(result)
         else:
-            records_for_logic_manager.append(record)  # AI failed: append the original record to the records_for_logic_manager list
+            records_for_logic_manager.append(record)
 
-        time.sleep(60) #prevent overloading of ai_manager API
+        time.sleep(60)  # Prevent overloading AI API rate limits
 
-    # LOGIC 
-    reports = Logic_Manager.process_reports(records_for_logic_manager) # process all records for logic manager
+    # LOGIC Processing
+    reports = Logic_Manager.process_reports(records_for_logic_manager)
 
-    # DATA
-    df = data_manager.to_dataframe(reports)   # logic manager sends processed reports to data manager
-    data_manager.save_reports(df, "moderation_results.csv")   # persistent storage for data manager outputs
+    # DATA Persistence
+    df = data_manager.to_dataframe(reports)
+    data_manager.save_reports(df, csv_path)
 
-    # IO (output)
-    io_manager.run_output_workflow(df)        # data manager sends back processed csv to io manager for output  
+    return df
+
+
+def main():
+    # Launches the main menu from io_manager and hooks in the AI/Logic pipeline
+    io_manager.main_menu(process_callback=process_ai_and_logic)
+
 
 if __name__ == "__main__":
-        main() # run the main workflow for the current file
+    main()
