@@ -64,7 +64,35 @@ def get_input_file() -> Path:
 
         print(f"'{filename}' not found. Available: {', '.join(csv_files)}") # Warn user and show available options if match fails
 
+def get_cleaned_file() -> Path:                                             # Cleaned CSV file selection workflow
+    """Scans the 'cleaned' directory, displays available CSV files,
+    and prompts the user to select one."""
+    CLEANED_DIR.mkdir(exist_ok=True, parents=True)
+    csv_files = sorted(p.name for p in CLEANED_DIR.glob("*.csv"))
 
+    if not csv_files:
+        print("\nNo cleaned CSV files found in the 'cleaned' directory.")
+        return None
+
+    print("\nAvailable cleaned CSV files:")
+    for file in csv_files:
+        print(f"- {file}")
+
+    file_map = {f.casefold(): f for f in csv_files}
+
+    while True:
+        filename = input("\nEnter cleaned CSV filename (or type 'back' to return): ").strip()
+        if filename.lower() == "back":
+            break
+
+        if not filename.endswith(".csv"):
+            filename += ".csv"
+
+        selected = file_map.get(filename.casefold())
+        if selected:
+            return CLEANED_DIR / selected
+
+        print(f"'{filename}' not found. Available: {', '.join(csv_files)}")
 # =============================================================
 # CSV & JSON PROCESSING
 # =============================================================
