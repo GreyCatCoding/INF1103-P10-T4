@@ -6,7 +6,6 @@
 # Python bytecode and runtime caches
 __pycache__/
 pytest_cache/
-*.py
 *.pyc
 *.pyo
 *.pyd
