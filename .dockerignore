@@ -1,20 +1,23 @@
-# Version control and environment
+# Version control and secrets (pass keys at run time with --env-file)
 .git/
 .gitignore
 .env
 
-# Python bytecode and runtime caches
+# Python bytecode and caches
 __pycache__/
-pytest_cache/
 *.pyc
 *.pyo
 *.pyd
-
-# Testing, virtual environments, and local IDE settings
-tests/
 .pytest_cache/
-.vscode/
-.idea/
+
+# Tests, virtual environments, and IDE settings
+tests/
 venv/
 .venv/
 env/
+.vscode/
+.idea/
+
+# Generated output (keep the uncleaned/ input folder)
+cleaned/
+moderation_results.csv
