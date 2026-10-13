@@ -47,5 +47,3 @@ def query(df, category=None, action=None):
 
 
     return filtered_df
-
-
