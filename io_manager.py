@@ -173,27 +173,77 @@ def run_input_workflow():
     return cleaned_df, csv_path
 
 
-def run_output_workflow(df):
-    """Shows the data manager's table, then lets the user filter it."""
-    print("\nInitial DataFrame:")
+def run_output_workflow(df: pd.DataFrame) -> None:
+    """Displays the DataFrame and offers an option to start filtering or exit directly."""
+    print("\nModerated DataFrame:")
     print_table(df)
 
-    
     while True:
-        print("\n=== Data Filter System ===")
-        print("Leave a field blank to skip it. Type 'exit' to quit.\n")
+        print("\n=== Filter Moderated Data ===")
+        print("1.) Start Filtering")
+        print("2.) Exit to Main Menu")
 
-        category = input("Enter Category (e.g., harassment, spam, hate, violence, sexual, self_harm): ").strip()
-        if category.lower() == "exit":
+        choice = input("\nSelect an option (1-2): ").strip()
+
+        if choice == "2":
+            print("Exiting filter system...")
             break
-        action = input("Enter Action (e.g., P1, P2, P3, P4): ").strip()
-        if action.lower() == "exit":
+        elif choice != "1":
+            print("\n[Error] Invalid choice. Please enter 1 or 2.")
+            continue
+        while True:
+            print("\n--- Filter Options ---")
+            category_input = input("Enter Category (e.g., harassment, spam, hate): ").strip()
+            action_input = input("Enter Action/Priority (e.g., P1, P2, P3, P4): ").strip()
+            category = category_input if category_input else None
+            action = action_input if action_input else None
+            # Fault checking: no neither
+            if category is None and action is None:
+                print("\n[Error] You must provide either a Category or an Action to filter.")
+                continue
+            # Query execution
+            results = data_manager.query(df, category=category, action=action)
+
+            print("\n--- Filter Results ---")
+            if results.empty:
+                print("No matching records found.")
+            else:
+                print_table(results)
+            break  # Return to the main filter option menu after printing results
+
+def main_menu(process_callback=None):
+    """Displays the main options menu and routes user selections.
+    Args:
+        process_callback: A function passed from main.py to handle 
+                          AI + Logic pipeline processing when cleansing new files.
+    """
+    while True:
+        print("\n" + "=" * 40)
+        print("      DATA CLEANING & MANAGEMENT MENU      ")
+        print("=" * 40)
+        print("1.) Cleanse New File")
+        print("2.) Display Existing Cleaned File")
+        print("3.) Exit")
+
+        choice = input("\nSelect an option (1-3): ").strip()
+
+        if choice == "1":
+            cleaned_df, csv_path = run_input_workflow()
+            if cleaned_df is not None:
+                # If main.py provided an AI/Logic processing pipeline, run it
+                if process_callback:
+                    final_df = process_callback(cleaned_df, csv_path)
+                    run_output_workflow(final_df)
+                else:
+                    run_output_workflow(cleaned_df)
+
+        elif choice == "2":
+            cleaned_df = display_existing_cleaned_file()
+            if cleaned_df is not None:
+                run_output_workflow(cleaned_df)
+
+        elif choice == "3":
+            print("\nExiting program...")
             break
-
-        results = data_manager.query(df, category=category or None, action=action or None)
-
-        print("\n--- Filter Results ---")
-        if results.empty:
-            print("No matching records found.")
         else:
-            print_table(results)
+            print("\nInvalid choice. Please enter 1, 2, or 3.")
