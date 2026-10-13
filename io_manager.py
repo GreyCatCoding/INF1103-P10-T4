@@ -126,6 +126,19 @@ def process_csv(input_path: Path, output_path: Path = None):
 
     return (df,csv_output,json_output,)  # Return structured data frame along with saved file paths
 
+def display_existing_cleaned_file(): # Load Function for previously cleaned CSV files and preview their contents
+    """Lets the user choose an already cleaned CSV file and previews its data."""
+    cleaned_file_path = get_cleaned_file()
+    if cleaned_file_path is None:
+        return None, None
+
+    print(f"\nLoading {cleaned_file_path.name}...")
+    cleaned_df = pd.read_csv(cleaned_file_path)
+
+    print("\n--- Cleaned Data Preview (Top 5) ---")
+    print_table(cleaned_df.head(5))
+
+    return cleaned_df
 
 # =============================================================
 # TERMINAL TABLE DISPLAY
@@ -150,14 +163,14 @@ def run_input_workflow():
     raw_df = pd.read_csv(input_file)                             # Load raw file for uncleaned preview display
     cleaned_df, csv_path, json_path = process_csv(input_file)    # Run the main text processing and export routine
 
-    print("\n--- Uncleaned Data Preview (Top 5) ---")    # Print first 5 rows of uncleaned data
+    print("\n--- Uncleaned Data Preview (Top 5) ---")            # Print first 5 rows of uncleaned data
     print_table(raw_df.head(5))
     print(f"\nSaved CSV to: {csv_path}")
     print(f"Saved JSON to: {json_path}")
     print("\n--- Cleaned Data Preview (Top 5) ---")
     print_table(cleaned_df.head(5))
 
-    return cleaned_df
+    return cleaned_df, csv_path
 
 
 def run_output_workflow(df):
