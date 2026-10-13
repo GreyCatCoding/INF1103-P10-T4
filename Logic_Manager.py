@@ -16,6 +16,16 @@ HIGH_RISK_CATEGORIES = {
     "self_harm"
 }
 
+CATEGORY_WEIGHTS = {
+    "hate": 1.0,
+    "violence": 1.0,
+    "self_harm": 1.0,
+    "harassment": 0.8,
+    "sexual": 0.8,
+    "spam": 0.5,
+    "none": 0.0,
+}
+
 ACTIONS = {
     "P1": "Remove user with human confirmation",
     "P2": "Remove content with human confirmation",
@@ -144,6 +154,25 @@ def evaluate(data):
         "human_review_required": review_required
     }
 
+def score(data: dict) -> float:
+    """
+    Calculate a numeric risk score from 0 to 100.
+    Higher scores indicate greater assessed moderation risk.
+    """
+
+    validate_data(data)
+
+    if not data["harmful"]:
+        return 0.0
+
+    severity_part = data["severity"] / 4
+    confidence = data["confidence"]
+    weight = CATEGORY_WEIGHTS[data["category"].lower()]
+
+    risk_score = 100 * severity_part * confidence * weight
+
+    return round(risk_score, 1)
+
 
 # ==========================================
 # 3. DETERMINE HUMAN REVIEW
@@ -207,6 +236,7 @@ def generate_report(data):
         "category_description": get_category_description(data["category"]),
         "severity": data["severity"],
         "confidence": data["confidence"],
+        "risk_score": score(data),
         "priority": priority,
         "recommended_action": action,
         "human_review_required": review_required,
@@ -234,10 +264,16 @@ def process_reports(records):
                 "username": record.get("username", "unknown")
                     if isinstance(record, dict) else "unknown",
                 "priority": None,
+                "risk_score": None,
                 "recommended_action": "Manual review required",
                 "human_review_required": True,
                 "error": str(error),
             })
+
+    results.sort(
+        key=lambda r: r["risk_score"] if r["risk_score"] is not None else 101,
+        reverse=True
+    )
 
     return results
 

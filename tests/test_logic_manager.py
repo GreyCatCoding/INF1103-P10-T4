@@ -74,13 +74,36 @@ def test_evaluate():
 
 def test_route():
     record = MOCK_RESULTS[18]
-    
+
     priority = Logic_Manager.evaluate(record)["priority"]
 
     action, review_required = Logic_Manager.route(record, priority)
 
     assert review_required == Logic_Manager.needs_human_review(record, priority)
     assert action == Logic_Manager.get_recommended_action(priority, review_required)
+
+def test_score_not_harmful_is_zero():
+    assert Logic_Manager.score(MOCK_RESULTS[0]) == 0.0
+
+
+def test_score_threat_beats_spam():
+    threat = Logic_Manager.score(MOCK_RESULTS[10])
+    spam = Logic_Manager.score(MOCK_RESULTS[2])
+
+    assert threat > spam
+
+
+def test_score_in_range():
+    for record in MOCK_RESULTS:
+        assert 0 <= Logic_Manager.score(record) <= 100
+
+
+def test_process_reports_ranked_highest_first():
+    reports = Logic_Manager.process_reports(MOCK_RESULTS)
+
+    scores = [report["risk_score"] for report in reports]
+
+    assert scores == sorted(scores, reverse=True)
 
 reports = Logic_Manager.process_reports(MOCK_RESULTS) # process all records for logic manager
 
