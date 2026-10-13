@@ -1,5 +1,5 @@
-import pytest
 import Logic_Manager
+import pytest
 
 """Fake ai_manager.analyse_record() outputs, for testing logic_manager without the API.
 """
@@ -51,6 +51,8 @@ def test_generate_report():
     record = MOCK_RESULTS[18]
     report = Logic_Manager.generate_report(record)
     assert report["priority"] == "P1"
+    assert "queue" in report
+    assert report["queue"] in {"human_review", "standard"}
 
 
 def test_process_reports():
@@ -62,9 +64,141 @@ def test_get_category_description():
     description = Logic_Manager.get_category_description("spam")
     assert description == "scams, get-rich-quick offers or unsolicited promotion"
 
+def test_evaluate():
+    record = MOCK_RESULTS[18]
 
-reports = Logic_Manager.process_reports(MOCK_RESULTS) # process all records for logic manager
+    decision = Logic_Manager.evaluate(record)
 
-# Test Result
-for report in reports:
-    print(report)
+    assert isinstance(decision, dict)
+    assert decision["priority"] == "P1"
+    assert decision["recommended_action"] == "Remove user with human confirmation"
+    assert decision["human_review_required"] is True
+
+def test_route():
+    record = MOCK_RESULTS[18]
+
+    decision = Logic_Manager.evaluate(record)
+    result = Logic_Manager.route(record)
+
+    assert isinstance(result, dict)
+    assert result["priority"] == decision["priority"]
+    assert result["queue"] == "human_review"
+    assert result["recommended_action"] == decision["recommended_action"]
+    assert result["human_review_required"] is True
+
+def test_score_not_harmful_is_zero():
+    assert Logic_Manager.score(MOCK_RESULTS[0]) == 0.0
+
+
+def test_score_threat_beats_spam():
+    threat = Logic_Manager.score(MOCK_RESULTS[10])
+    spam = Logic_Manager.score(MOCK_RESULTS[2])
+
+    assert threat > spam
+
+
+def test_score_in_range():
+    for record in MOCK_RESULTS:
+        assert 0 <= Logic_Manager.score(record) <= 100
+
+
+def test_process_reports_ranked_highest_first():
+    reports = Logic_Manager.process_reports(MOCK_RESULTS)
+
+    scores = [report["risk_score"] for report in reports]
+
+    assert scores == sorted(scores, reverse=True)
+
+def test_route_standard_queue():
+    record = MOCK_RESULTS[0].copy()
+
+    record["harmful"] = False
+    record["category"] = "none"
+    record["severity"] = 0
+    record["target"] = "none"
+    record["confidence"] = 0.95
+
+    result = Logic_Manager.route(record)
+
+    assert isinstance(result, dict)
+    assert result["priority"] == "P4"
+    assert result["queue"] == "standard"
+    assert result["human_review_required"] is False
+    assert result["recommended_action"] == "Monitor user"
+
+def test_process_reports_invalid_ai_record():
+    records = [None]
+
+    reports = Logic_Manager.process_reports(records)
+
+    assert len(reports) == 1
+
+    report = reports[0]
+
+    assert report["User ID"] == "unknown"
+    assert report["username"] == "unknown"
+    assert report["priority"] is None
+    assert report["risk_score"] is None
+    assert report["recommended_action"] == "Manual review required"
+    assert report["human_review_required"] is True
+
+def test_invalid_records_ranked_first():
+    valid_record = MOCK_RESULTS[18].copy()
+    invalid_record = None
+
+    records = [valid_record, invalid_record]
+
+    reports = Logic_Manager.process_reports(records)
+
+    assert len(reports) == 2
+
+    # Invalid record should appear first
+    assert reports[0]["risk_score"] is None
+    assert reports[0]["priority"] is None
+    assert reports[0]["human_review_required"] is True
+
+    # Valid record should appear second
+    assert reports[1]["risk_score"] is not None
+    assert reports[1]["priority"] == "P1"
+
+def test_priority_p2_and_p3():
+    # P2: High severity and sufficient confidence
+    p2_record = MOCK_RESULTS[18].copy()
+    p2_record["harmful"] = True
+    p2_record["category"] = "harassment"
+    p2_record["severity"] = 3
+    p2_record["confidence"] = 0.85
+
+    assert Logic_Manager.get_priority(p2_record) == "P2"
+
+    # P3: Lower severity, still harmful
+    p3_record = MOCK_RESULTS[18].copy()
+    p3_record["harmful"] = True
+    p3_record["category"] = "harassment"
+    p3_record["severity"] = 2
+    p3_record["confidence"] = 0.85
+
+    assert Logic_Manager.get_priority(p3_record) == "P3"
+
+def test_invalid_severity():
+    record = MOCK_RESULTS[18].copy()
+    record["severity"] = 5
+
+    with pytest.raises(ValueError):
+        Logic_Manager.validate_data(record)
+
+
+def test_invalid_confidence():
+    record = MOCK_RESULTS[18].copy()
+    record["confidence"] = 1.5
+
+    with pytest.raises(ValueError):
+        Logic_Manager.validate_data(record)
+
+
+def test_missing_required_field():
+    record = MOCK_RESULTS[18].copy()
+    del record["category"]
+
+    with pytest.raises(ValueError):
+        Logic_Manager.validate_data(record)

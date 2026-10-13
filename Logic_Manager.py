@@ -1,5 +1,3 @@
-from ai_manager import analyse_record
-
 CATEGORIES = {
     "harassment": "insults, threats or mockery aimed at a specific person",
     "hate": "attacks on a group based on race, religion, nationality, gender, sexuality or disability",
@@ -16,6 +14,16 @@ HIGH_RISK_CATEGORIES = {
     "self_harm"
 }
 
+CATEGORY_WEIGHTS = {
+    "hate": 1.0,
+    "violence": 1.0,
+    "self_harm": 1.0,
+    "harassment": 0.8,
+    "sexual": 0.8,
+    "spam": 0.5,
+    "none": 0.0,
+}
+
 ACTIONS = {
     "P1": "Remove user with human confirmation",
     "P2": "Remove content with human confirmation",
@@ -28,7 +36,7 @@ ACTIONS = {
 # 1. VALIDATE AI OUTPUT
 # ==========================================
 
-def validate_data(data): # Check that the AI output contains valid information
+def validate_data(data: dict) -> None:
 
     if not isinstance(data, dict):
         raise ValueError("AI output must be a dictionary")
@@ -95,7 +103,7 @@ def validate_data(data): # Check that the AI output contains valid information
 # 2. DETERMINE PRIORITY
 # ==========================================
 
-def get_priority(data):
+def get_priority(data: dict) -> str:
 
     validate_data(data)
 
@@ -127,12 +135,48 @@ def get_priority(data):
     # P3: Lower severity harmful content
     return "P3"
 
+def evaluate(data: dict) -> dict:    # Validate AI output and determine moderation priority
+
+    priority = get_priority(data)
+
+    # Determine whether human review is required
+    review_required = needs_human_review(data, priority)
+
+    # Determine recommended moderation action
+    action = get_recommended_action(priority, review_required)
+
+    # Return the moderation decision as a dictionary
+    return {
+        "priority": priority,
+        "recommended_action": action,
+        "human_review_required": review_required
+    }
+
+def score(data: dict) -> float:
+    """
+    Calculate a numeric risk score from 0 to 100.
+    Higher scores indicate greater assessed moderation risk.
+    """
+
+    validate_data(data)
+
+    if not data["harmful"]:
+        return 0.0
+
+    severity_part = data["severity"] / 4
+    confidence = data["confidence"]
+    weight = CATEGORY_WEIGHTS[data["category"].lower()]
+
+    risk_score = 100 * severity_part * confidence * weight
+
+    return round(risk_score, 1)
+
 
 # ==========================================
 # 3. DETERMINE HUMAN REVIEW
 # ==========================================
 
-def needs_human_review(data, priority):
+def needs_human_review(data: dict, priority: str) -> bool:
 
     confidence = data["confidence"]
     severity = data["severity"]
@@ -156,29 +200,47 @@ def needs_human_review(data, priority):
 # 4. RECOMMENDED ACTION
 # ==========================================
 
-def get_recommended_action(priority, review_required):
+def get_recommended_action(priority: str, review_required: bool) -> str:
 
     if review_required and priority in {"P3", "P4"}:
         return "Send to human moderator for review"
 
     return ACTIONS[priority]
 
+def route(record: dict) -> dict:
+    """
+    Determine the moderation route for a record.
+    Returns its priority, destination queue, and recommended action.
+    """
+
+    decision = evaluate(record)
+
+    if decision["human_review_required"]:
+        queue = "human_review"
+    else:
+        queue = "standard"
+
+    return {
+        "priority": decision["priority"],
+        "queue": queue,
+        "recommended_action": decision["recommended_action"],
+        "human_review_required": decision["human_review_required"],
+    }
+
 
 # ==========================================
 # 5. GENERATE REPORT
 # ==========================================
 
-def generate_report(data):
+def generate_report(data: dict) -> dict:
 
-    priority = get_priority(data)
+    decision = evaluate(data)
 
-    review_required = needs_human_review(
-        data, priority
-    )
+    priority = decision["priority"]
+    action = decision["recommended_action"]
+    review_required = decision["human_review_required"]
 
-    action = get_recommended_action(
-        priority, review_required
-    )
+    routing = route(data)
 
     return {
         "User ID": data["User ID"],
@@ -188,7 +250,9 @@ def generate_report(data):
         "category_description": get_category_description(data["category"]),
         "severity": data["severity"],
         "confidence": data["confidence"],
+        "risk_score": score(data),
         "priority": priority,
+        "queue": routing["queue"],
         "recommended_action": action,
         "human_review_required": review_required,
         "ai_reason": data["reason"],
@@ -199,7 +263,7 @@ def generate_report(data):
 # 6. PROCESS MULTIPLE RECORDS
 # ==========================================
 
-def process_reports(records):
+def process_reports(records: list) -> list:
 
     results = []
 
@@ -215,10 +279,16 @@ def process_reports(records):
                 "username": record.get("username", "unknown")
                     if isinstance(record, dict) else "unknown",
                 "priority": None,
+                "risk_score": None,
                 "recommended_action": "Manual review required",
                 "human_review_required": True,
                 "error": str(error),
             })
+
+    results.sort(
+        key=lambda r: r["risk_score"] if r["risk_score"] is not None else 101,
+        reverse=True
+    )
 
     return results
 
@@ -227,8 +297,8 @@ def process_reports(records):
 # 7. CATEGORIES DICTIONARY
 # ==========================================
 
-def get_category_description(category):
-
+def get_category_description(category: str) -> str:
+    
     category = category.lower()
 
     if category == "none":
@@ -239,4 +309,3 @@ def get_category_description(category):
 
     else:
         raise ValueError("Unknown category")
-
