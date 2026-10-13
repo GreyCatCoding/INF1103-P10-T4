@@ -215,6 +215,33 @@ def display_existing_cleaned_file() -> tuple[pd.DataFrame | None, Path | None]:
             print(f"\n[Error] {e}")
             print("Please select a valid, non-empty cleaned CSV file.\n")
 
+def print_summary_view(df: pd.DataFrame) -> None:
+    """Prints a neat, formatted summary card of moderation statistics."""
+    summary = data_manager.get_summary_metrics(df)
+
+    if summary["total_records"] == 0:
+        print("\n--- Summary Statistics ---")
+        print("No data available to summarize.")
+        return
+
+    separator = "=" * 55
+    print("\n" + separator)
+    print("           MODERATION DATASET SUMMARY")
+    print(separator)
+    print(f" Total Comments Analyzed : {summary['total_records']}")
+    print(f" Pending Human Review    : {summary['human_review_count']}")
+
+    print("\n --- Counts by Priority ---")
+    for priority, count in summary["priority_counts"].items():
+        p_label = priority if priority else "Unassigned"
+        print(f"   • {p_label:<10} : {count}")
+
+    print("\n --- Counts by Category ---")
+    for category, count in summary["category_counts"].items():
+        c_label = category if category else "Uncategorized"
+        print(f"   • {c_label:<15} : {count}")
+
+    print(separator + "\n")
 # =============================================================
 # MAIN WORKFLOW EXECUTION
 # =============================================================
@@ -243,6 +270,7 @@ def run_output_workflow(df: pd.DataFrame) -> None:
     """Displays the DataFrame and offers an option to start filtering or exit directly."""
     print("\nModerated DataFrame:")
     print_detailed_records(df)
+    print_summary_view(df)
 
     while True:
         print("\n=== Filter Moderated Data ===")
