@@ -210,4 +210,40 @@ def run_output_workflow(df: pd.DataFrame) -> None:
             else:
                 print_table(results)
             break  # Return to the main filter option menu after printing results
-            
+
+def main_menu(process_callback=None):
+    """Displays the main options menu and routes user selections.
+    Args:
+        process_callback: A function passed from main.py to handle 
+                          AI + Logic pipeline processing when cleansing new files.
+    """
+    while True:
+        print("\n" + "=" * 40)
+        print("      DATA CLEANING & MANAGEMENT MENU      ")
+        print("=" * 40)
+        print("1.) Cleanse New File")
+        print("2.) Display Existing Cleaned File")
+        print("3.) Exit")
+
+        choice = input("\nSelect an option (1-3): ").strip()
+
+        if choice == "1":
+            cleaned_df, csv_path = run_input_workflow()
+            if cleaned_df is not None:
+                # If main.py provided an AI/Logic processing pipeline, run it
+                if process_callback:
+                    final_df = process_callback(cleaned_df, csv_path)
+                    run_output_workflow(final_df)
+                else:
+                    run_output_workflow(cleaned_df)
+
+        elif choice == "2":
+            cleaned_df = display_existing_cleaned_file()
+            if cleaned_df is not None:
+                run_output_workflow(cleaned_df)
+
+        elif choice == "3":
+            print("\nExiting program...")
+            break
+        else:
+            print("\nInvalid choice. Please enter 1, 2, or 3.")
