@@ -5,7 +5,6 @@
 # we need to have error handling for file not found, invalid data, etc. (Brian)
 from pathlib import Path
 import pandas as pd
-import os
 
 # Define CLEANED_DIR relative to the script location
 BASE_DIR = Path(__file__).resolve().parent
@@ -14,49 +13,64 @@ CLEANED_DIR = BASE_DIR / "cleaned"
 # Columns to display in the DataFrame 
 DISPLAY_COLUMNS = ["User ID", "username", "comment", "category", "category_description", "priority", "recommended_action", "ai_reason"]
 
+def validate_csv_structure(file_path: Path) -> None:
+    """Validates that a CSV file exists and is not empty.
+    Raises ValueError or FileNotFoundError if invalid."""
+    if not file_path.exists():
+        raise FileNotFoundError(f"File '{file_path.name}' does not exist.")
+
+    if file_path.stat().st_size == 0:
+        raise ValueError(f"The file '{file_path.name}' is empty (0 bytes).")
+
+    df_preview = pd.read_csv(file_path, nrows=1)
+    if df_preview.empty and len(df_preview.columns) == 0:
+        raise ValueError(f"The file '{file_path.name}' contains no readable data.")
+
+def get_available_cleaned_files() -> list[str]:
+    """Returns a sorted list of available cleaned CSV filenames."""
+    CLEANED_DIR.mkdir(exist_ok=True, parents=True)
+    return sorted(p.name for p in CLEANED_DIR.glob("*.csv"))
+
+def load_cleaned_file(filename: str) -> tuple[pd.DataFrame, Path]:
+    """Resolves and loads a cleaned CSV file by filename.
+    Raises FileNotFoundError or ValueError on invalid inputs."""
+    CLEANED_DIR.mkdir(exist_ok=True, parents=True)
+
+    if not filename.endswith(".csv"):
+        filename += ".csv"
+
+    file_path = CLEANED_DIR / filename
+    validate_csv_structure(file_path)
+
+    df = pd.read_csv(file_path).fillna("")
+    return df, file_path
 
 def to_dataframe(reports: list) -> pd.DataFrame:
-    # Converts the logic manager's list of report dicts into a DataFrame for display and filtering
+    """Converts a list of report dicts into a formatted DataFrame."""
     return pd.DataFrame(reports).reindex(columns=DISPLAY_COLUMNS).fillna("")
 
 def save_reports(df: pd.DataFrame, file_target: str | Path) -> Path:
-    """Saves or overwrites the DataFrame in the 'cleaned' directory.
-    Accepts either a filename/stem (e.g., 'data_cleaned.csv' or 'data') 
-    or a full file path.
-    """
+    """Saves or overwrites a DataFrame as a CSV file in the 'cleaned' directory."""
     CLEANED_DIR.mkdir(exist_ok=True, parents=True)
-    
     path_obj = Path(file_target)
-    
-    # If a plain filename (or relative path) is given, save it inside CLEANED_DIR
-    if not path_obj.is_absolute():
-        output_path = CLEANED_DIR / path_obj.name
-    else:
-        output_path = path_obj
 
-    # Ensure .csv extension
+    output_path = CLEANED_DIR / path_obj.name if not path_obj.is_absolute() else path_obj
+
     if output_path.suffix != ".csv":
         output_path = output_path.with_suffix(".csv")
 
     df.to_csv(output_path, index=False)
     return output_path
 
-def load_reports(csv_filepath: str) -> pd.DataFrame:
-#Loads a previously saved CSV into a DataFrame.
-    if not os.path.exists(csv_filepath):
-        raise FileNotFoundError(f"The CSV file '{csv_filepath}' was not found.")
-    return pd.read_csv(csv_filepath).fillna("")
-
-def query(df, category=None, action=None):
+def query(df: pd.DataFrame, category: str = None, action: str = None) -> pd.DataFrame:
+    """Filters the DataFrame by category OR action/priority."""
     filtered_df = df.copy()
-    if category: # Normalize the category string for comparison
+
+    if category:
         choice_of_category = category.strip().lower().replace(" ", "_")
-        filtered_df = filtered_df[filtered_df["category"].astype(str).str.lower() == choice_of_category] # filter by category as a normalized string
+        filtered_df = filtered_df[filtered_df["category"].astype(str).str.lower() == choice_of_category]
 
     if action:
         filtered_df = filtered_df[filtered_df["priority"].astype(str).str.lower() == action.strip().lower()]
 
-
     return filtered_df
-
-
