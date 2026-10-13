@@ -19,5 +19,6 @@ env/
 .idea/
 
 # Generated output (keep the uncleaned/ input folder)
-cleaned/
-moderation_results.csv
+# Cleaned data output
+cleaned/ 
+
