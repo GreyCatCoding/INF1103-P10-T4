@@ -127,6 +127,23 @@ def get_priority(data):
     # P3: Lower severity harmful content
     return "P3"
 
+def evaluate(data):
+    # Validate AI output and determine moderation priority
+    priority = get_priority(data)
+
+    # Determine whether human review is required
+    review_required = needs_human_review(data, priority)
+
+    # Determine recommended moderation action
+    action = get_recommended_action(priority, review_required)
+
+    # Return the moderation decision as a dictionary
+    return {
+        "priority": priority,
+        "recommended_action": action,
+        "human_review_required": review_required
+    }
+
 
 # ==========================================
 # 3. DETERMINE HUMAN REVIEW
@@ -163,6 +180,12 @@ def get_recommended_action(priority, review_required):
 
     return ACTIONS[priority]
 
+def route(data, priority):
+    review_required = needs_human_review(data, priority)
+    action = get_recommended_action(priority, review_required)
+
+    return action, review_required
+
 
 # ==========================================
 # 5. GENERATE REPORT
@@ -170,15 +193,11 @@ def get_recommended_action(priority, review_required):
 
 def generate_report(data):
 
-    priority = get_priority(data)
+    decision = evaluate(data)
 
-    review_required = needs_human_review(
-        data, priority
-    )
-
-    action = get_recommended_action(
-        priority, review_required
-    )
+    priority = decision["priority"]
+    action = decision["recommended_action"]
+    review_required = decision["human_review_required"]
 
     return {
         "User ID": data["User ID"],
@@ -239,4 +258,3 @@ def get_category_description(category):
 
     else:
         raise ValueError("Unknown category")
-

@@ -62,6 +62,25 @@ def test_get_category_description():
     description = Logic_Manager.get_category_description("spam")
     assert description == "scams, get-rich-quick offers or unsolicited promotion"
 
+def test_evaluate():
+    record = MOCK_RESULTS[18]
+
+    decision = Logic_Manager.evaluate(record)
+
+    assert isinstance(decision, dict)
+    assert decision["priority"] == "P1"
+    assert decision["recommended_action"] == "Remove user with human confirmation"
+    assert decision["human_review_required"] is True
+
+def test_route():
+    record = MOCK_RESULTS[18]
+    
+    priority = Logic_Manager.evaluate(record)["priority"]
+
+    action, review_required = Logic_Manager.route(record, priority)
+
+    assert review_required == Logic_Manager.needs_human_review(record, priority)
+    assert action == Logic_Manager.get_recommended_action(priority, review_required)
 
 reports = Logic_Manager.process_reports(MOCK_RESULTS) # process all records for logic manager
 
