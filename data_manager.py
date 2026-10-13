@@ -63,7 +63,7 @@ def load_cleaned_file(filename: str) -> tuple[pd.DataFrame, Path]:
 
 
 # =============================================================
-# DATAFRAME & PERSISTENCE MANAGEMENT
+# DATAFRAME, SUMMARY METRICS & PERSISTENCE MANAGEMENT
 # =============================================================
 def to_dataframe(reports: list[dict]) -> pd.DataFrame:
     """Converts a list of report dictionaries from Logic_Manager into a standardized DataFrame.
@@ -73,6 +73,45 @@ def to_dataframe(reports: list[dict]) -> pd.DataFrame:
         pd.DataFrame: Reindexed and sanitized DataFrame ready for storage/display.
     """
     return pd.DataFrame(reports).reindex(columns=DISPLAY_COLUMNS).fillna("")
+
+def get_summary_metrics(df: pd.DataFrame) -> dict:
+    """Calculates summary statistics for a moderation DataFrame.
+    Args:
+        df (pd.DataFrame): The moderation DataFrame.
+    Returns:
+        dict: A structured dictionary containing overall counts, priority 
+              breakdowns, category breakdowns, and human review requirements.
+    """
+    if df.empty:
+        return {
+            "total_records": 0,
+            "priority_counts": {},
+            "category_counts": {},
+            "human_review_count": 0,
+        }
+
+    # Count total records
+    total_records = len(df)
+
+    # Priority counts (e.g., P1, P2, P3, P4)
+    priority_counts = df["priority"].value_counts().to_dict() if "priority" in df.columns else {}
+
+    # Category counts (e.g., harassment, sexual, hate)
+    category_counts = df["category"].value_counts().to_dict() if "category" in df.columns else {}
+
+    # Human review flag count (checks recommended_action or ai_reason for keywords)
+    human_review_count = 0
+    if "recommended_action" in df.columns:
+        human_review_count = df["recommended_action"].astype(str).str.contains(
+            r"human|review|moderator", case=False, regex=True
+        ).sum()
+
+    return {
+        "total_records": total_records,
+        "priority_counts": priority_counts,
+        "category_counts": category_counts,
+        "human_review_count": int(human_review_count),
+    }
 
 
 def save_reports(df: pd.DataFrame, file_target: str | Path) -> Path:

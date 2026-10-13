@@ -162,6 +162,32 @@ def print_table(df: pd.DataFrame, max_width: int = 36):
     # Set temporary display options for column width and total output width
     with pd.option_context("display.max_colwidth", max_width, "display.width", 1000):
         print(df.to_string(index=False))  # Convert DataFrame to clean string without index numbers
+        
+def print_detailed_records(df: pd.DataFrame) -> None:
+    """Prints each record as a clean, structured detail card in the terminal."""
+    if df.empty:
+        print("No records found.")
+        return
+
+    separator = "=" * 80
+    sub_separator = "-" * 80
+
+    for idx, row in df.iterrows():
+        print(separator)
+        print(f"ID: {row.get('User ID', 'N/A')} | User: {row.get('username', 'N/A')} | Priority: {row.get('priority', 'N/A')} | Category: {row.get('category', 'N/A')}")
+        print(sub_separator)
+        print(f"Comment            : {row.get('comment', 'N/A')}")
+        
+        if "category_description" in row and row["category_description"]:
+            print(f"Category Desc      : {row['category_description']}")
+            
+        if "recommended_action" in row and row["recommended_action"]:
+            print(f"Recommended Action : {row['recommended_action']}")
+            
+        if "ai_reason" in row and row["ai_reason"]:
+            print(f"AI Reason          : {row['ai_reason']}")
+
+    print(separator)
 
 def display_existing_cleaned_file() -> tuple[pd.DataFrame | None, Path | None]:
     """Handles prompt loop for selecting and displaying an existing cleaned CSV."""
@@ -183,14 +209,39 @@ def display_existing_cleaned_file() -> tuple[pd.DataFrame | None, Path | None]:
         try:
             cleaned_df, cleaned_file_path = data_manager.load_cleaned_file(filename)
             print(f"\nLoading {cleaned_file_path.name}...")
-            print("\n--- Cleaned Data Preview (Top 5) ---")
-            print_table(cleaned_df.head(5))
             return cleaned_df, cleaned_file_path
 
         except (FileNotFoundError, ValueError, pd.errors.EmptyDataError) as e:
             print(f"\n[Error] {e}")
             print("Please select a valid, non-empty cleaned CSV file.\n")
 
+def print_summary_view(df: pd.DataFrame) -> None:
+    """Prints a neat, formatted summary card of moderation statistics."""
+    summary = data_manager.get_summary_metrics(df)
+
+    if summary["total_records"] == 0:
+        print("\n--- Summary Statistics ---")
+        print("No data available to summarize.")
+        return
+
+    separator = "=" * 55
+    print("\n" + separator)
+    print("           MODERATION DATASET SUMMARY")
+    print(separator)
+    print(f" Total Comments Analyzed : {summary['total_records']}")
+    print(f" Pending Human Review    : {summary['human_review_count']}")
+
+    print("\n --- Counts by Priority ---")
+    for priority, count in summary["priority_counts"].items():
+        p_label = priority if priority else "Unassigned"
+        print(f"   • {p_label:<10} : {count}")
+
+    print("\n --- Counts by Category ---")
+    for category, count in summary["category_counts"].items():
+        c_label = category if category else "Uncategorized"
+        print(f"   • {c_label:<15} : {count}")
+
+    print(separator + "\n")
 # =============================================================
 # MAIN WORKFLOW EXECUTION
 # =============================================================
@@ -218,7 +269,8 @@ def run_input_workflow():
 def run_output_workflow(df: pd.DataFrame) -> None:
     """Displays the DataFrame and offers an option to start filtering or exit directly."""
     print("\nModerated DataFrame:")
-    print_table(df)
+    print_detailed_records(df)
+    print_summary_view(df)
 
     while True:
         print("\n=== Filter Moderated Data ===")
@@ -250,7 +302,7 @@ def run_output_workflow(df: pd.DataFrame) -> None:
             if results.empty:
                 print("No matching records found.")
             else:
-                print_table(results)
+                print_detailed_records(results)
             break  # Return to the main filter option menu after printing results
 
 def main_menu(process_callback=None):
