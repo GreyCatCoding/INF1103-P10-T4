@@ -1,5 +1,5 @@
-import pytest
 import Logic_Manager
+import pytest
 
 """Fake ai_manager.analyse_record() outputs, for testing logic_manager without the API.
 """
@@ -161,4 +161,44 @@ def test_invalid_records_ranked_first():
     assert reports[1]["risk_score"] is not None
     assert reports[1]["priority"] == "P1"
 
-reports = Logic_Manager.process_reports(MOCK_RESULTS) # process all records for logic manager
+def test_priority_p2_and_p3():
+    # P2: High severity and sufficient confidence
+    p2_record = MOCK_RESULTS[18].copy()
+    p2_record["harmful"] = True
+    p2_record["category"] = "harassment"
+    p2_record["severity"] = 3
+    p2_record["confidence"] = 0.85
+
+    assert Logic_Manager.get_priority(p2_record) == "P2"
+
+    # P3: Lower severity, still harmful
+    p3_record = MOCK_RESULTS[18].copy()
+    p3_record["harmful"] = True
+    p3_record["category"] = "harassment"
+    p3_record["severity"] = 2
+    p3_record["confidence"] = 0.85
+
+    assert Logic_Manager.get_priority(p3_record) == "P3"
+
+def test_invalid_severity():
+    record = MOCK_RESULTS[18].copy()
+    record["severity"] = 5
+
+    with pytest.raises(ValueError):
+        Logic_Manager.validate_data(record)
+
+
+def test_invalid_confidence():
+    record = MOCK_RESULTS[18].copy()
+    record["confidence"] = 1.5
+
+    with pytest.raises(ValueError):
+        Logic_Manager.validate_data(record)
+
+
+def test_missing_required_field():
+    record = MOCK_RESULTS[18].copy()
+    del record["category"]
+
+    with pytest.raises(ValueError):
+        Logic_Manager.validate_data(record)
