@@ -1,5 +1,3 @@
-from ai_manager import analyse_record
-
 CATEGORIES = {
     "harassment": "insults, threats or mockery aimed at a specific person",
     "hate": "attacks on a group based on race, religion, nationality, gender, sexuality or disability",
@@ -38,7 +36,7 @@ ACTIONS = {
 # 1. VALIDATE AI OUTPUT
 # ==========================================
 
-def validate_data(data): # Check that the AI output contains valid information
+def validate_data(data: dict) -> None:
 
     if not isinstance(data, dict):
         raise ValueError("AI output must be a dictionary")
@@ -105,7 +103,7 @@ def validate_data(data): # Check that the AI output contains valid information
 # 2. DETERMINE PRIORITY
 # ==========================================
 
-def get_priority(data):
+def get_priority(data: dict) -> str:
 
     validate_data(data)
 
@@ -137,8 +135,8 @@ def get_priority(data):
     # P3: Lower severity harmful content
     return "P3"
 
-def evaluate(data):
-    # Validate AI output and determine moderation priority
+def evaluate(data: dict) -> dict:    # Validate AI output and determine moderation priority
+
     priority = get_priority(data)
 
     # Determine whether human review is required
@@ -178,7 +176,7 @@ def score(data: dict) -> float:
 # 3. DETERMINE HUMAN REVIEW
 # ==========================================
 
-def needs_human_review(data, priority):
+def needs_human_review(data: dict, priority: str) -> bool:
 
     confidence = data["confidence"]
     severity = data["severity"]
@@ -202,7 +200,7 @@ def needs_human_review(data, priority):
 # 4. RECOMMENDED ACTION
 # ==========================================
 
-def get_recommended_action(priority, review_required):
+def get_recommended_action(priority: str, review_required: bool) -> str:
 
     if review_required and priority in {"P3", "P4"}:
         return "Send to human moderator for review"
@@ -234,7 +232,7 @@ def route(record: dict) -> dict:
 # 5. GENERATE REPORT
 # ==========================================
 
-def generate_report(data):
+def generate_report(data: dict) -> dict:
 
     decision = evaluate(data)
 
@@ -265,7 +263,7 @@ def generate_report(data):
 # 6. PROCESS MULTIPLE RECORDS
 # ==========================================
 
-def process_reports(records):
+def process_reports(records: list) -> list:
 
     results = []
 
@@ -299,8 +297,8 @@ def process_reports(records):
 # 7. CATEGORIES DICTIONARY
 # ==========================================
 
-def get_category_description(category):
-
+def get_category_description(category: str) -> str:
+    
     category = category.lower()
 
     if category == "none":
