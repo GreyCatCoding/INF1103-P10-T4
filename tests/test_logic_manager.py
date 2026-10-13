@@ -109,4 +109,56 @@ def test_process_reports_ranked_highest_first():
 
     assert scores == sorted(scores, reverse=True)
 
+def test_route_standard_queue():
+    record = MOCK_RESULTS[0].copy()
+
+    record["harmful"] = False
+    record["category"] = "none"
+    record["severity"] = 0
+    record["target"] = "none"
+    record["confidence"] = 0.95
+
+    result = Logic_Manager.route(record)
+
+    assert isinstance(result, dict)
+    assert result["priority"] == "P4"
+    assert result["queue"] == "standard"
+    assert result["human_review_required"] is False
+    assert result["recommended_action"] == "Monitor user"
+
+def test_process_reports_invalid_ai_record():
+    records = [None]
+
+    reports = Logic_Manager.process_reports(records)
+
+    assert len(reports) == 1
+
+    report = reports[0]
+
+    assert report["User ID"] == "unknown"
+    assert report["username"] == "unknown"
+    assert report["priority"] is None
+    assert report["risk_score"] is None
+    assert report["recommended_action"] == "Manual review required"
+    assert report["human_review_required"] is True
+
+def test_invalid_records_ranked_first():
+    valid_record = MOCK_RESULTS[18].copy()
+    invalid_record = None
+
+    records = [valid_record, invalid_record]
+
+    reports = Logic_Manager.process_reports(records)
+
+    assert len(reports) == 2
+
+    # Invalid record should appear first
+    assert reports[0]["risk_score"] is None
+    assert reports[0]["priority"] is None
+    assert reports[0]["human_review_required"] is True
+
+    # Valid record should appear second
+    assert reports[1]["risk_score"] is not None
+    assert reports[1]["priority"] == "P1"
+
 reports = Logic_Manager.process_reports(MOCK_RESULTS) # process all records for logic manager
