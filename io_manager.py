@@ -156,4 +156,3 @@ def run_output_workflow(df):
             print("No matching records found.")
         else:
             print_table(results)
-
