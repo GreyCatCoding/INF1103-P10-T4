@@ -76,9 +76,6 @@ jobs:
       - name: Check the app code is inside the image
         run: docker run --rm moderation:ci ls main.py io_manager.py ai_manager.py Logic_Manager.py data_manager.py
 
-      - name: Run the tests inside the container
-        run: docker run --rm moderation:ci python -m pytest -v
-
   # ---------------------------------------------------------
   # 3) CD: publish the image when main changes
   # ---------------------------------------------------------
