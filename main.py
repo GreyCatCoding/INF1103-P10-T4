@@ -24,7 +24,7 @@ def process_ai_and_logic(cleaned_df, csv_path):
         else:
             records_for_logic_manager.append(record)
 
-        time.sleep(20)  # Prevent overloading AI API rate limits
+        time.sleep(40)  # Prevent overloading AI API rate limits
 
     # LOGIC Processing
     reports = Logic_Manager.process_reports(records_for_logic_manager)
