@@ -38,61 +38,136 @@ def clean_text(text: str) -> str:
 # =============================================================
 # USER INPUT & FILE SELECTION
 # =============================================================
+def validate_csv_structure(file_path: Path, required_columns: list) -> bool:     #Helper to check if a CSV file is empty or missing required columns.
+    try:
+        # Check if file size is 0 bytes
+        if file_path.stat().st_size == 0:
+            print(f"\n[Error] The file '{file_path.name}' is empty (0 bytes).")
+            return False
+
+        df_preview = pd.read_csv(file_path, nrows=1)                            # Read only headers/first row to validate structure
+        if df_preview.empty and len(df_preview.columns) == 0:                   # Check if file has no data/rows at all
+            print(f"\n[Error] The file '{file_path.name}' contains no readable data.")
+            return False
+        
+        # Validate required column presence (case-insensitive)
+        existing_cols = [c.lower() for c in df_preview.columns]
+        missing_cols = [col for col in required_columns if col.lower() not in existing_cols]
+
+        if missing_cols:
+            print(f"\n[Error] '{file_path.name}' is missing required column(s): {', '.join(missing_cols)}")
+            print(f"Found columns: {', '.join(df_preview.columns)}")
+            return False
+        return True
+    except pd.errors.EmptyDataError:
+        print(f"\n[Error] '{file_path.name}' is completely empty or corrupted.")
+        return False
+    except Exception as e:
+        print(f"\n[Error] Could not read '{file_path.name}': {e}")
+        return False
+
 def get_input_file() -> Path:
-    """Scans the 'uncleaned' directory, displays available CSV files,
-    and prompts the user to select one (case-insensitive, auto-appends .csv extension)."""
-    UNCLEANED_DIR.mkdir(exist_ok=True, parents=True)                        # Ensure the input directory exists before trying to scan it
-    csv_files = sorted(p.name for p in UNCLEANED_DIR.glob("*.csv"))         # Collect all .csv files in the directory and sort them alphabetically
-
-    # Raise an explicit error if no CSV files are found to process
-    if not csv_files:
-        raise FileNotFoundError("No CSV files found in the 'uncleaned' folder.")
-    print("Available uncleaned CSV files:")                                 # Display the list of available files to the user
-    for file in csv_files:
-        print(f"- {file}")
-    file_map = {f.casefold(): f for f in csv_files}                         # Build a lookup map where lowercase filenames point to actual filenames for case-insensitive matching
-
-    # Loop until the user provides a valid filename
-    while True:
-        filename = input("\nEnter CSV filename: ").strip()
-        # Automatically append .csv extension if the user omitted it
-        if not filename.endswith(".csv"):
-            filename += ".csv"
-        selected = file_map.get(filename.casefold())                        # Check if user input matches any file in our lookup map
-        if selected:
-            return UNCLEANED_DIR / selected                                 # Return absolute Path object
-
-        print(f"'{filename}' not found. Available: {', '.join(csv_files)}") # Warn user and show available options if match fails
-
-def get_cleaned_file() -> Path:                                             # Cleaned CSV file selection workflow
-    """Scans the 'cleaned' directory, displays available CSV files,
-    and prompts the user to select one."""
-    CLEANED_DIR.mkdir(exist_ok=True, parents=True)
-    csv_files = sorted(p.name for p in CLEANED_DIR.glob("*.csv"))
-
-    if not csv_files:
-        print("\nNo cleaned CSV files found in the 'cleaned' directory.")
-        return None
-
-    print("\nAvailable cleaned CSV files:")
-    for file in csv_files:
-        print(f"- {file}")
-
-    file_map = {f.casefold(): f for f in csv_files}
+    """Scans 'uncleaned' directory, displays available CSV files, validates required 
+    columns ('username' and 'comments') and non-emptiness, and lets the user retry on fault."""
+    UNCLEANED_DIR.mkdir(exist_ok=True, parents=True)
 
     while True:
-        filename = input("\nEnter cleaned CSV filename (or type 'back' to return): ").strip()
+        csv_files = sorted(p.name for p in UNCLEANED_DIR.glob("*.csv"))
+
+        if not csv_files:
+            print("\nNo CSV files found in the 'uncleaned' directory.")
+            retry = input("Press Enter to refresh or type 'back' to return: ").strip().lower()
+            if retry == "back":
+                return None
+            continue
+
+        print("\nAvailable uncleaned CSV files:")
+        for file in csv_files:
+            print(f"- {file}")
+
+        file_map = {f.casefold(): f for f in csv_files}
+
+        filename = input("\nEnter CSV filename (or type 'back' to return): ").strip()
         if filename.lower() == "back":
-            break
+            return None
 
         if not filename.endswith(".csv"):
             filename += ".csv"
 
         selected = file_map.get(filename.casefold())
-        if selected:
-            return CLEANED_DIR / selected
 
-        print(f"'{filename}' not found. Available: {', '.join(csv_files)}")
+        if not selected:
+            print(f"\n[Error] '{filename}' not found in 'uncleaned/'. Please try again.")
+            continue
+
+        selected_path = UNCLEANED_DIR / selected
+
+        # FAULT CHECK: Check for non-empty file and required columns ('username' & 'comments')
+        # (Supports both 'comments' and 'comment')
+        try:
+            df_check = pd.read_csv(selected_path, nrows=1)
+            cols = [c.lower() for c in df_check.columns]
+            
+            # Flexible check for 'comment' or 'comments' and 'username'
+            has_comments = "comments" in cols or "comment" in cols
+            has_username = "username" in cols
+
+            if not validate_csv_structure(selected_path, []):
+                print("Please select a valid CSV file.\n")
+                continue
+
+            if not has_username or not has_comments:
+                missing = []
+                if not has_username: missing.append("'username'")
+                if not has_comments: missing.append("'comments' (or 'comment')")
+                print(f"\n[Error] '{selected}' is missing required column(s): {', '.join(missing)}")
+                print("Please select a file with valid columns.\n")
+                continue
+
+            return selected_path
+
+        except pd.errors.EmptyDataError:
+            print(f"\n[Error] '{selected}' is empty. Please select a valid file.\n")
+            continue
+
+def get_cleaned_file() -> Path:
+    """Scans 'cleaned' directory, validates file structure/non-emptiness, 
+    and lets the user retry on fault."""
+    CLEANED_DIR.mkdir(exist_ok=True, parents=True)
+
+    while True:
+        csv_files = sorted(p.name for p in CLEANED_DIR.glob("*.csv"))
+
+        if not csv_files:
+            print("\nNo cleaned CSV files found in the 'cleaned' directory.")
+            return None
+
+        print("\nAvailable cleaned CSV files:")
+        for file in csv_files:
+            print(f"- {file}")
+
+        file_map = {f.casefold(): f for f in csv_files}
+
+        filename = input("\nEnter cleaned CSV filename (or type 'back' to return): ").strip()
+        if filename.lower() == "back":
+            return None
+
+        if not filename.endswith(".csv"):
+            filename += ".csv"
+
+        selected = file_map.get(filename.casefold())
+
+        if not selected:
+            print(f"\n[Error] '{filename}' not found. Please try again.")
+            continue
+
+        selected_path = CLEANED_DIR / selected
+
+        # FAULT CHECK: Validate that file is not empty
+        if not validate_csv_structure(selected_path, []):
+            print("Please select a valid, non-empty cleaned CSV file.\n")
+            continue
+        return selected_path
 # =============================================================
 # CSV & JSON PROCESSING
 # =============================================================
@@ -100,13 +175,10 @@ def process_csv(input_path: Path, output_path: Path = None):
     """Reads a CSV file, cleans the 'comments' column, creates both original and processed comment columns,
     and exports the result to both CSV and JSON in the 'cleaned' directory."""
     CLEANED_DIR.mkdir(exist_ok=True, parents=True)                              # Ensure the output directory exists
-
     csv_output = (
         Path(output_path)
         if output_path
-        else CLEANED_DIR / f"{input_path.stem}_cleaned.csv"
-    )                                                                           # Use specified output path or generate default path using input file name stem
-
+        else CLEANED_DIR / f"{input_path.stem}_cleaned.csv")                    # Use specified output path or generate default path using input file name stem
     json_output = csv_output.with_suffix(".json")                               # Automatically derive the matching JSON path from the CSV output path
     df = pd.read_csv(input_path)                                                # Read source CSV file into a pandas DataFrame
     # Validate that required target column exists
@@ -117,16 +189,16 @@ def process_csv(input_path: Path, output_path: Path = None):
 
     expected_cols = ["User ID","username","original_comments","processed_comments","timestamp",]     # Define columns to keep for the main DataFrame and CSV export
     df = df[[c for c in expected_cols if c in df.columns]]
-    df.to_csv(csv_output, index=False)     # Export complete cleaned DataFrame to CSV
+    df.to_csv(csv_output, index=False)                                          # Export complete cleaned DataFrame to CSV
 
     # Define specific subset of columns required for JSON export
     json_cols = ["User ID", "username", "processed_comments"]
     json_df = df[[c for c in json_cols if c in df.columns]]
-    json_df.to_json(json_output, orient="records", indent=4) # Export filtered DataFrame to JSON formatted as an array of record objects
+    json_df.to_json(json_output, orient="records", indent=4)                    # Export filtered DataFrame to JSON formatted as an array of record objects
 
-    return (df,csv_output,json_output,)  # Return structured data frame along with saved file paths
+    return (df,csv_output,json_output,)                                         # Return structured data frame along with saved file paths
 
-def display_existing_cleaned_file(): # Load Function for previously cleaned CSV files and preview their contents
+def display_existing_cleaned_file():                                            # Load Function for previously cleaned CSV files and preview their contents
     """Lets the user choose an already cleaned CSV file and previews its data."""
     cleaned_file_path = get_cleaned_file()
     if cleaned_file_path is None:
