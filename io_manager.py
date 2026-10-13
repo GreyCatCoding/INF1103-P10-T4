@@ -197,9 +197,11 @@ def process_csv(input_path: Path, output_path: Path = None):
 
     return (df,csv_output,json_output,)                                         # Return structured data frame along with saved file paths
 
-def display_existing_cleaned_file():                                            # Load Function for previously cleaned CSV files and preview their contents
+def display_existing_cleaned_file():                                            # loads function previously saved cleaned CSV file and previews its data
     """Lets the user choose an already cleaned CSV file and previews its data."""
     cleaned_file_path = get_cleaned_file()
+    
+    # SAFETY CHECK: If user typed 'back', safely return None
     if cleaned_file_path is None:
         return None, None
 
@@ -209,7 +211,7 @@ def display_existing_cleaned_file():                                            
     print("\n--- Cleaned Data Preview (Top 5) ---")
     print_table(cleaned_df.head(5))
 
-    return cleaned_df
+    return cleaned_df, cleaned_file_path
 
 # =============================================================
 # TERMINAL TABLE DISPLAY
@@ -229,12 +231,17 @@ def print_table(df: pd.DataFrame, max_width: int = 36):
 # =============================================================
 def run_input_workflow():
     """Coordinates file selection, cleans data, saves outputs, and prints before/after summaries."""
-    input_file = get_input_file()                                # Prompt user for input file path
-    print(f"\nProcessing {input_file.name}...")
-    raw_df = pd.read_csv(input_file)                             # Load raw file for uncleaned preview display
-    cleaned_df, csv_path, json_path = process_csv(input_file)    # Run the main text processing and export routine
+    input_file = get_input_file()
+    
+    # SAFETY CHECK: If user typed 'back', safely return None
+    if input_file is None:
+        return None, None
 
-    print("\n--- Uncleaned Data Preview (Top 5) ---")            # Print first 5 rows of uncleaned data
+    print(f"\nProcessing {input_file.name}...")                     # processing message
+    raw_df = pd.read_csv(input_file)
+    cleaned_df, csv_path, json_path = process_csv(input_file)
+
+    print("\n--- Uncleaned Data Preview (Top 5) ---")
     print_table(raw_df.head(5))
     print(f"\nSaved CSV to: {csv_path}")
     print(f"Saved JSON to: {json_path}")
@@ -283,11 +290,7 @@ def run_output_workflow(df: pd.DataFrame) -> None:
             break  # Return to the main filter option menu after printing results
 
 def main_menu(process_callback=None):
-    """Displays the main options menu and routes user selections.
-    Args:
-        process_callback: A function passed from main.py to handle 
-                          AI + Logic pipeline processing when cleansing new files.
-    """
+    """Displays the main options menu and routes user selections."""
     while True:
         print("\n" + "=" * 40)
         print("      DATA CLEANING & MANAGEMENT MENU      ")
@@ -300,8 +303,8 @@ def main_menu(process_callback=None):
 
         if choice == "1":
             cleaned_df, csv_path = run_input_workflow()
+            # If user typed 'back', cleaned_df is None, so execution loops back to menu
             if cleaned_df is not None:
-                # If main.py provided an AI/Logic processing pipeline, run it
                 if process_callback:
                     final_df = process_callback(cleaned_df, csv_path)
                     run_output_workflow(final_df)
@@ -309,12 +312,13 @@ def main_menu(process_callback=None):
                     run_output_workflow(cleaned_df)
 
         elif choice == "2":
-            cleaned_df = display_existing_cleaned_file()
+            cleaned_df, csv_path = display_existing_cleaned_file()
+            # If user typed 'back', cleaned_df is None, so execution loops back to menu
             if cleaned_df is not None:
                 run_output_workflow(cleaned_df)
 
         elif choice == "3":
-            print("\nExiting program...")
+            print("\nExiting program. Goodbye!")
             break
         else:
             print("\nInvalid choice. Please enter 1, 2, or 3.")
