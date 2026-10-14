@@ -1,6 +1,6 @@
 import io_manager
 import ai_manager
-import Logic_Manager
+import logic_manager
 import data_manager
 import logging
 import time
@@ -27,7 +27,7 @@ def process_ai_and_logic(cleaned_df, csv_path):
         time.sleep(40)  # Prevent overloading AI API rate limits
 
     # LOGIC Processing
-    reports = Logic_Manager.process_reports(records_for_logic_manager)
+    reports = logic_manager.process_reports(records_for_logic_manager)
 
     # DATA Persistence
     df = data_manager.to_dataframe(reports)
