@@ -72,15 +72,15 @@ def get_input_file() -> Path | None:
         # Inline column check for raw CSVs
         try:
             df_preview = pd.read_csv(selected_path, nrows=1)
-            cols = [c.lower() for c in df_preview.columns]
+            cols = list(df_preview.columns)
 
             has_username = "username" in cols
-            has_comments = "comments" in cols or "comment" in cols
+            has_comments = "comments" in cols
 
             if not has_username or not has_comments:
                 missing = []
                 if not has_username: missing.append("'username'")
-                if not has_comments: missing.append("'comments' (or 'comment')")
+                if not has_comments: missing.append("'comments'")
                 print(f"\n[Error] '{selected}' is missing required column(s): {', '.join(missing)}")
                 print("Please select a valid CSV file.\n")
                 continue
