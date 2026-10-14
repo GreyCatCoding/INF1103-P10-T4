@@ -3,6 +3,7 @@
 # =============================================================
 from pathlib import Path
 import pandas as pd
+import logging
 
 # Define CLEANED_DIR relative to the script location
 BASE_DIR = Path(__file__).resolve().parent
@@ -133,7 +134,12 @@ def save_reports(df: pd.DataFrame, file_target: str | Path) -> Path:
     if output_path.suffix != ".csv":
         output_path = output_path.with_suffix(".csv")
 
-    df.to_csv(output_path, index=False)
+    try:
+        df.to_csv(output_path, index=False)
+    except PermissionError:
+        logging.error("Permission denied: '%s' is currently open in another program (e.g., Excel).", output_path.name)
+        raise
+    
     return output_path
 
 
