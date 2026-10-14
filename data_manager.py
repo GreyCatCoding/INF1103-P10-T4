@@ -161,6 +161,10 @@ def query(
     Returns:
         pd.DataFrame: A new DataFrame containing only matching records.
     """
+    # A file that never finished moderation has no category/priority columns; return no matches instead of crashing
+    if "category" not in df.columns or "priority" not in df.columns:
+        return df.iloc[0:0]
+
     filtered_df = df.copy()
 
     if category:
