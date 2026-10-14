@@ -321,7 +321,12 @@ def main_menu(process_callback=None):
             cleaned_df, csv_path = run_input_workflow()
             if cleaned_df is not None:
                 if process_callback:
-                    final_df = process_callback(cleaned_df, csv_path)
+                    try:
+                        final_df = process_callback(cleaned_df, csv_path)
+                    except PermissionError:
+                        print(f"\n[Error] Could not save results: '{csv_path.name}' is open in another program (e.g. Excel).")
+                        print("Close the file and choose option 1 again.")
+                        continue
                     run_output_workflow(final_df)
                 else:
                     run_output_workflow(cleaned_df)
