@@ -1,19 +1,10 @@
 # AI Content Moderation System
-<!-- TODO-DATA-MANAGER (read me first)
-When the data manager's load feature is finished and merged, search this file for
-TODO-DATA-MANAGER. There are 7 spots (1-7). At each one, replace the line(s) named
-with the text given, then delete that comment block. Delete this block last.
-These comments are invisible on GitHub, but remove them all before final submission.
--->
 
 **INF1103 Team Project, Phase 1 · Lab P10, Team 4**
 
 Online platforms receive far more user comments than human moderators can read. Keyword filters miss disguised insults (`l0ser`, `i d i o t`), slang and sarcasm, and they wrongly flag people who are only *quoting* abuse in order to report it.
 
-This command-line application takes a CSV of user comments, cleans them, and sends **every comment through an AI model** (`openai/gpt-oss-safeguard-20b` on Groq, a model built for safety classification). The model classifies each comment for harm (category, severity, target and confidence). The logic layer then turns that classification into a moderation priority (P1–P4), a recommended action, and a decision on whether a human moderator needs to review it. The results are saved to CSV and can be filtered by category or priority.
-<!-- TODO-DATA-MANAGER 1/7: replace the last sentence of the paragraph above with:
-The results are saved to CSV and can be reloaded and filtered later.
--->
+This command-line application takes a CSV of user comments, cleans them, and sends **every comment through an AI model** (`openai/gpt-oss-safeguard-20b` on Groq, a model built for safety classification). The model classifies each comment for harm (category, severity, target and confidence). The logic layer then turns that classification into a moderation priority (P1–P4), a recommended action, and a decision on whether a human moderator needs to review it. The results are saved to CSV and can be reopened and filtered later by category or priority.
 
 ---
 
@@ -21,40 +12,24 @@ The results are saved to CSV and can be reloaded and filtered later.
 
 The application is **100% procedural** (no classes) and is split into four managers that form one pipeline:
 
-<!-- TODO-DATA-MANAGER 2/7: in the diagram below, delete the line that ends with
-"save, query]", then remove the "%% " from the 3 lines under the "%% TODO" lines,
-and delete the two "%% TODO" lines themselves.
--->
 ```mermaid
 flowchart LR
     U([User / CSV file]) --> IO[io_manager.py<br/>input, validation, display]
     IO -->|clean record dict| AI[ai_manager.py<br/>prompt, API call, JSON validation]
-    AI -->|record + AI verdict| LM[Logic_Manager.py<br/>business rules, priority, action]
-    LM -->|moderation report| DM[data_manager.py<br/>save, query]
-    %% TODO: uncomment the next line
-    %% LM -->|moderation report| DM[data_manager.py<br/>save, load, query]
+    AI -->|record + AI verdict| LM[logic_manager.py<br/>business rules, priority, risk score]
+    LM -->|moderation report| DM[data_manager.py<br/>save, load, summary, query]
     DM -->|write| FS[("cleaned/*.csv")]
-    %% TODO: uncomment the next two lines
-    %% FS -->|"load"| DM
-    %% DM -->|"menu option 2: saved results"| IO
+    FS -->|"load"| DM
+    DM -->|"menu option 2: saved results"| IO
     AI <-->|JSON| API[(Groq API<br/>fallback: OpenRouter)]
 ```
 
-<!-- TODO-DATA-MANAGER 3/7: in the io_manager.py row of the table below,
-(a) change  cleans the comment text and displays the results.
-    to      cleans the comment text, displays results and lets the user reopen saved results.
-(b) add  `get_cleaned_file`, `display_existing_cleaned_file`,  to its function list, before `run_output_workflow`
--->
-<!-- TODO-DATA-MANAGER 4/7: replace the data_manager.py row of the table below with:
-| `data_manager.py` | Persistence. Saves processed records to CSV, loads them back, and filters them by category and/or priority. A missing or corrupt file is logged and returns an empty result instead of crashing. | `to_dataframe`, `save_reports`, `load_reports`, `query` |
-(use your real function names if they changed)
--->
 | Module | Responsibility | Key functions |
 |---|---|---|
-| `io_manager.py` | Handles all user interaction. It is the **only** file containing `print()` and `input()`. Lets the user pick a file, validates it, cleans the comment text and displays the results. | `get_input_file`, `validate_csv_structure`, `clean_text`, `process_csv`, `run_output_workflow`, `main_menu` |
+| `io_manager.py` | Handles all user interaction. It is the **only** file containing `print()` and `input()`. Lets the user pick a file, checks its columns, cleans the comment text, displays the results and a summary, and lets the user reopen saved results. | `get_input_file`, `clean_text`, `process_csv`, `print_detailed_records`, `print_summary_view`, `display_existing_cleaned_file`, `run_output_workflow`, `main_menu` |
 | `ai_manager.py` | The system's core engine. Every record passes through the AI API. It builds the prompt, calls the API, parses the JSON reply and validates the schema. Contains no domain logic. | `build_prompt`, `call_api`, `call_with_fallback`, `parse_response`, `validate_response`, `analyse_record` |
-| `Logic_Manager.py` | The domain rules. Applies the moderation business rules to the AI output. | `validate_data`, `get_priority`, `needs_human_review`, `get_recommended_action`, `generate_report`, `process_reports` |
-| `data_manager.py` | Implements data persistence. Converts reports to a table, saves them to CSV and filters them by category and/or priority. | `to_dataframe`, `save_reports`, `query` |
+| `logic_manager.py` | The domain rules. Applies the moderation business rules to the AI output and ranks reports by risk score. | `validate_data`, `get_priority`, `evaluate`, `score`, `needs_human_review`, `get_recommended_action`, `route`, `generate_report`, `process_reports` |
+| `data_manager.py` | Implements data persistence. Converts reports to a table, saves them to CSV, loads saved files back, counts results for the summary, and filters them by category and/or priority. A missing, empty or unreadable saved file raises an error that `io_manager` catches, so the user can choose again. | `to_dataframe`, `save_reports`, `get_available_cleaned_files`, `validate_csv_structure`, `load_cleaned_file`, `get_summary_metrics`, `query` |
 | `main.py` | Entry point. Connects the four managers in pipeline order. | `process_ai_and_logic`, `main` |
 
 ### What the AI returns
@@ -96,6 +71,8 @@ A rejected reply is retried once. If a provider fails, the request falls back to
 
 If the AI fails or returns an invalid result for a comment, that record is not dropped. It is marked **"Manual review required"**.
 
+Reports are then ranked by a **risk score** from 0 to 100: `100 × (severity ÷ 4) × confidence × category weight` (hate, violence and self_harm 1.0; harassment and sexual 0.8; spam 0.5). The highest risk is listed first, and records marked for manual review are placed at the top.
+
 ---
 
 ## Project structure
@@ -105,7 +82,7 @@ If the AI fails or returns an invalid result for a comment, that record is not d
 ├── main.py                  # entry point, connects the pipeline
 ├── io_manager.py            # input, validation, display
 ├── ai_manager.py            # AI API interaction
-├── Logic_Manager.py         # business rules
+├── logic_manager.py         # business rules
 ├── data_manager.py          # CSV persistence and queries
 ├── tests/
 │   ├── test_ai_manager.py   # prompt, parsing and validation tests (no API needed)
@@ -120,7 +97,7 @@ If the AI fails or returns an invalid result for a comment, that record is not d
 
 ### Input CSV format
 
-Place CSV files in `uncleaned/`. The `User ID`, `username` and `comments` columns are required. `User ID` must be a whole number; without it, every record fails validation and is sent to manual review. Files that are empty or missing a required column are rejected, and you are asked to choose another file:
+Place CSV files in `uncleaned/`. The `username` and `comments` columns are required, with exactly these lowercase names. Files that are empty, unreadable or missing either column are rejected, and you are asked to choose another file. `User ID` must also be present as a whole number; without it, every record fails validation and is sent to manual review:
 
 ```csv
 User ID,username,comments,timestamp
@@ -212,17 +189,14 @@ Use `python -m pytest`, not plain `pytest`, so the tests can import the manager 
 ```
 
 1. **Cleanse New File.** Pick a CSV from `uncleaned/`. The app cleans the comments: it lowercases them, expands slang (`imo` becomes `in my opinion`) and strips URLs, emails and punctuation. Digits and the symbols `$ * @ !` are kept on purpose, so disguised words like `l0ser` or `sh!t` reach the AI intact. It then sends each comment to the AI, applies the business rules and saves the results to `cleaned/<name>_cleaned.csv`.
-2. After moderation, you can **filter** the results by category, by priority, or both.
-<!-- TODO-DATA-MANAGER 5/7: replace step 2 above with these two steps:
-2. **Display Existing Cleaned File.** Reload and preview a file saved in `cleaned/`.
-3. In either view, you can **filter** the results by category, by priority, or both.
--->
+2. **Display Existing Cleaned File.** Reopen a results file saved in `cleaned/` without calling the AI again. In Docker, mount `cleaned/` (see above) so files are still there next time.
+3. In either view, the results are shown one record per card, followed by a **summary** (counts by priority and by category, and how many actions involve a human moderator). You can then **filter** by category, by priority, or both.
 
 > The app pauses 40 seconds between comments to stay within Groq's free-tier token limit for this model, so the 10-row sample takes about 7 minutes. Use a 3–5 row file for quick demos.
 
 ### Output columns
 
-After moderation, each comment is shown and saved with these columns:
+After moderation, results are saved to `cleaned/<name>_cleaned.csv` with these columns:
 
 | Column | Comes from | Example values |
 |---|---|---|
@@ -240,13 +214,13 @@ After moderation, each comment is shown and saved with these columns:
 |---|---|
 | API connection failure or timeout | Caught in `call_api`. The error is logged, the request falls back to OpenRouter and is retried once. If everything fails, the record is marked "Manual review required" and the app continues. |
 | Malformed AI response | `parse_response` and `validate_response` reject it and the request is retried. If it still fails, the record goes to manual review. |
-| Missing or empty input file / missing columns | `validate_csv_structure` rejects the file and the user is asked to choose again. |
+| Missing, empty or unreadable input file / missing columns | `get_input_file` checks the file before cleaning, rejects it and asks the user to choose again. |
 | Invalid menu input | The input is rejected and the user is asked again. |
-| Missing API key | The missing key is logged by name (e.g. `set GROQ_API_KEY in .env`). Records are sent to manual review. |
+| Missing API key | The missing key is logged by name (e.g. `set GROQ_API_KEY in .env`) and the request falls back to OpenRouter. If no provider works, records are sent to manual review. |
 | Free-tier rate limit | A fixed 40-second pause between comments keeps usage under the token-per-minute limit. |
-<!-- TODO-DATA-MANAGER 6/7: add this row to the end of the error table above:
-| Missing or corrupt saved file | `load_reports` logs the error and returns an empty result; the user is told and returned to the menu. |
--->
+| Results file open in another program (e.g. Excel) | `save_reports` logs the `PermissionError`; `main_menu` catches it, shows a message and returns to the menu. |
+| Missing, empty or unreadable saved file (menu option 2) | `load_cleaned_file` raises an error; `display_existing_cleaned_file` shows it and asks the user to choose again. |
+| Saved file that never finished moderation | `query` returns no matches instead of crashing, and the user sees "No matching records found." |
 
 ---
 
@@ -266,12 +240,9 @@ GitHub Actions (`.github/workflows/ci.yml`) runs on every push and pull request:
 | C1 | 100% procedural | No `class` definitions; enforced by CI |
 | C2 | AI is the core engine | Every record goes through `ai_manager.analyse_record`; without it, no comment can be classified |
 | C3 | Structured API responses | JSON mode, plus schema validation before any field is used |
-| C4 | Flat-file persistence | Results saved to CSV in `cleaned/`; `temperature: 0` reduces variation between runs |
+| C4 | Flat-file persistence | Results saved to and reloaded from CSV in `cleaned/`; `temperature: 0` reduces variation between runs |
 | C5 | Runs in Docker | `Dockerfile` in the repository root; tests run inside the container |
 | C6 | Git history | Feature branches and pull requests for almost every change |
-<!-- TODO-DATA-MANAGER 7/7: replace the C4 row above with:
-| C4 | Flat-file persistence | Results saved to and loaded from CSV in `cleaned/`; `temperature: 0` reduces variation between runs |
--->
 
 ---
 
