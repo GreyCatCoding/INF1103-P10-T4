@@ -30,10 +30,13 @@ class TextCleaner:
             escaped_slang.append(re.escape(word))
 
         # cleaning of slang words and unwanted noise in the text
-        
         # regex to match any slang word in the dictionary and replace with corresponding values in dictionary
         self.__slang_pattern = re.compile(r"\b(" + "|".join(escaped_slang) + r")\b", flags=re.IGNORECASE)
         # regex to match URLs , emails and unwanted symbols
         self.__noise_pattern = re.compile(r"https?://\S+|www\.\S+|\S+@\S+|[^a-zA-Z0-9$*@!\s]")
 
+    def __expand_slang(self, match: re.Match) -> str:
+            """Returns the full phrase for one matched slang word."""
+            slang_word = match.group(0).lower()
+            return self.__slang_dict[slang_word]
     
