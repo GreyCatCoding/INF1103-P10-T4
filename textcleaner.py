@@ -35,6 +35,16 @@ class TextCleaner:
         # regex to match URLs , emails and unwanted symbols
         self.__noise_pattern = re.compile(r"https?://\S+|www\.\S+|\S+@\S+|[^a-zA-Z0-9$*@!\s]")
 
+    def clean(self, text: str) -> str:
+        """Returns the cleaned comment, or "" if text is not a string or is blank."""
+        if not isinstance(text, str) or not text.strip():
+            return ""
+
+        text = text.lower()
+        text = self.__slang_pattern.sub(self.__expand_slang, text)
+        text = self.__noise_pattern.sub("", text)
+        return " ".join(text.split())  # Collapse repeated spaces and newlines into single spaces
+
     def __expand_slang(self, match: re.Match) -> str:
             """Returns the full phrase for one matched slang word."""
             slang_word = match.group(0).lower()
