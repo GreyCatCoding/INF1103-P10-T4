@@ -4,6 +4,7 @@ import pytest
 import requests
 
 from groqprovider import GroqProvider
+from openrouterprovider import OpenRouterProvider
 
 API_REPLY = {"model": "test-model", "choices": [{"message": {"content": "hello"}}]}
 
@@ -38,3 +39,19 @@ def test_generate_returns_none_when_api_unreachable(monkeypatch):
 
     monkeypatch.setattr(requests, "post", no_internet)
     assert GroqProvider().generate("rules", "<comment>hi</comment>") is None
+
+
+def test_groq_sends_no_backup_models(monkeypatch):
+    monkeypatch.setenv("GROQ_API_KEY", "test-key")
+    sent = {}
+    monkeypatch.setattr(requests, "post", fake_post(sent))
+    GroqProvider().generate("rules", "<comment>hi</comment>")
+    assert "models" not in sent
+
+
+def test_openrouter_sends_backup_models(monkeypatch):
+    monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
+    sent = {}
+    monkeypatch.setattr(requests, "post", fake_post(sent))
+    OpenRouterProvider().generate("rules", "<comment>hi</comment>")
+    assert sent["models"] == ["thinkingmachines/inkling-small:free", "openrouter/free"]
