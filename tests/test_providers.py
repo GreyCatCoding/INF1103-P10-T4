@@ -3,6 +3,8 @@ from unittest.mock import Mock
 import pytest
 import requests
 
+from fakeprovider import FakeProvider
+from fallbackprovider import FallbackProvider
 from groqprovider import GroqProvider
 from openrouterprovider import OpenRouterProvider
 
@@ -55,3 +57,16 @@ def test_openrouter_sends_backup_models(monkeypatch):
     monkeypatch.setattr(requests, "post", fake_post(sent))
     OpenRouterProvider().generate("rules", "<comment>hi</comment>")
     assert sent["models"] == ["thinkingmachines/inkling-small:free", "openrouter/free"]
+
+
+
+def test_fallback_uses_backup_when_primary_fails():
+    provider = FallbackProvider(FakeProvider([None]), FakeProvider(["backup reply"]))
+    assert provider.generate("rules", "<comment>hi</comment>") == "backup reply"
+
+
+def test_fallback_skips_backup_when_primary_works():
+    backup = FakeProvider(["backup reply"])
+    provider = FallbackProvider(FakeProvider(["main reply"]), backup)
+    assert provider.generate("rules", "<comment>hi</comment>") == "main reply"
+    assert backup.calls == 0
