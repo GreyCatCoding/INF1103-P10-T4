@@ -10,43 +10,37 @@ class FileSelector(ABC):
         self._list_heading = list_heading    # Heading shown above the file list
         self._prompt = prompt                # Text shown when asking for a filename
 
-    def select(self) -> tuple[pd.DataFrame, Path] | None:
-        """Lists the files, asks the user to pick one and loads it.
+    @property
+    def empty_message(self) -> str:
+        """Text to show when there are no files to choose from."""
+        return self._empty_message
 
-        Returns (df, path) on success, or None if there are no files or the user types 'back'.
-        Keeps asking until a valid file is chosen.
+    @property
+    def list_heading(self) -> str:
+        """Heading to show above the list of files."""
+        return self._list_heading
+
+    @property
+    def prompt(self) -> str:
+        """Text to show when asking the user for a filename."""
+        return self._prompt
+
+    def get_files(self) -> list[str]:
+        """Returns the names of the files the user can choose from."""
+        return self._list_files()
+
+    def select(self, filename: str) -> tuple[pd.DataFrame, Path]:
+        """Validates and loads the file the user typed.
+
+        Returns (df, path). Raises FileNotFoundError or ValueError with a
+        user-friendly message if the file cannot be used.
         """
-        notice = ""  # Error text from the previous attempt, shown above the next prompt
-
-        while True:
-            files = self._list_files()
-            if not files:
-                input(f"\n{self._empty_message}\nPress Enter to return...")
-                return None
-
-            listing = "\n".join(f"- {file}" for file in files)
-            answer = input(f"{notice}\n{self._list_heading}\n{listing}\n{self._prompt}").strip()
-
-            if answer.lower() == "back":
-                return None
-
-            try:
-                result = self._load(answer)
-            except (FileNotFoundError, ValueError, pd.errors.EmptyDataError) as error:
-                notice = f"\n[Error] {error}\nPlease select a valid CSV file.\n"
-                continue
-
-            if result is not None:
-                return result
+        return self._load(filename.strip())
 
     @abstractmethod
     def _list_files(self) -> list[str]:
         """Returns the names of the files the user can choose from."""
 
     @abstractmethod
-    def _load(self, filename: str) -> tuple[pd.DataFrame, Path] | None:
-        """Validates and loads the chosen file.
-
-        Returns (df, path). Raises FileNotFoundError or ValueError (with a user-friendly
-        message) if the file cannot be used; select() shows that message and asks again.
-        """
+    def _load(self, filename: str) -> tuple[pd.DataFrame, Path]:
+        """Validates and loads the chosen file, returning (df, path)."""
