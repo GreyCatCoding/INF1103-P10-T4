@@ -7,6 +7,7 @@ from fakeprovider import FakeProvider
 from fallbackprovider import FallbackProvider
 from groqprovider import GroqProvider
 from openrouterprovider import OpenRouterProvider
+from providerfactory import ProviderFactory
 
 API_REPLY = {"model": "test-model", "choices": [{"message": {"content": "hello"}}]}
 
@@ -70,3 +71,24 @@ def test_fallback_skips_backup_when_primary_works():
     provider = FallbackProvider(FakeProvider(["main reply"]), backup)
     assert provider.generate("rules", "<comment>hi</comment>") == "main reply"
     assert backup.calls == 0
+
+
+
+def test_factory_wraps_groq_with_openrouter_backup(monkeypatch):
+    monkeypatch.setenv("AI_PROVIDER", "groq")
+    monkeypatch.setenv("GROQ_API_KEY", "test-key")
+    monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
+    assert isinstance(ProviderFactory.from_env(), FallbackProvider)
+
+
+def test_factory_uses_groq_alone_without_backup_key(monkeypatch):
+    monkeypatch.setenv("AI_PROVIDER", "groq")
+    monkeypatch.setenv("GROQ_API_KEY", "test-key")
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    assert isinstance(ProviderFactory.from_env(), GroqProvider)
+
+
+def test_factory_rejects_unknown_provider(monkeypatch):
+    monkeypatch.setenv("AI_PROVIDER", "gemini")
+    with pytest.raises(ValueError):
+        ProviderFactory.from_env()
