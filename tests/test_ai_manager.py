@@ -1,8 +1,11 @@
+from ai_manager import AIManager
+from fakeprovider import FakeProvider
 from promptbuilder import PromptBuilder
 from responseparser import ResponseParser
 from responsevalidator import ResponseValidator
 
 GOOD_REPLY = '{"harmful": true, "category": "harassment", "severity": 2, "target": "individual", "confidence": 0.9, "reason": "Test reply."}'
+RECORD = {"User ID": 1, "username": "ben", "processed_comments": "u r a l0ser"}
 
 
 # PromptBuilder
@@ -36,3 +39,29 @@ def test_validate_rejects_contradiction():
     data = {"harmful": False, "category": "hate", "severity": 0,
             "target": "none", "confidence": 0.5, "reason": "x"}
     assert ResponseValidator().validate(data) is False
+
+
+# AIManager
+
+def test_analyse_record_merges_verdict():
+    result = AIManager(FakeProvider([GOOD_REPLY])).analyse_record(RECORD)
+    assert result["category"] == "harassment"
+    assert result["username"] == "ben"
+
+
+def test_analyse_record_retries_after_bad_json():
+    fake = FakeProvider(["not json", GOOD_REPLY])
+    assert AIManager(fake).analyse_record(RECORD) is not None
+    assert fake.calls == 2
+
+
+def test_analyse_record_gives_up_after_all_attempts():
+    fake = FakeProvider([None, None])
+    assert AIManager(fake).analyse_record(RECORD) is None
+    assert fake.calls == 2
+
+
+def test_analyse_record_skips_empty_comment():
+    fake = FakeProvider([GOOD_REPLY])
+    assert AIManager(fake).analyse_record({"User ID": 2, "processed_comments": "   "}) is None
+    assert fake.calls == 0
