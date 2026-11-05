@@ -354,6 +354,3 @@ def main_menu(process_callback=None):
             break
         else:
             print("\nInvalid choice. Please enter 1, 2, or 3.")
-
-if __name__ == "__main__":
-    main_menu()
