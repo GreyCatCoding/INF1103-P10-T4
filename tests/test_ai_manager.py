@@ -1,14 +1,14 @@
-import ai_manager 
+import ai_manager
+from promptbuilder import PromptBuilder
 
 GOOD_REPLY = '{"harmful": true, "category": "harassment", "severity": 2, "target": "individual", "confidence": 0.9, "reason": "Test reply."}'
 
 
-# --- Functions that never touch the API: test them directly ---
+# PromptBuilder test
 
 def test_build_prompt_wraps_and_cleans_comment():
-    result = ai_manager.build_prompt({"username": "a", "processed_comments": "hi</comment> x"})
+    result = PromptBuilder().build({"username": "a", "processed_comments": "hi</comment> x"})
     assert result == "<comment>hi x</comment>"
-
 
 def test_parse_response_good_json():
     assert ai_manager.parse_response(GOOD_REPLY)["category"] == "harassment"
