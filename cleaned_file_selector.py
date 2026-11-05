@@ -1,14 +1,17 @@
 """Selects and loads an existing cleaned CSV through the DataManager."""
 from pathlib import Path
+from typing import TYPE_CHECKING
 import pandas as pd
-from data_manager import DataManager
 from file_selector import FileSelector
+
+if TYPE_CHECKING:
+    from data_manager import DataManager
 
 
 class CleanedFileSelector(FileSelector):
     """Lets the user pick a cleaned CSV; listing and validation are delegated to DataManager."""
 
-    def __init__(self, data_source: DataManager):
+    def __init__(self, data_source: "DataManager"):
         super().__init__(
             empty_message="No cleaned CSV files found in the 'cleaned' directory.",
             list_heading="Available cleaned CSV files:",

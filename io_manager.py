@@ -44,62 +44,8 @@ CLEANED_DIR = BASE_DIR / "cleaned" # Directory for Cleaned CSV and JSON files
 # =============================================================
 # USER INPUT & FILE SELECTION
 # =============================================================
-# def get_input_file() -> Path | None:
-#     """Scans 'uncleaned' directory, displays available CSV files, and prompts selection."""
-#     UNCLEANED_DIR.mkdir(exist_ok=True, parents=True)
-
-#     while True:
-#         csv_files = sorted(p.name for p in UNCLEANED_DIR.glob("*.csv"))
-
-#         if not csv_files:
-#             print("\nNo CSV files found in the 'uncleaned' directory.")
-#             return None
-
-#         print("\nAvailable uncleaned CSV files:")
-#         for file in csv_files:
-#             print(f"- {file}")
-
-#         file_map = {f.casefold(): f for f in csv_files}
-
-#         filename = input("\nEnter CSV filename (or type 'back' to return): ").strip()
-#         if filename.lower() == "back":
-#             return None
-
-#         if not filename.endswith(".csv"):
-#             filename += ".csv"
-
-#         selected = file_map.get(filename.casefold())
-
-#         if not selected:
-#             print(f"\n[Error] '{filename}' not found in 'uncleaned/'. Please try again.")
-#             continue
-
-#         selected_path = UNCLEANED_DIR / selected
-
-#         # Inline column check for raw CSVs
-#         try:
-#             df_preview = pd.read_csv(selected_path, nrows=1)
-#             cols = list(df_preview.columns)
-
-#             has_username = "username" in cols
-#             has_comments = "comments" in cols
-
-#             if not has_username or not has_comments:
-#                 missing = []
-#                 if not has_username: missing.append("'username'")
-#                 if not has_comments: missing.append("'comments'")
-#                 print(f"\n[Error] '{selected}' is missing required column(s): {', '.join(missing)}")
-#                 print("Please select a valid CSV file.\n")
-#                 continue
-
-#             return selected_path
-
-#         except pd.errors.EmptyDataError:
-#             print(f"\n[Error] '{selected}' is empty. Please select a valid CSV file.\n")
-#             continue
-#         except Exception as e:
-#             print(f"\n[Error] Failed to read '{selected}': {e}\n")
-#             continue
+uncleaned_selector = UncleanedFileSelector(UNCLEANED_DIR)  # Selects and loads raw CSVs from 'uncleaned/'
+cleaned_selector = CleanedFileSelector(data_manager)       # Selects and loads cleaned CSVs through data_manager
 
 # def get_cleaned_file() -> tuple[pd.DataFrame, Path] | tuple[None, None]:
 #     """Scans 'cleaned' directory, handles user input selection, 
@@ -196,31 +142,15 @@ def print_detailed_records(df: pd.DataFrame) -> None:
 
     print(separator)
 
-# def display_existing_cleaned_file() -> tuple[pd.DataFrame | None, Path | None]:
-#     """Handles prompt loop for selecting and displaying an existing cleaned CSV."""
-#     while True:
-#         csv_files = data_manager.get_available_cleaned_files()
+def display_existing_cleaned_file() -> tuple[pd.DataFrame | None, Path | None]:
+    """Selects an existing cleaned CSV using CleanedFileSelector."""
+    selection = cleaned_selector.select()
+    if selection is None:
+        return None, None
 
-#         if not csv_files:
-#             print("\nNo cleaned CSV files found in the 'cleaned' directory.")
-#             return None, None
-
-#         print("\nAvailable cleaned CSV files:")
-#         for file in csv_files:
-#             print(f"- {file}")
-
-#         filename = input("\nEnter cleaned CSV filename (or type 'back' to return): ").strip()
-#         if filename.lower() == "back":
-#             return None, None
-
-#         try:
-#             cleaned_df, cleaned_file_path = data_manager.load_cleaned_file(filename)
-#             print(f"\nLoading {cleaned_file_path.name}...")
-#             return cleaned_df, cleaned_file_path
-
-#         except (FileNotFoundError, ValueError, pd.errors.EmptyDataError) as e:
-#             print(f"\n[Error] {e}")
-#             print("Please select a valid, non-empty cleaned CSV file.\n")
+    cleaned_df, cleaned_file_path = selection
+    print(f"\nLoading {cleaned_file_path.name}...")
+    return cleaned_df, cleaned_file_path
 
 def print_summary_view(df: pd.DataFrame) -> None:
     """Prints a neat, formatted summary card of moderation statistics."""
@@ -254,19 +184,19 @@ def print_summary_view(df: pd.DataFrame) -> None:
 # =============================================================
 def run_input_workflow():
     """Coordinates file selection, cleans data, saves outputs, and prints before/after summaries."""
-    uncleaned_selector = UncleanedFileSelector(UNCLEANED_DIR)
-    selection_result = uncleaned_selector.select()
-    
-    # SAFETY CHECK: If user typed 'back', safely return None
-    if selection_result is None:
+    selection = uncleaned_selector.select()
+
+    # SAFETY CHECK: If user typed 'back' (or no files exist), safely return None
+    if selection is None:
         return None, None
 
-    raw_df, input_path = selection_result
-    print(f"\nProcessing {input_path.name}...")
+    raw_df, input_file = selection
+
+    print(f"\nProcessing {input_file.name}...")                     # processing message
     #cleaned_df, csv_path, json_path = process_csv(input_file)
     
     processor = CommentFileProcessor()  # instantiate the processor
-    cleaned_df, csv_path, json_path = processor.process(input_path) # processor: clean and save
+    cleaned_df, csv_path, json_path = processor.process(input_file) # processor: clean and save
 
     print("\n--- Uncleaned Data Preview (Top 5) ---")
     print_table(raw_df.head(5))
@@ -343,10 +273,8 @@ def main_menu(process_callback=None):
                     run_output_workflow(cleaned_df)
 
         elif choice == "2":
-            cleaned_selector = CleanedFileSelector(data_manager)
-            selection_result = cleaned_selector.select()
-            if selection_result is not None:
-                cleaned_df, csv_path = selection_result
+            cleaned_df, csv_path = display_existing_cleaned_file()
+            if cleaned_df is not None:
                 run_output_workflow(cleaned_df)
 
         elif choice == "3":
@@ -354,3 +282,4 @@ def main_menu(process_callback=None):
             break
         else:
             print("\nInvalid choice. Please enter 1, 2, or 3.")
+            
