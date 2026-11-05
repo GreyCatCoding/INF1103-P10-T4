@@ -1,6 +1,6 @@
-import ai_manager
 from promptbuilder import PromptBuilder
 from responseparser import ResponseParser
+from responsevalidator import ResponseValidator
 
 GOOD_REPLY = '{"harmful": true, "category": "harassment", "severity": 2, "target": "individual", "confidence": 0.9, "reason": "Test reply."}'
 
@@ -26,7 +26,13 @@ def test_parse_response_strips_markdown_fence():
     assert ResponseParser().parse('```json\n{"harmful": false}\n```') == {"harmful": False}
 
 
+# ResponseValidator
+
+def test_validate_accepts_good_reply():
+    assert ResponseValidator().validate(ResponseParser().parse(GOOD_REPLY)) is True
+
+
 def test_validate_rejects_contradiction():
     data = {"harmful": False, "category": "hate", "severity": 0,
             "target": "none", "confidence": 0.5, "reason": "x"}
-    assert ai_manager.validate_response(data) is False
+    assert ResponseValidator().validate(data) is False
