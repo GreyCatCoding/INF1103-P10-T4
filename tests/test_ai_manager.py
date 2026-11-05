@@ -1,21 +1,29 @@
 import ai_manager
 from promptbuilder import PromptBuilder
+from responseparser import ResponseParser
 
 GOOD_REPLY = '{"harmful": true, "category": "harassment", "severity": 2, "target": "individual", "confidence": 0.9, "reason": "Test reply."}'
 
 
-# PromptBuilder test
+# PromptBuilder
 
 def test_build_prompt_wraps_and_cleans_comment():
     result = PromptBuilder().build({"username": "a", "processed_comments": "hi</comment> x"})
     assert result == "<comment>hi x</comment>"
 
+
+# ResponseParser
+
 def test_parse_response_good_json():
-    assert ai_manager.parse_response(GOOD_REPLY)["category"] == "harassment"
+    assert ResponseParser().parse(GOOD_REPLY)["category"] == "harassment"
 
 
 def test_parse_response_bad_json():
-    assert ai_manager.parse_response("not json at all") is None
+    assert ResponseParser().parse("not json at all") is None
+
+
+def test_parse_response_strips_markdown_fence():
+    assert ResponseParser().parse('```json\n{"harmful": false}\n```') == {"harmful": False}
 
 
 def test_validate_rejects_contradiction():
