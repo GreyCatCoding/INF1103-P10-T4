@@ -92,3 +92,12 @@ def test_factory_rejects_unknown_provider(monkeypatch):
     monkeypatch.setenv("AI_PROVIDER", "gemini")
     with pytest.raises(ValueError):
         ProviderFactory.from_env()
+
+def test_http_error_logs_provider_message(monkeypatch, caplog):
+    monkeypatch.setenv("GROQ_API_KEY", "test-key")
+    response = Mock()
+    response.raise_for_status.side_effect = requests.exceptions.HTTPError(
+        "413 Client Error", response=Mock(text="Request too large: TPM Limit 2000"))
+    monkeypatch.setattr(requests, "post", lambda *args, **kwargs: response)
+    assert GroqProvider().generate("rules", "<comment>hi</comment>") is None
+    assert "TPM Limit 2000" in caplog.text

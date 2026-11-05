@@ -57,6 +57,9 @@ class ChatAPIProvider(AIProvider):
                 logger.error("Model reply is not text: %s", content)
                 return None
             return content
+        except requests.exceptions.HTTPError as err:
+            # Include the provider's own explanation
+            logger.error("API request failed: %s | %s", err, err.response.text[:300])
         except requests.exceptions.RequestException as err:
             # Covers timeouts, connection errors and HTTP errors
             logger.error("API request failed: %s", err)
