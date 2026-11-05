@@ -8,7 +8,7 @@ from ai_manager import AIManager
 class ModerationPipeline:
     """Connects AIManager -> logic_manager -> data_manager."""
 
-    def __init__(self, ai_manager: AIManager, delay_seconds: int = 40):
+    def __init__(self, ai_manager: AIManager, delay_seconds: int = 45):
         self.__ai_manager = ai_manager
         self.__delay_seconds = delay_seconds  # Stay under the free-tier rate limit
 

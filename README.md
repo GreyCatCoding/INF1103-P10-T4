@@ -207,7 +207,7 @@ Use `python -m pytest`, not plain `pytest`, so the tests can import the manager 
 2. **Display Existing Cleaned File.** Reopen a results file saved in `cleaned/` without calling the AI again. In Docker, mount `cleaned/` (see above) so files are still there next time.
 3. In either view, the results are shown one record per card, followed by a **summary** (counts by priority and by category, and how many actions involve a human moderator). You can then **filter** by category, by priority, or both.
 
-> The app pauses 40 seconds between comments to stay within Groq's free-tier token limit for this model, so the 10-row sample takes about 7 minutes. Use a 3–5 row file for quick demos.
+> The app pauses 45 seconds between comments to stay within Groq's free-tier limit of 2,000 tokens per minute for this model, so the 10-row sample takes about 8 minutes. Use a 3–5 row file for quick demos.
 
 ### Output columns
 
@@ -232,7 +232,7 @@ After moderation, results are saved to `cleaned/<name>_cleaned.csv` with these c
 | Missing, empty or unreadable input file / missing columns | `get_input_file` checks the file before cleaning, rejects it and asks the user to choose again. |
 | Invalid menu input | The input is rejected and the user is asked again. |
 | Missing API key | The app stops at startup with a clear message (e.g. `Cannot start: Missing API key: set GROQ_API_KEY in .env`). A missing OpenRouter key only logs a warning, and the app runs without a fallback. |
-| Free-tier rate limit | A fixed 40-second pause between comments keeps usage under the token-per-minute limit. |
+| Free-tier rate limit | Groq replies are capped at 800 tokens so each request fits the 2,000 tokens-per-minute limit, and a fixed 45-second pause between comments lets the limit refill. If Groq still refuses, its message is logged and the request falls back to OpenRouter. |
 | Results file open in another program (e.g. Excel) | `save_reports` logs the `PermissionError`; `main_menu` catches it, shows a message and returns to the menu. |
 | Missing, empty or unreadable saved file (menu option 2) | `load_cleaned_file` raises an error; `display_existing_cleaned_file` shows it and asks the user to choose again. |
 | Saved file that never finished moderation | `query` returns no matches instead of crashing, and the user sees "No matching records found." |

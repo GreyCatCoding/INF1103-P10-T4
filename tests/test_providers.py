@@ -101,3 +101,10 @@ def test_http_error_logs_provider_message(monkeypatch, caplog):
     monkeypatch.setattr(requests, "post", lambda *args, **kwargs: response)
     assert GroqProvider().generate("rules", "<comment>hi</comment>") is None
     assert "TPM Limit 2000" in caplog.text
+
+def test_groq_caps_reply_length(monkeypatch):
+    monkeypatch.setenv("GROQ_API_KEY", "test-key")
+    sent = {}
+    monkeypatch.setattr(requests, "post", fake_post(sent))
+    GroqProvider().generate("rules", "<comment>hi</comment>")
+    assert sent["max_completion_tokens"] == 800
