@@ -44,4 +44,12 @@ class CsvReportStore(ReportStore):
         except PermissionError:
             logging.error("Permission denied: '%s' is currently open in another program (e.g., Excel).", file_path.name)
             raise
+        
+    def __path_for(self, name: str) -> Path:
+            """Returns the file's path inside the folder, adding .csv if missing."""
+            # Path(name).name drops any folders in the name, so files stay inside this store's folder
+            filename = Path(name).name
+            if not filename.endswith(".csv"):
+                filename += ".csv"
+            return self.__folder / filename
     
