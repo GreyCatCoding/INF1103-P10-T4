@@ -13,3 +13,11 @@ class LogicManager:
         """
         self._scorer = scorer
         self._policy = policy
+    
+    def calculate_risk(self, record) -> float:
+        """
+        Calculate risk using the injected scoring implementation.
+
+        record: A validated ModerationRecord object.
+        """
+        return self._scorer.score(record)
