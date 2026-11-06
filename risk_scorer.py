@@ -15,10 +15,12 @@ class RiskScorer:
         if not data["harmful"]:
             return 0.0
 
-        #NotImplementedError still being raise as the numerical calculation hasn't been added yet.
-        raise NotImplementedError(
-            "Risk score calculation is not implemented yet."
-        )
-        
+        severity_part = data["severity"]/4
+        confidence = data["confidence"]
+        weight = CATEGORY_WEIGHTS[data["category"].lower()]
+
+        risk_score = 100 * severity_part * confidence * weight
+
+        return round(risk_score, 1)
 
     
