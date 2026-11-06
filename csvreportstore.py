@@ -44,7 +44,7 @@ class CsvReportStore(ReportStore):
         except PermissionError:
             logging.error("Permission denied: '%s' is currently open in another program (e.g., Excel).", file_path.name)
             raise
-        
+
     def __path_for(self, name: str) -> Path:
             """Returns the file's path inside the folder, adding .csv if missing."""
             # Path(name).name drops any folders in the name, so files stay inside this store's folder
@@ -52,4 +52,11 @@ class CsvReportStore(ReportStore):
             if not filename.endswith(".csv"):
                 filename += ".csv"
             return self.__folder / filename
+
+    def __validate(self, file_path: Path) -> None:
+        """Raises an error if the file is missing or has no content."""
+        if not file_path.exists():
+            raise FileNotFoundError(f"File '{file_path.name}' does not exist.")
+        if file_path.stat().st_size == 0:
+            raise ValueError(f"The file '{file_path.name}' is empty (0 bytes).")
     
