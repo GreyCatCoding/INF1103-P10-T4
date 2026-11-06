@@ -1,26 +1,24 @@
 class ModerationPolicy:
-    """Assign moderation priorities, human review and recommended actions.
+    """Apply moderation rules and recommend actions.
 
-    Expects a dictionary that has already passed validate_data().
+    This class recommends actions only.
+    It does not remove content or users.
     """
 
     CATEGORIES = {
-        "harassment": "insults, threats or mockery aimed at a specific person",
+        "harassment": "Insults, threats or mockery aimed at a specific person",
         "hate": (
-            "attacks on a group based on race, religion, nationality, "
+            "Attacks on a group based on race, religion, nationality, "
             "gender, sexuality or disability"
         ),
-        "violence": "threats, incitement or praise of physical harm",
-        "sexual": "explicit sexual content or unwanted sexual comments",
-        "self_harm": "encouraging or glorifying suicide or self-injury",
-        "spam": "scams, get-rich-quick offers or unsolicited promotion",
+        "violence": "Threats, incitement or praise of physical harm",
+        "sexual": "Explicit sexual content or unwanted sexual comments",
+        "self_harm": "Encouraging or glorifying suicide or self-injury",
+        "spam": "Scams, get-rich-quick offers or unsolicited promotion",
+        "none": "No harmful content detected",
     }
 
-    HIGH_RISK_CATEGORIES = {
-        "hate",
-        "violence",
-        "self_harm",
-    }
+    HIGH_RISK_CATEGORIES = {"hate", "violence", "self_harm"}
 
     ACTIONS = {
         "P1": "Remove user with human confirmation",
@@ -29,8 +27,57 @@ class ModerationPolicy:
         "P4": "Monitor user",
     }
 
+    def _validate_policy_data(self, data: dict) -> None:
+        """Check only the fields needed by the moderation policy."""
+
+        if not isinstance(data, dict):
+            raise ValueError("Moderation data must be a dictionary")
+
+        required_fields = {
+            "harmful", "category", "severity", "target", "confidence"
+        }
+
+        for field in required_fields:
+            if field not in data:
+                raise ValueError(f"Missing field: {field}")
+
+        if type(data["harmful"]) is not bool:
+            raise ValueError("harmful must be a boolean")
+
+        if not isinstance(data["category"], str):
+            raise ValueError("category must be a string")
+
+        if data["category"].lower() not in self.CATEGORIES:
+            raise ValueError("Unknown category")
+
+        if type(data["severity"]) is not int:
+            raise ValueError("severity must be an integer")
+
+        if not 0 <= data["severity"] <= 4:
+            raise ValueError("severity must be between 0 and 4")
+
+        if not isinstance(data["target"], str):
+            raise ValueError("target must be a string")
+
+        if data["target"].lower() not in {"individual", "group", "none"}:
+            raise ValueError("Unknown target")
+
+        if type(data["confidence"]) not in (int, float):
+            raise ValueError("confidence must be numeric")
+
+        if not 0 <= data["confidence"] <= 1:
+            raise ValueError("confidence must be between 0 and 1")
+
+    def _validate_priority(self, priority: str) -> None:
+        """Check that the supplied priority is supported."""
+
+        if not isinstance(priority, str) or priority not in self.ACTIONS:
+            raise ValueError("Priority must be P1, P2, P3 or P4")
+
     def get_priority(self, data: dict) -> str:
-        """Determine the priority of a validated moderation record."""
+        """Assign a priority based on the moderation assessment."""
+
+        self._validate_policy_data(data)
 
         harmful = data["harmful"]
         category = data["category"].lower()
@@ -38,11 +85,9 @@ class ModerationPolicy:
         target = data["target"].lower()
         confidence = data["confidence"]
 
-        # P4: No harmful content detected.
         if not harmful or severity == 0:
             return "P4"
 
-        # P1: Severe content with sufficiently high confidence.
         if (
             severity == 4
             and confidence >= 0.80
@@ -53,42 +98,34 @@ class ModerationPolicy:
         ):
             return "P1"
 
-        # P2: Clearly harmful content.
         if severity >= 3 and confidence >= 0.70:
             return "P2"
 
-        # P3: Other harmful content.
         return "P3"
 
     def needs_human_review(self, data: dict, priority: str) -> bool:
-        """Determine whether a human moderator must review the record."""
+        """Determine whether human review is required."""
 
-        if priority not in self.ACTIONS:
-            raise ValueError("Priority must be P1, P2, P3 or P4")
+        self._validate_policy_data(data)
+        self._validate_priority(priority)
 
-        # Uncertain AI assessment.
-        if data["confidence"] < 0.70:
-            return True
-
-        # Severe content.
-        if data["severity"] >= 3:
-            return True
-
-        # Actions requiring human confirmation.
-        if priority in {"P1", "P2"}:
-            return True
-
-        return False
+        return (
+            data["confidence"] < 0.70
+            or data["severity"] >= 3
+            or priority in {"P1", "P2"}
+        )
 
     def get_recommended_action(
         self,
         priority: str,
         review_required: bool,
     ) -> str:
-        """Return an action recommendation without carrying it out."""
+        """Return the recommended action for a moderation decision."""
 
-        if priority not in self.ACTIONS:
-            raise ValueError("Priority must be P1, P2, P3 or P4")
+        self._validate_priority(priority)
+
+        if type(review_required) is not bool:
+            raise ValueError("review_required must be a boolean")
 
         if review_required and priority in {"P3", "P4"}:
             return "Send to human moderator for review"
@@ -96,16 +133,14 @@ class ModerationPolicy:
         return self.ACTIONS[priority]
 
     def get_category_description(self, category: str) -> str:
-        """Return a readable explanation of the moderation category."""
+        """Return the description of a supported category."""
+
+        if not isinstance(category, str):
+            raise ValueError("category must be a string")
 
         category = category.lower()
 
-        if category == "none":
-            return "No harmful content detected"
+        if category not in self.CATEGORIES:
+            raise ValueError("Unknown category")
 
-        if category in self.CATEGORIES:
-            return self.CATEGORIES[category]
-
-        raise ValueError("Unknown category")
-
-    
+        return self.CATEGORIES[category]
