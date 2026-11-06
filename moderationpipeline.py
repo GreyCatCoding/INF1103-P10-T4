@@ -8,10 +8,10 @@ from ai_manager import AIManager
 class ModerationPipeline:
     """Connects AIManager -> logic_manager -> data_manager."""
 
-    def __init__(self, ai_manager: AIManager, data_manager: DataManager, delay_seconds: int = 45):
+    def __init__(self, ai_manager: AIManager, data_manager: DataManager = None, delay_seconds: int = 45):
         
         self.__ai_manager = ai_manager
-        self.__data_manager = data_manager
+        self.__data_manager = data_manager or DataManager(CsvReportStore()) # Fallback to default CsvReportStore if not explicitly injected
         self.__delay_seconds = delay_seconds  # Stay under the free-tier rate limit
 
     def process(self, cleaned_df, csv_path):
