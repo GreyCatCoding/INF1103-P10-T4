@@ -6,7 +6,11 @@ import pandas as pd
 import data_manager
 from commentfileprocessor import CommentFileProcessor
 from console_view import ConsoleView
-#from file_selector import UncleanedFileSelector, CleanedFileSelector
+from file_selector import FileSelector
+from uncleaned_file_selector import UncleanedFileSelector
+from cleaned_file_selector import CleanedFileSelector
+
+
 
 BASE_DIR = Path(__file__).resolve().parent
 UNCLEANED_DIR = BASE_DIR / "uncleaned"
@@ -18,8 +22,8 @@ class IOManager:
         # Composition: IOManager manages the lifecycles of these instances
         self.__view = ConsoleView()
         self.__processor = CommentFileProcessor()
-        #self.__uncleaned_selector = UncleanedFileSelector(UNCLEANED_DIR)
-        #self.__cleaned_selector = CleanedFileSelector(CLEANED_DIR)
+        self.__uncleaned_selector = UncleanedFileSelector(UNCLEANED_DIR)
+        self.__cleaned_selector = CleanedFileSelector(data_manager)
 
     def main_menu(self, process_callback=None) -> None:
         """Displays the main options menu and routes user selections."""
@@ -35,6 +39,7 @@ class IOManager:
 
             if choice == "1":
                 cleaned_df, csv_path = self.__run_input_workflow()
+
                 if cleaned_df is not None:
                     if process_callback: 
                         try:
@@ -47,7 +52,8 @@ class IOManager:
                         self.__run_output_workflow(cleaned_df)
 
             elif choice == "2":
-                result = self.__cleaned_selector.select_file()
+                result = self.__select_file(self.__cleaned_selector)
+
                 if result:
                     cleaned_df, csv_path = result
                     self.__run_output_workflow(cleaned_df)
@@ -60,13 +66,21 @@ class IOManager:
 
     def __run_input_workflow(self) -> tuple[pd.DataFrame | None, Path | None]:
         """Coordinates uncleaned file selection, processing, and outputting previews."""
-        input_file = self.__uncleaned_selector.select_file()
+        # input_file = self.__uncleaned_selector.select_file()
         
-        if input_file is None:
+        # if input_file is None:
+        #     return None, None
+
+        # print(f"\nProcessing {input_file.name}...")
+        # raw_df = pd.read_csv(input_file)
+        result = self.__select_file(self.__uncleaned_selector)
+
+        if result is None:
             return None, None
 
+        raw_df, input_file = result
+
         print(f"\nProcessing {input_file.name}...")
-        raw_df = pd.read_csv(input_file)
         
         # Processor transforms the data
         cleaned_df, csv_path, json_path = self.__processor.process(input_file)
@@ -125,3 +139,32 @@ class IOManager:
                 else:
                     self.__view.print_detailed_records(results)
                 break
+
+    def __select_file(self, selector: FileSelector) -> tuple[pd.DataFrame, Path] | None:
+        """Shows the files a selector offers, asks the user to pick one and loads it.
+
+        Returns (df, path), or None if there are no files or the user types 'back'.
+        """
+        notice = ""
+
+        while True:
+            files = selector._list_files()
+
+            if not files:
+                input(f"\n{selector._empty_message}\nPress Enter to return...")
+                return None
+
+            listing = "\n".join(f"- {file}" for file in files)
+
+            filename = input(
+                f"{notice}\n{selector._list_heading}\n{listing}\n{selector._prompt}"
+            ).strip()
+
+            if filename.lower() == "back":
+                return None
+
+            try:
+                return selector._load(filename)
+
+            except (FileNotFoundError, ValueError, pd.errors.EmptyDataError) as e:
+                notice = f"\n[Error] {e}\nPlease select a valid CSV file.\n"

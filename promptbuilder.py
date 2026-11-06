@@ -1,5 +1,4 @@
-"""Builds the prompts sent to the AI model."""
-
+"""Holds the system prompt and wraps each comment in <comment> tags, removing any </comment> hidden inside it."""
 
 class PromptBuilder:
     """Holds the moderation rules and wraps one comment in <comment> tags."""

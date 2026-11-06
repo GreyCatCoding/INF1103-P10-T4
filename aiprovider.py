@@ -1,3 +1,4 @@
+"""Takesthe prompts and return the provider model's reply text, or None on failure. All AI providers follows this interface"""
 from abc import ABC, abstractmethod
 
 

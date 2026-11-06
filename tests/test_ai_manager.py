@@ -1,3 +1,4 @@
+"""Tests for PromptBuilder, ResponseParser, ResponseValidator and AIManager's retry logic, using FakeProvider instead of a real API."""
 from ai_manager import AIManager
 from fakeprovider import FakeProvider
 from promptbuilder import PromptBuilder

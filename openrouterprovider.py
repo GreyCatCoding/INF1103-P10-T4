@@ -1,3 +1,4 @@
+"""Backup provider to call a free OpenRouter model and gives OpenRouter a list of backup models to try if it is unavailable."""
 from chatapiprovider import ChatAPIProvider
 
 

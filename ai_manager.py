@@ -1,4 +1,5 @@
-"""Refactored ai_manager.py for OOP."""
+"""Sends one comment record through prompt, AI call, parse and validate, retrying once on failure. 
+Returns the record with the AI verdict added, or None if every attempt fails."""
 import logging
 
 from aiprovider import AIProvider

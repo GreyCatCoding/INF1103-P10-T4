@@ -1,3 +1,4 @@
+"""Turns the model's reply text into a dict, removing a markdown code fence if present. Returns None if the text is not valid JSON."""
 import json
 
 
