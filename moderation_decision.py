@@ -1,4 +1,4 @@
-class ModerationDesicion:
+class ModerationDecision:
     """Represents the result of a content moderation decison."""
 
     VALID_PRIORITIES = {"P1", "P2", "P3", "P4"}
@@ -29,7 +29,7 @@ class ModerationDesicion:
             )
 
         #Validate Human Review
-        if not isinstance(queue, str) or not queue.strip():
+        if not isinstance(human_review_required, bool):
             raise TypeError(
                 "Human review required must be a boolen"
             )
@@ -47,11 +47,11 @@ class ModerationDesicion:
             )
 
         # Store Validated Attributes
-        self.priority = priority
-        self.risk_score = risk_score
-        self.queue = queue
-        self.recommended_action = recommended_action
-        self.human_review_required = human_review_required
+        self._priority = priority
+        self._risk_score = float(risk_score)
+        self._queue = queue
+        self._recommended_action = recommended_action
+        self._human_review_required = human_review_required
 
     @property
     def priority(self):
@@ -72,3 +72,13 @@ class ModerationDesicion:
     @property
     def human_review_required(self):
         return self._human_review_required
+
+    def to_dict(self) -> dict:
+        """Convert this moderation decision into a dictionary."""
+        return {
+            "priority": self.priority,
+            "risk_score": self.risk_score,
+            "queue": self.queue,
+            "recommended_action": self.recommended_action,
+            "human_review_required": self.human_review_required
+        }
