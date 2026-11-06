@@ -1,9 +1,4 @@
 class ModerationPolicy:
-    """Apply moderation rules and recommend actions.
-
-    This class recommends actions only.
-    It does not remove content or users.
-    """
 
     CATEGORIES = {
         "harassment": "Insults, threats or mockery aimed at a specific person",
