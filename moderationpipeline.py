@@ -1,6 +1,6 @@
 import time
 
-import data_manager
+from data_manager import DataManager
 import logic_manager
 from ai_manager import AIManager
 
@@ -8,8 +8,10 @@ from ai_manager import AIManager
 class ModerationPipeline:
     """Connects AIManager -> logic_manager -> data_manager."""
 
-    def __init__(self, ai_manager: AIManager, delay_seconds: int = 45):
+    def __init__(self, ai_manager: AIManager, data_manager: DataManager, delay_seconds: int = 45):
+        
         self.__ai_manager = ai_manager
+        self.__data_manager = data_manager
         self.__delay_seconds = delay_seconds  # Stay under the free-tier rate limit
 
     def process(self, cleaned_df, csv_path):
@@ -31,7 +33,7 @@ class ModerationPipeline:
         reports = logic_manager.process_reports(records_for_logic_manager)
 
         # DATA Persistence
-        df = data_manager.to_dataframe(reports)
-        data_manager.save_reports(df, csv_path)
+        df = self.__data_manager.build_table(reports)
+        self.__data_manager.save_report(df, csv_path)
 
         return df
