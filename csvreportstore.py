@@ -23,4 +23,13 @@ class CsvReportStore(ReportStore):
             filenames.append(path.name)
         return sorted(filenames)
 
+    def save(self, df: pd.DataFrame, name: str) -> None:
+        """Writes df to the named CSV, replacing any existing file."""
+        self.__folder.mkdir(parents=True, exist_ok=True)
+        file_path = self.__path_for(name)
+        try:
+            df.to_csv(file_path, index=False)
+        except PermissionError:
+            logging.error("Permission denied: '%s' is currently open in another program (e.g., Excel).", file_path.name)
+            raise
     
