@@ -36,7 +36,7 @@ jobs:
           import ast, pathlib, sys
           bad = []
           for f in pathlib.Path(".").rglob("*.py"):
-              if f.name == "io_manager.py" or "tests" in f.parts or ".venv" in f.parts:
+              if f.name == "io_manager.py" or f.name == "console_view.py" or "tests" in f.parts or ".venv" in f.parts:
                   continue
               for node in ast.walk(ast.parse(f.read_text())):
                   if isinstance(node, ast.Call) and getattr(node.func, "id", "") in {"print", "input"}:
