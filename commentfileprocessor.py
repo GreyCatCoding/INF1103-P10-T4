@@ -8,18 +8,15 @@ BASE_DIR = Path(__file__).resolve().parent
 CLEANED_DIR = BASE_DIR / "cleaned"  # Default folder for cleaned CSV and JSON files
 
 # Csv columns for cleaned output save
-CLEANED_CSV_COLUMNS = ["User ID", "username", "original_comments", "processed_comments", "timestamp"]
+__CLEANED_CSV_COLUMNS = ["User ID", "username", "original_comments", "processed_comments", "timestamp"]
 # Json columns for cleaned output and save
-CLEANED_JSON_COLUMNS = ["User ID", "username", "processed_comments"]
+__CLEANED_JSON_COLUMNS = ["User ID", "username", "processed_comments"]
 
 
 class CommentFileProcessor:
     """Reads a raw comments CSV, cleans every comment and saves CSV and JSON copies."""
 
     def __init__(self, output_dir: Path = CLEANED_DIR):
-
-
-
         self.__output_dir = Path(output_dir)
         self.__cleaner = TextCleaner() 
 
@@ -46,10 +43,10 @@ class CommentFileProcessor:
         df["original_comments"] = df["comments"].fillna("")
         df["processed_comments"] = df["original_comments"].apply(self.__cleaner.clean) # referencing the method in textcleaner.py class
 
-        cleaned_df = self.__keep_columns(df, CLEANED_CSV_COLUMNS)
+        cleaned_df = self.__keep_columns(df, __CLEANED_CSV_COLUMNS)
         cleaned_df.to_csv(csv_output, index=False)
 
-        json_df = self.__keep_columns(cleaned_df, CLEANED_JSON_COLUMNS)
+        json_df = self.__keep_columns(cleaned_df, __CLEANED_JSON_COLUMNS)
         json_df.to_json(json_output, orient="records", indent=4)
 
         return cleaned_df, csv_output, json_output
