@@ -1,4 +1,4 @@
-
+"""Tries the primary provider first and resorts to fallback provider only if the primary fails."""
 import logging
 
 from aiprovider import AIProvider
@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 class FallbackProvider(AIProvider):
-    """AIProvider to wraps the other AIProviders."""
+    """AIProvider to wrap two AIProviders."""
 
     def __init__(self, primary: AIProvider, backup: AIProvider):
         self.__primary = primary

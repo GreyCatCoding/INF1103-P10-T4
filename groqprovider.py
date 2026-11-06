@@ -1,3 +1,4 @@
+"""Main provider to call Groq's gpt-oss-safeguard-20b model. The replies are capped at 800 tokens to fit the free tier."""
 from chatapiprovider import ChatAPIProvider
 
 

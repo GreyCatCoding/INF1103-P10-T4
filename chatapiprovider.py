@@ -1,3 +1,4 @@
+"""Abstract provider with the shared HTTP code for chat completions APIs."""
 import logging
 import os
 from abc import abstractmethod
