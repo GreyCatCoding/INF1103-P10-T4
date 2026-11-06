@@ -45,17 +45,18 @@ class CsvReportStore(ReportStore):
             raise
 
     def __path_for(self, name: str | Path) -> Path:
-        """Returns the file's path, respecting absolute paths or falling back to the default folder."""
+        """Returns the file's path, respecting absolute paths while forcing relative traversal attempts inside the folder."""
         path_obj = Path(name)
         
-        # If an absolute path (or explicit path with directories like tmp_path) is passed, use it directly
-        if path_obj.is_absolute() or path_obj.parent != Path('.'):
+        # If it's an absolute path (e.g., from pytest's tmp_path), use it directly
+        if path_obj.is_absolute():
             filename = path_obj.name
             if not filename.endswith(".csv"):
                 filename += ".csv"
             return path_obj.parent / filename
             
-        # Otherwise, treat it as a standard filename inside self.__folder
+        # Otherwise, sanitize relative paths (stripping '..' or other directories) 
+        # so files always stay inside self.__folder as intended by test_save_stays_inside_the_folder
         filename = path_obj.name
         if not filename.endswith(".csv"):
             filename += ".csv"
