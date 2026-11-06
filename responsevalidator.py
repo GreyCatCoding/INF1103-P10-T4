@@ -1,3 +1,4 @@
+"""Checks if the parsed reply has all six keys with valid types and ranges, and that its fields do not contradict each other."""
 import logging
 
 logger = logging.getLogger(__name__)
