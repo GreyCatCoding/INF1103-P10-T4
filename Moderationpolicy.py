@@ -22,52 +22,7 @@ class ModerationPolicy:
         "P4": "Monitor user",
     }
 
-    def _validate_policy_data(self, data: dict) -> None:
-        """Check only the fields needed by the moderation policy."""
-
-        if not isinstance(data, dict):
-            raise ValueError("Moderation data must be a dictionary")
-
-        required_fields = {
-            "harmful", "category", "severity", "target", "confidence"
-        }
-
-        for field in required_fields:
-            if field not in data:
-                raise ValueError(f"Missing field: {field}")
-
-        if type(data["harmful"]) is not bool:
-            raise ValueError("harmful must be a boolean")
-
-        if not isinstance(data["category"], str):
-            raise ValueError("category must be a string")
-
-        if data["category"].lower() not in self.CATEGORIES:
-            raise ValueError("Unknown category")
-
-        if type(data["severity"]) is not int:
-            raise ValueError("severity must be an integer")
-
-        if not 0 <= data["severity"] <= 4:
-            raise ValueError("severity must be between 0 and 4")
-
-        if not isinstance(data["target"], str):
-            raise ValueError("target must be a string")
-
-        if data["target"].lower() not in {"individual", "group", "none"}:
-            raise ValueError("Unknown target")
-
-        if type(data["confidence"]) not in (int, float):
-            raise ValueError("confidence must be numeric")
-
-        if not 0 <= data["confidence"] <= 1:
-            raise ValueError("confidence must be between 0 and 1")
-
-    def _validate_priority(self, priority: str) -> None:
-        """Check that the supplied priority is supported."""
-
-        if not isinstance(priority, str) or priority not in self.ACTIONS:
-            raise ValueError("Priority must be P1, P2, P3 or P4")
+    #Main functions
 
     def get_priority(self, data: dict) -> str:
         """Assign a priority based on the moderation assessment."""
@@ -126,6 +81,55 @@ class ModerationPolicy:
             return "Send to human moderator for review"
 
         return self.ACTIONS[priority]
+
+    #Extra 
+
+    def _validate_policy_data(self, data: dict) -> None:
+        """Check only the fields needed by the moderation policy."""
+
+        if not isinstance(data, dict):
+            raise ValueError("Moderation data must be a dictionary")
+
+        required_fields = {
+            "harmful", "category", "severity", "target", "confidence"
+        }
+
+        for field in required_fields:
+            if field not in data:
+                raise ValueError(f"Missing field: {field}")
+
+        if type(data["harmful"]) is not bool:
+            raise ValueError("harmful must be a boolean")
+
+        if not isinstance(data["category"], str):
+            raise ValueError("category must be a string")
+
+        if data["category"].lower() not in self.CATEGORIES:
+            raise ValueError("Unknown category")
+
+        if type(data["severity"]) is not int:
+            raise ValueError("severity must be an integer")
+
+        if not 0 <= data["severity"] <= 4:
+            raise ValueError("severity must be between 0 and 4")
+
+        if not isinstance(data["target"], str):
+            raise ValueError("target must be a string")
+
+        if data["target"].lower() not in {"individual", "group", "none"}:
+            raise ValueError("Unknown target")
+
+        if type(data["confidence"]) not in (int, float):
+            raise ValueError("confidence must be numeric")
+
+        if not 0 <= data["confidence"] <= 1:
+            raise ValueError("confidence must be between 0 and 1")
+
+    def _validate_priority(self, priority: str) -> None:
+        """Check that the supplied priority is supported."""
+
+        if not isinstance(priority, str) or priority not in self.ACTIONS:
+            raise ValueError("Priority must be P1, P2, P3 or P4")
 
     def get_category_description(self, category: str) -> str:
         """Return the description of a supported category."""
