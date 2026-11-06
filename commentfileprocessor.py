@@ -47,7 +47,7 @@ class CommentFileProcessor:
         cleaned_df = self.__keep_columns(df, self.__CLEANED_CSV_COLUMNS)
         cleaned_df.to_csv(csv_output, index=False)
 
-        json_df = self.__keep_columns(cleaned_df, __CLEANED_JSON_COLUMNS)
+        json_df = self.__keep_columns(cleaned_df, self.__CLEANED_JSON_COLUMNS)
         json_df.to_json(json_output, orient="records", indent=4)
 
         return cleaned_df, csv_output, json_output
