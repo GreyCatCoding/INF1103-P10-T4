@@ -1,4 +1,5 @@
 """Manages moderation reports by coordinating storage, table building, summaries, and queries."""
+from pathlib import Path
 import pandas as pd
 
 from reportquery import ReportQuery
@@ -21,7 +22,7 @@ class DataManager:
         """Turns raw report dictionaries into a standardized DataFrame."""
         return self.__table_builder.build(reports)
 
-    def save_report(self, df: pd.DataFrame, name: str) -> None:
+    def save_report(self, df: pd.DataFrame, name: str | Path) -> None:
         """Saves a report DataFrame through the configured store."""
         self.__store.save(df, name)
 
@@ -29,7 +30,7 @@ class DataManager:
         """Lists all saved report names from the store."""
         return self.__store.list_reports()
 
-    def load_report(self, name: str) -> pd.DataFrame:
+    def load_report(self, name: str | Path) -> pd.DataFrame:
         """Loads a named report DataFrame from the store."""
         return self.__store.load(name)
 
