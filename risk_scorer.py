@@ -9,6 +9,13 @@ class RiskScorer:
         Higher scores indicate greater assessed risks.
         """
 
+        validate_data(data)
+
+        #If a comment is harmless, its risk score is zero
+        if not data["harmful"]:
+            return 0.0
+
+        #NotImplementedError still being raise as the numerical calculation hasn't been added yet.
         raise NotImplementedError(
             "Risk score calculation is not implemented yet."
         )
