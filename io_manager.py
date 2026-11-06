@@ -36,7 +36,7 @@ class IOManager:
             if choice == "1":
                 cleaned_df, csv_path = self.__run_input_workflow()
                 if cleaned_df is not None:
-                    if process_callback:
+                    if process_callback: 
                         try:
                             final_df = process_callback(cleaned_df, csv_path)
                             self.__run_output_workflow(final_df)
