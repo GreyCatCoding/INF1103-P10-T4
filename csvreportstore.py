@@ -23,6 +23,18 @@ class CsvReportStore(ReportStore):
             filenames.append(path.name)
         return sorted(filenames)
 
+    
+    def load(self, name: str) -> pd.DataFrame:
+        """Returns the named CSV as a DataFrame, with blank cells as "".
+
+        Raises FileNotFoundError if the file is missing, or ValueError if it is
+        empty or corrupt (pandas' read errors are also ValueErrors).
+        """
+        file_path = self.__path_for(name)
+        self.__validate(file_path)
+        df = pd.read_csv(file_path)
+        return df.fillna("")
+
     def save(self, df: pd.DataFrame, name: str) -> None:
         """Writes df to the named CSV, replacing any existing file."""
         self.__folder.mkdir(parents=True, exist_ok=True)
