@@ -1,6 +1,6 @@
 # AI Content Moderation System
 
-**INF1103 Team Project, Phase 1 · Lab P10, Team 4**
+**INF1103 Team Project, Phase 2 · Lab P10, Team 4**
 
 Online platforms receive far more user comments than human moderators can read. Keyword filters miss disguised insults (`l0ser`, `i d i o t`), slang and sarcasm, and they wrongly flag people who are only *quoting* abuse in order to report it.
 
@@ -10,7 +10,7 @@ This command-line application takes a CSV of user comments, cleans them, and sen
 
 ## Architecture
 
-The application is **100% procedural** (no classes) and is split into four managers that form one pipeline:
+The application is **object-oriented** and is split into four managers that form one pipeline. `main.py` builds the objects, and `ModerationPipeline` passes each record from one manager to the next:
 
 ```mermaid
 flowchart LR
@@ -24,13 +24,13 @@ flowchart LR
     AI <-->|JSON| API[(Groq API<br/>fallback: OpenRouter)]
 ```
 
-| Module | Responsibility | Key functions |
+| Module | Responsibility | Key classes / functions |
 |---|---|---|
 | `io_manager.py` | Handles all user interaction. It is the **only** file containing `print()` and `input()`. Lets the user pick a file, checks its columns, cleans the comment text, displays the results and a summary, and lets the user reopen saved results. | `get_input_file`, `clean_text`, `process_csv`, `print_detailed_records`, `print_summary_view`, `display_existing_cleaned_file`, `run_output_workflow`, `main_menu` |
-| `ai_manager.py` | The system's core engine. Every record passes through the AI API. It builds the prompt, calls the API, parses the JSON reply and validates the schema. Contains no domain logic. | `build_prompt`, `call_api`, `call_with_fallback`, `parse_response`, `validate_response`, `analyse_record` |
+| `ai_manager.py` + provider classes | The system's core engine. Every record passes through the AI API. `AIManager` builds the prompt, calls the provider, parses the JSON reply and validates the schema, with one retry. Contains no domain logic. | `AIManager`, `PromptBuilder`, `ResponseParser`, `ResponseValidator`, `AIProvider` (interface), `ChatAPIProvider` (abstract), `GroqProvider`, `OpenRouterProvider`, `FallbackProvider`, `ProviderFactory` |
 | `logic_manager.py` | The domain rules. Applies the moderation business rules to the AI output and ranks reports by risk score. | `validate_data`, `get_priority`, `evaluate`, `score`, `needs_human_review`, `get_recommended_action`, `route`, `generate_report`, `process_reports` |
 | `data_manager.py` | Implements data persistence. Converts reports to a table, saves them to CSV, loads saved files back, counts results for the summary, and filters them by category and/or priority. A missing, empty or unreadable saved file raises an error that `io_manager` catches, so the user can choose again. | `to_dataframe`, `save_reports`, `get_available_cleaned_files`, `validate_csv_structure`, `load_cleaned_file`, `get_summary_metrics`, `query` |
-| `main.py` | Entry point. Connects the four managers in pipeline order. | `process_ai_and_logic`, `main` |
+| `main.py` + `moderationpipeline.py` | `main.py` is the entry point: it builds the provider, `AIManager` and `ModerationPipeline`, then starts the menu. `ModerationPipeline` runs each record through the AI, the logic manager and the data manager. | `ModerationPipeline` |
 
 ### What the AI returns
 
@@ -47,7 +47,7 @@ The model is forced into JSON mode, and the system prompt specifies this exact s
 }
 ```
 
-`validate_response()` rejects a reply if any of the following is true:
+`ResponseValidator.validate()` rejects a reply if any of the following is true:
 
 - a key is missing
 - a value has the wrong type, or is out of range (severity must be 0–4, confidence 0–1)
@@ -79,14 +79,29 @@ Reports are then ranked by a **risk score** from 0 to 100: `100 × (severity ÷ 
 
 ```
 .
-├── main.py                  # entry point, connects the pipeline
+├── main.py                  # entry point: builds the objects, starts the menu
+├── moderationpipeline.py    # ModerationPipeline: AI → logic → data
 ├── io_manager.py            # input, validation, display
-├── ai_manager.py            # AI API interaction
+├── textcleaner.py           # TextCleaner: cleans one comment
+├── commentfileprocessor.py  # CommentFileProcessor: cleans a CSV, saves CSV + JSON
+├── ai_manager.py            # AIManager: build → generate → parse → validate
+├── aiprovider.py            # AIProvider interface
+├── chatapiprovider.py       # ChatAPIProvider abstract class (shared HTTP code)
+├── groqprovider.py          # GroqProvider
+├── openrouterprovider.py    # OpenRouterProvider (with backup models)
+├── fallbackprovider.py      # FallbackProvider: primary → backup
+├── providerfactory.py       # ProviderFactory: builds the provider from .env
+├── promptbuilder.py         # PromptBuilder: system prompt + <comment> tags
+├── responseparser.py        # ResponseParser: JSON text → dict
+├── responsevalidator.py     # ResponseValidator: schema checks
 ├── logic_manager.py         # business rules
 ├── data_manager.py          # CSV persistence and queries
 ├── tests/
-│   ├── test_ai_manager.py   # prompt, parsing and validation tests (no API needed)
-│   └── test_logic_manager.py# business rule tests with hardcoded AI responses
+│   ├── fakeprovider.py              # pretend AIProvider so tests need no API
+│   ├── test_providers.py            # providers, fallback, factory (API mocked)
+│   ├── test_ai_manager.py           # prompt, parsing, validation, retries
+│   ├── test_moderationpipeline.py   # full AI → logic → data flow
+│   └── test_logic_manager.py        # business rule tests with hardcoded AI responses
 ├── uncleaned/               # put input CSV files here
 ├── cleaned/                 # generated output (created at run time)
 ├── Dockerfile
@@ -192,7 +207,7 @@ Use `python -m pytest`, not plain `pytest`, so the tests can import the manager 
 2. **Display Existing Cleaned File.** Reopen a results file saved in `cleaned/` without calling the AI again. In Docker, mount `cleaned/` (see above) so files are still there next time.
 3. In either view, the results are shown one record per card, followed by a **summary** (counts by priority and by category, and how many actions involve a human moderator). You can then **filter** by category, by priority, or both.
 
-> The app pauses 40 seconds between comments to stay within Groq's free-tier token limit for this model, so the 10-row sample takes about 7 minutes. Use a 3–5 row file for quick demos.
+> The app pauses 45 seconds between comments to stay within Groq's free-tier limit of 2,000 tokens per minute for this model, so the 10-row sample takes about 8 minutes. Use a 3–5 row file for quick demos.
 
 ### Output columns
 
@@ -212,12 +227,12 @@ After moderation, results are saved to `cleaned/<name>_cleaned.csv` with these c
 
 | Scenario | How it is handled |
 |---|---|
-| API connection failure or timeout | Caught in `call_api`. The error is logged, the request falls back to OpenRouter and is retried once. If everything fails, the record is marked "Manual review required" and the app continues. |
-| Malformed AI response | `parse_response` and `validate_response` reject it and the request is retried. If it still fails, the record goes to manual review. |
+| API connection failure or timeout | Caught in `ChatAPIProvider.generate`. The error is logged, `FallbackProvider` switches to OpenRouter, and `AIManager` retries once. If everything fails, the record is marked "Manual review required" and the app continues. |
+| Malformed AI response | `ResponseParser` and `ResponseValidator` reject it and `AIManager` retries. If it still fails, the record goes to manual review. |
 | Missing, empty or unreadable input file / missing columns | `get_input_file` checks the file before cleaning, rejects it and asks the user to choose again. |
 | Invalid menu input | The input is rejected and the user is asked again. |
-| Missing API key | The missing key is logged by name (e.g. `set GROQ_API_KEY in .env`) and the request falls back to OpenRouter. If no provider works, records are sent to manual review. |
-| Free-tier rate limit | A fixed 40-second pause between comments keeps usage under the token-per-minute limit. |
+| Missing API key | The app stops at startup with a clear message (e.g. `Cannot start: Missing API key: set GROQ_API_KEY in .env`). A missing OpenRouter key only logs a warning, and the app runs without a fallback. |
+| Free-tier rate limit | Groq replies are capped at 800 tokens so each request fits the 2,000 tokens-per-minute limit, and a fixed 45-second pause between comments lets the limit refill. If Groq still refuses, its message is logged and the request falls back to OpenRouter. |
 | Results file open in another program (e.g. Excel) | `save_reports` logs the `PermissionError`; `main_menu` catches it, shows a message and returns to the menu. |
 | Missing, empty or unreadable saved file (menu option 2) | `load_cleaned_file` raises an error; `display_existing_cleaned_file` shows it and asks the user to choose again. |
 | Saved file that never finished moderation | `query` returns no matches instead of crashing, and the user sees "No matching records found." |
@@ -228,17 +243,16 @@ After moderation, results are saved to `cleaned/<name>_cleaned.csv` with these c
 
 GitHub Actions (`.github/workflows/ci.yml`) runs on every push and pull request:
 
-1. **Rule checks.** Fails if any `class` definition exists, or if `print()`/`input()` appears outside `io_manager.py`.
+1. **Rule checks.** Fails if `print()`/`input()` appears outside `io_manager.py`.
 2. **Tests.** Runs `pytest` without a live API.
-3. **Docker build.** Builds the image and checks that the app files are inside it.
+3. **Docker build and test.** Builds the image, checks that the app files are inside it, and runs the full test suite inside the container.
 4. **Publish.** On merge to `main`, pushes the image to the GitHub Container Registry.
 
 ## Hard constraints checklist
 
 | # | Constraint | How we meet it |
 |---|---|---|
-| C1 | 100% procedural | No `class` definitions; enforced by CI |
-| C2 | AI is the core engine | Every record goes through `ai_manager.analyse_record`; without it, no comment can be classified |
+| C2 | AI is the core engine | Every record goes through `AIManager.analyse_record`; without it, no comment can be classified |
 | C3 | Structured API responses | JSON mode, plus schema validation before any field is used |
 | C4 | Flat-file persistence | Results saved to and reloaded from CSV in `cleaned/`; `temperature: 0` reduces variation between runs |
 | C5 | Runs in Docker | `Dockerfile` in the repository root; tests run inside the container |
