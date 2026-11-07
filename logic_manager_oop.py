@@ -141,7 +141,25 @@ class LogicManager:
                     "human_review_required": True
                 })
 
-        return results
+        # Separate invalid records from valid reports.
+        invalid_reports = [
+            report for report in results
+            if "error" in report
+        ]
+
+        valid_reports = [
+            report for report in results
+            if "error" not in report
+        ]
+
+        # Sort valid reports from highest to lowest risk.
+        valid_reports.sort(
+            key=lambda report: report["risk_score"],
+            reverse=True
+        )
+
+        # Invalid reports appear first.
+        return invalid_reports + valid_reports
 
 
     def generate_report(self, record: ModerationRecord) -> dict:

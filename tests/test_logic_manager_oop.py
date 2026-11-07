@@ -85,3 +85,75 @@ def test_batch_continues_after_error(manager, valid_record):
     assert len(results) == 2
     assert "error" in results[0]
     assert results[1]["risk_score"] == 94.0
+
+
+def test_batch_sorted_by_risk(manager, valid_record):
+    """
+    Valid reports should be sorted by descending risk score.
+    """
+
+    # Create three independent copies of the valid record.
+    low_risk = valid_record.copy()
+    medium_risk = valid_record.copy()
+    high_risk = valid_record.copy()
+
+    # Change severity while retaining valid record fields.
+    low_risk["severity"] = 1
+    medium_risk["severity"] = 2
+    high_risk["severity"] = 4
+
+    # Give each record a different identity.
+    low_risk["User ID"] = 101
+    medium_risk["User ID"] = 102
+    high_risk["User ID"] = 103
+
+    # Intentionally provide records in the wrong order.
+    reports = manager.process_records([
+        low_risk,
+        high_risk,
+        medium_risk
+    ])
+
+    scores = [report["risk_score"] for report in reports]
+
+    assert scores == sorted(scores, reverse=True)
+    assert [report["User ID"] for report in reports] == [
+        103, 102, 101
+    ]
+
+
+def test_invalid_records_appear_first(manager, valid_record):
+    """
+    Invalid records must appear before valid moderation reports.
+    """
+
+    # Create two valid records.
+    low_risk = valid_record.copy()
+    low_risk["User ID"] = 101
+    low_risk["severity"] = 1
+
+    high_risk = valid_record.copy()
+    high_risk["User ID"] = 102
+    high_risk["severity"] = 4
+
+    # Create an invalid record.
+    invalid_record = valid_record.copy()
+    invalid_record["User ID"] = 103
+    invalid_record["severity"] = 8
+
+    # Intentionally place the invalid record last.
+    reports = manager.process_records([
+        low_risk,
+        high_risk,
+        invalid_record
+    ])
+
+    # The invalid record should appear first.
+    assert "error" in reports[0]
+    assert reports[0]["human_review_required"] is True
+
+    # Valid reports should follow in descending risk order.
+    assert reports[1]["User ID"] == 102
+    assert reports[2]["User ID"] == 101
+
+    assert reports[1]["risk_score"] >= reports[2]["risk_score"]
