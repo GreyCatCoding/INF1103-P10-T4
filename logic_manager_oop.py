@@ -1,6 +1,7 @@
 from riskscorer import RiskScorer
 from moderationrecord import ModerationRecord
 from moderation_policy import ModerationPolicy
+from moderation_decision import ModerationDecision
 
 class LogicManager:
     """Coordinates risk scoring and moderation decisions."""
@@ -56,6 +57,38 @@ class LogicManager:
             "recommended_action": action,
             "human_review_required": review_required
         }
+    
+    def create_decision(
+        self,
+        record: ModerationRecord
+    ) -> ModerationDecision:
+        """
+        Create a complete moderation decision for a valid record.
+
+        Coordinates risk scoring, policy evaluation and routing.
+        """
+
+        # Step 1: Calculate the numerical risk score
+        risk_score = self.calculate_risk(record)
+
+        # Step 2: Obtain priority, action and human-review status
+        policy_result = self.evaluate_policy(record)
+
+        # Step 3: Determine the destination queue
+        queue = self.route_record(
+            policy_result["human_review_required"]
+        )
+
+        # Step 4: Create the ModerationDecision object
+        decision = ModerationDecision(
+            priority=policy_result["priority"],
+            risk_score=risk_score,
+            queue=queue,
+            recommended_action=policy_result["recommended_action"],
+            human_review_required=policy_result["human_review_required"]
+        )
+
+        return decision
 
     def route_record(self, human_review_required: bool) -> str:
         """
