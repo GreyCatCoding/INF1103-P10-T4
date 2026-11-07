@@ -6,7 +6,7 @@ from moderation_decision import ModerationDecision
 class LogicManager:
     """Coordinates risk scoring and moderation decisions."""
 
-    def __init__(self, scorer: RiskScorer, policy):
+    def __init__(self, scorer: RiskScorer, policy: ModerationPolicy):
         """
         Initialise the Logic Manager with its dependencies.
 
@@ -136,5 +136,30 @@ class LogicManager:
                 })
 
         return results
-        
+    
+    def generate_report(self, record: ModerationRecord) -> dict:
+        """
+        Generate a complete moderation report.
 
+        Combines the original record information
+        with the moderation decision.
+        """
+
+        # Create a moderation decision
+        decision = self.create_decision(record)
+
+        # Combine record data and decision data
+        report = {
+            "User ID": record.user_id,
+            "username": record.username,
+            "comment": record.comment,
+            "category": record.category,
+            "category_description":
+                self._policy.get_category_description(record.category),
+            "severity": record.severity,
+            "confidence": record.confidence,
+            "ai_reason": record.reason,
+            **decision.to_dict()
+        }
+
+        return report
