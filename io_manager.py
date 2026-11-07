@@ -3,7 +3,7 @@
 # =============================================================
 from pathlib import Path
 import pandas as pd
-import data_manager
+from data_manager import DataManager
 from commentfileprocessor import CommentFileProcessor
 from console_view import ConsoleView
 from file_selector import FileSelector
@@ -18,12 +18,14 @@ CLEANED_DIR = BASE_DIR / "cleaned"
 class IOManager:
     """Main workflow controller. Coordinates views, selectors, and processors."""
     
-    def __init__(self):
+    def __init__(self, data_manager: DataManager):
         # Composition: IOManager manages the lifecycles of these instances
         self.__view = ConsoleView()
         self.__processor = CommentFileProcessor()
         self.__uncleaned_selector = UncleanedFileSelector(UNCLEANED_DIR)
         self.__cleaned_selector = CleanedFileSelector(data_manager)
+        self.__data_manager = data_manager
+    
 
     def main_menu(self, process_callback=None) -> None:
         """Displays the main options menu and routes user selections."""
@@ -38,7 +40,15 @@ class IOManager:
             choice = input("\nSelect an option (1-3): ").strip()
 
             if choice == "1":
-                cleaned_df, csv_path = self.__run_input_workflow()
+                # The input workflow saves the cleaned CSV, which fails if another
+                # program (e.g. Excel) has that file open and locked.
+                try:
+                    cleaned_df, csv_path = self.__run_input_workflow()
+                except PermissionError:
+                    # csv_path was never assigned, so the message cannot name the file.
+                    print(f"\n[Error] Could not access file: it may be open in another program.")
+                    # Return to the menu so the user can close the file and try again.
+                    continue
 
                 if cleaned_df is not None:
                     if process_callback: 
@@ -102,7 +112,7 @@ class IOManager:
         self.__view.print_detailed_records(df)
         
         # Association: Utilizing data_manager without owning it
-        summary_dict = data_manager.get_summary_metrics(df)
+        summary_dict = self.__data_manager.get_summary(df)
         self.__view.print_summary(summary_dict)
         self.__run_filter(df)
 
@@ -131,7 +141,7 @@ class IOManager:
                     print("\n[Error] You must provide either a Category or an Action to filter.")
                     continue
                     
-                results = data_manager.query(df, category=category, action=action)
+                results = self.__data_manager.filter_reports(df, category=category, action=action)
 
                 print("\n--- Filter Results ---")
                 if results.empty:
@@ -148,23 +158,23 @@ class IOManager:
         notice = ""
 
         while True:
-            files = selector._list_files()
+            files = selector.get_files()
 
             if not files:
-                input(f"\n{selector._empty_message}\nPress Enter to return...")
+                input(f"\n{selector.empty_message}\nPress Enter to return...")
                 return None
 
             listing = "\n".join(f"- {file}" for file in files)
 
             filename = input(
-                f"{notice}\n{selector._list_heading}\n{listing}\n{selector._prompt}"
+                f"{notice}\n{selector.list_heading}\n{listing}\n{selector.prompt}"
             ).strip()
 
             if filename.lower() == "back":
                 return None
 
             try:
-                return selector._load(filename)
+                return selector.select(filename)
 
             except (FileNotFoundError, ValueError, pd.errors.EmptyDataError) as e:
                 notice = f"\n[Error] {e}\nPlease select a valid CSV file.\n"
