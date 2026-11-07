@@ -56,6 +56,24 @@ class LogicManager:
             "recommended_action": action,
             "human_review_required": review_required
         }
+
+    def route_record(self, human_review_required: bool) -> str:
+        """
+        Determine the destination queue based on human review.
+
+        Returns:
+            "human_review" if human review is required.
+            "standard" otherwise.
+        """
+        if not isinstance(human_review_required, bool):
+            raise ValueError(
+                "human_review_required must be a boolean"
+            )
+
+        if human_review_required:
+            return "human_review"
+
+        return "standard"
     
     def process_records(self, records: list) -> list:
         """
@@ -85,4 +103,5 @@ class LogicManager:
                 })
 
         return results
+        
 
