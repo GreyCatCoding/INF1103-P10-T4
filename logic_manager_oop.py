@@ -149,7 +149,8 @@ class LogicManager:
                         if isinstance(data, dict) else ""
                     ),
                     "error": str(error),
-                    "priority": "P1",
+                    "priority": None,
+                    "risk_score": None,
                     "queue": "human_review",
                     "recommended_action": "Manual review required",
                     "human_review_required": True
