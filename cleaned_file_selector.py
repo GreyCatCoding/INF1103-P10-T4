@@ -21,12 +21,13 @@ class CleanedFileSelector(FileSelector):
 
     def _list_files(self) -> list[str]:
         """Returns the names of the cleaned CSV files known to the DataManager."""
-        return self.__data_source.get_available_cleaned_files()
-
+        return self.__data_source.list_reports()
+    
     def _load(self, filename: str) -> tuple[pd.DataFrame, Path]:
         """Returns (cleaned_df, path).
 
         DataManager raises FileNotFoundError, ValueError or EmptyDataError for invalid
         files; select() catches those and asks the user again.
         """
-        return self.__data_source.load_cleaned_file(filename)
+        report_df = self.__data_source.load_report(filename)
+        return report_df, Path(filename)
