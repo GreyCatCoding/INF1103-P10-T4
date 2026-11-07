@@ -15,6 +15,7 @@ class LogicManager:
         """
         self._scorer = scorer
         self._policy = policy
+
     
     def calculate_risk(self, record) -> float:
         """
@@ -23,6 +24,7 @@ class LogicManager:
         record: A validated ModerationRecord object.
         """
         return self._scorer.score(record)
+
 
     def evaluate_policy(self, record: ModerationRecord) -> dict:
         """
@@ -57,6 +59,7 @@ class LogicManager:
             "recommended_action": action,
             "human_review_required": review_required
         }
+
     
     def create_decision(
         self,
@@ -90,6 +93,7 @@ class LogicManager:
 
         return decision
 
+
     def route_record(self, human_review_required: bool) -> str:
         """
         Determine the destination queue based on human review.
@@ -107,36 +111,39 @@ class LogicManager:
             return "human_review"
 
         return "standard"
-    
+
+
     def process_records(self, records: list) -> list:
         """
-        Validate and calculate risk scores for multiple records.
+        Process multiple AI-enriched records.
 
-        Moderation policy integration will be added later.
+        Valid records receive complete moderation reports.
+        Invalid records are flagged for human review.
         """
-        from moderationrecord import ModerationRecord
 
         results = []
 
         for data in records:
             try:
+                # Step 1: Validate and create a record object
                 record = ModerationRecord(data)
-                risk_score = self.calculate_risk(record)
 
-                results.append({
-                    "User ID": record.user_id,
-                    "username": record.username,
-                    "risk_score": risk_score
-                })
+                # Step 2: Generate the full 13-field report
+                report = self.generate_report(record)
+
+                # Step 3: Store the completed report
+                results.append(report)
 
             except ValueError as error:
+                # Keep processing even if one record is invalid
                 results.append({
                     "error": str(error),
                     "human_review_required": True
                 })
 
         return results
-    
+
+
     def generate_report(self, record: ModerationRecord) -> dict:
         """
         Generate a complete moderation report.

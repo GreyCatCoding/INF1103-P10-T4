@@ -1,15 +1,17 @@
-
 import pytest
 
 from logic_manager_oop import LogicManager
 from weightedriskscorer import WeightedRiskScorer
 from moderationrecord import ModerationRecord
+from moderation_policy import ModerationPolicy
 
 
 @pytest.fixture
 def manager():
-    """Create a LogicManager with a weighted scorer."""
-    return LogicManager(WeightedRiskScorer(), None)
+    return LogicManager(
+        scorer=WeightedRiskScorer(),
+        policy=ModerationPolicy()
+    )
 
 
 @pytest.fixture
