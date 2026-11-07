@@ -9,7 +9,7 @@ from commentfileprocessor import CommentFileProcessor
 from data_manager import DataManager
 
 # ==========================================
-# THREADING WORKER (Advanced Deliverable 11.4)
+# THREADING WORKER (to prevent GUI freezing during long-running AI moderation)
 # ==========================================
 class ModerationWorker(QThread):
     """Runs the AI moderation pipeline in the background to prevent GUI freezing."""
@@ -93,7 +93,14 @@ class GUIView(QMainWindow):
 
         # --- Summary Label ---
         self.summary_label = QLabel("Awaiting Data...\n")
-        self.summary_label.setStyleSheet("font-weight: bold; padding: 10px; background-color: #f0f0f0;")
+        #self.summary_label.setStyleSheet("font-weight: bold; padding: 10px; background-color: #f0f0f0;") #Catered for better light theme visibility
+        self.summary_label.setStyleSheet(
+            "font-weight: bold; "
+            "padding: 10px; "
+            "background-color: #2d2d2d; "
+            "color: #ffffff; "
+            "border: 1px solid #555555; "
+            "border-radius: 5px;") # Catered for better dark theme visibility
         main_layout.addWidget(self.summary_label)
 
         # --- Table Display ---
