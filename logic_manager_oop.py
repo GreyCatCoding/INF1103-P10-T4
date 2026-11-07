@@ -135,11 +135,26 @@ class LogicManager:
                 results.append(report)
 
             except ValueError as error:
-                # Keep processing even if one record is invalid
                 results.append({
+                    "User ID": (
+                        data.get("User ID", "")
+                        if isinstance(data, dict) else ""
+                    ),
+                    "username": (
+                        data.get("username", "")
+                        if isinstance(data, dict) else ""
+                    ),
+                    "comment": (
+                        data.get("processed_comments", "")
+                        if isinstance(data, dict) else ""
+                    ),
                     "error": str(error),
+                    "priority": "P1",
+                    "queue": "human_review",
+                    "recommended_action": "Manual review required",
                     "human_review_required": True
                 })
+
 
         # Separate invalid records from valid reports.
         invalid_reports = [

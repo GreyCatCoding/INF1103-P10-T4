@@ -2,18 +2,32 @@ import time
 
 from csvreportstore import CsvReportStore
 from data_manager import DataManager
-import logic_manager
 from ai_manager import AIManager
+from logic_manager_oop import LogicManager
+from weightedriskscorer import WeightedRiskScorer
+from moderation_policy import ModerationPolicy
 
 
 class ModerationPipeline:
     """Connects AIManager -> logic_manager -> data_manager."""
 
-    def __init__(self, ai_manager: AIManager, data_manager: DataManager = None, delay_seconds: int = 45):
-        
+
+    def __init__(
+        self,
+        ai_manager: AIManager,
+        data_manager: DataManager = None,
+        delay_seconds: int = 45,
+        logic_manager_instance: LogicManager = None
+    ):
+
         self.__ai_manager = ai_manager
         self.__data_manager = data_manager or DataManager(CsvReportStore()) # Fallback to default CsvReportStore if not explicitly injected
         self.__delay_seconds = delay_seconds  # Stay under the free-tier rate limit
+        self.__logic_manager = logic_manager_instance or LogicManager(
+            scorer=WeightedRiskScorer(),
+            policy=ModerationPolicy()
+        )
+
 
     def process(self, cleaned_df, csv_path):
         """Moderates every row of cleaned_df, saves the reports to csv_path and returns them."""
@@ -31,7 +45,7 @@ class ModerationPipeline:
             time.sleep(self.__delay_seconds)  # Prevent overloading AI API rate limits
 
         # LOGIC Processing
-        reports = logic_manager.process_reports(records_for_logic_manager)
+        reports = self.__logic_manager.process_records(records_for_logic_manager)
 
         # DATA Persistence
         df = self.__data_manager.build_table(reports)
