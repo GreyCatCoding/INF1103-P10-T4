@@ -157,3 +157,35 @@ def test_invalid_records_appear_first(manager, valid_record):
     assert reports[2]["User ID"] == 101
 
     assert reports[1]["risk_score"] >= reports[2]["risk_score"]
+
+    
+def test_invalid_record_preserves_manual_review_fallback(
+    manager, valid_record
+):
+    """
+    Invalid AI records must preserve the original
+    Part 1 manual-review behaviour.
+    """
+
+    # Create an invalid AI record.
+    invalid_record = valid_record.copy()
+    invalid_record["severity"] = 8
+
+    # Process the invalid record.
+    reports = manager.process_records([invalid_record])
+
+    assert len(reports) == 1
+
+    report = reports[0]
+
+    # An invalid AI assessment has no reliable classification.
+    assert report["priority"] is None
+    assert report["risk_score"] is None
+
+    # The record must be routed for manual review.
+    assert report["queue"] == "human_review"
+    assert report["human_review_required"] is True
+    assert report["recommended_action"] == "Manual review required"
+
+    # Preserve the validation error for troubleshooting.
+    assert "error" in report
