@@ -1,5 +1,7 @@
 from ModerationPolicy import ModerationPolicy
 
+import logging
+
 policy = ModerationPolicy()
 
 # Each test contains:
@@ -102,14 +104,14 @@ def test_decisions():
             f"{name}: expected action '{expected_action}', got '{action}'"
         )
 
-        print(f"PASS: {name} | {priority} | Human review: {review}")
+        logging.info(f"PASS: {name} | {priority} | Human review: {review}")
 
 
 def test_category_description():
     description = policy.get_category_description("none")
 
     assert description == "No harmful content detected"
-    print("PASS: Category description")
+    logging.info("PASS: Category description")
 
 
 def test_invalid_data():
@@ -120,7 +122,7 @@ def test_invalid_data():
     try:
         policy.get_priority(invalid_data)
     except ValueError as error:
-        print(f"PASS: Invalid confidence rejected | {error}")
+        logging.info(f"PASS: Invalid confidence rejected | {error}")
     else:
         raise AssertionError("Invalid confidence was accepted")
 
@@ -130,4 +132,4 @@ if __name__ == "__main__":
     test_category_description()
     test_invalid_data()
 
-    print("\nAll 8 tests passed!")
+    logging.info("\nAll 8 tests passed!")
