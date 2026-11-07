@@ -1,4 +1,4 @@
-from ModerationPolicy import ModerationPolicy
+from moderation_policy import ModerationPolicy
 
 import logging
 
