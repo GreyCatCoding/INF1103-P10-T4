@@ -11,4 +11,4 @@ class ReportTableBuilder:
         """Returns reports as a DataFrame with the standard columns, with blank cells as ""."""
         df = pd.DataFrame(reports)
         df = df.reindex(columns=self.__DISPLAY_COLUMNS)
-        return df.fillna("")
+        return df.astype(object).fillna("")
