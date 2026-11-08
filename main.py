@@ -2,16 +2,30 @@ import logging
 import sys
 from dotenv import load_dotenv
 
-from PySide6.QtWidgets import QApplication
-
 from data_manager import DataManager
 from moderationpipeline import ModerationPipeline
 from providerfactory import ProviderFactory
 from csvreportstore import CsvReportStore
 from ai_manager import AIManager
 
-# Import the GUI View
-from gui_view import GUIView
+
+def run_console(data_manager, pipeline):
+    """Text menu in the terminal (used by Docker)."""
+    logging.getLogger().setLevel(logging.WARNING)   # Hide INFO logs
+    from io_manager import IOManager
+    io_manager = IOManager(data_manager)
+    io_manager.main_menu(process_callback=pipeline.process)
+
+
+def run_gui(data_manager, pipeline):
+    """PySide6 window (used when running on your own laptop)."""
+    from PySide6.QtWidgets import QApplication
+    from gui_view import GUIView
+    app = QApplication(sys.argv)
+    window = GUIView(data_manager=data_manager, process_callback=pipeline.process)
+    window.show()
+    sys.exit(app.exec())
+
 
 if __name__ == "__main__":
     load_dotenv()  # Load API keys from .env
@@ -24,18 +38,12 @@ if __name__ == "__main__":
         logger.error("Cannot start: %s", err)
         sys.exit(1)
 
-    # 1. Initialize your existing OOP backend systems
+    # Build the backend once
     report_store = CsvReportStore()
     data_manager = DataManager(report_store)
     pipeline = ModerationPipeline(AIManager(provider), data_manager)
 
-    # 2. Start the PySide6 Application Loop
-    app = QApplication(sys.argv)
-    
-    # 3. Create the GUI Window, passing the backend dependencies
-    #    (pipeline.process gets passed as the callback just like before)
-    window = GUIView(data_manager=data_manager, process_callback=pipeline.process)
-    window.show()
-    
-    # 4. Safely execute the application and exit when closed
-    sys.exit(app.exec())
+    if "--console" in sys.argv:
+        run_console(data_manager, pipeline)
+    else:
+        run_gui(data_manager, pipeline)
