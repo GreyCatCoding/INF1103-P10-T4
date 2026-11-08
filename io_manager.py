@@ -1,6 +1,9 @@
 # =============================================================
 # MAIN WORKFLOW EXECUTION (OOP)
 # =============================================================
+import time
+from concurrent.futures import ThreadPoolExecutor, wait
+from progresstracker import ProgressTracker
 from pathlib import Path
 import pandas as pd
 from data_manager import DataManager
@@ -53,7 +56,7 @@ class IOManager:
                 if cleaned_df is not None:
                     if process_callback: 
                         try:
-                            final_df = process_callback(cleaned_df, csv_path)
+                            final_df = self.__run_with_progress(process_callback, cleaned_df, csv_path)
                             self.__run_output_workflow(final_df)
                         except PermissionError:
                             print(f"\n[Error] Could not save results: '{csv_path.name}' is open in another program.")
@@ -73,6 +76,36 @@ class IOManager:
                 break
             else:
                 print("\nInvalid choice. Please enter 1, 2, or 3.")
+
+
+    def __run_with_progress(self, process_callback, cleaned_df: pd.DataFrame, csv_path: Path) -> pd.DataFrame:
+        """Runs the moderation in a worker thread while this main thread shows live progress."""
+        # Build the progress bar
+        progress = ProgressTracker()
+        # Start timer
+        start = time.monotonic()
+
+        with ThreadPoolExecutor(max_workers=1, thread_name_prefix="moderation") as pool:
+            future = pool.submit(process_callback, cleaned_df, csv_path, progress)
+
+            # Every half a second, check the progress
+            while not future.done():
+                try:
+                    done, total = progress.snapshot()
+                    self.__view.show_progress(done, total, time.monotonic() - start)
+                    wait([future], timeout=0.5)   # nap 0.5 s (or less if the chef finishes)
+                except KeyboardInterrupt:
+                    # Implement the stop (CTRL+C)
+                    progress.request_stop()
+                    print("\nStopping after the current comment... results so far will be saved.")
+
+            # Update progress
+            done, total = progress.snapshot()
+            self.__view.show_progress(done, total, time.monotonic() - start)
+            print()
+
+            # Return the final result
+            return future.result()    
 
     def __run_input_workflow(self) -> tuple[pd.DataFrame | None, Path | None]:
         """Coordinates uncleaned file selection, processing, and outputting previews."""
