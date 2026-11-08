@@ -1,5 +1,3 @@
-import time
-
 from csvreportstore import CsvReportStore
 from data_manager import DataManager
 from ai_manager import AIManager

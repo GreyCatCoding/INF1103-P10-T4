@@ -58,3 +58,17 @@ class ConsoleView:
             c_label = category if category else "Uncategorized"
             print(f"   • {c_label:<15} : {count}")
         print(separator + "\n")
+
+    def show_progress(self, done: int, total: int, elapsed_seconds: float) -> None:
+        """Displays a progress bar like [########------------] 4 of 10 comments | 03:05"""
+        width = 20
+
+        # Calculate progress bar
+        filled = int(width * done / total) if total else 0
+
+        # e.g. "########------------"
+        bar = "#" * filled + "-" * (width - filled)
+        minutes, seconds = divmod(int(elapsed_seconds), 60)
+
+        print(f"\r[{bar}] {done} of {total} comments | {minutes:02d}:{seconds:02d} | Ctrl+C to stop ",
+              end="", flush=True)        
