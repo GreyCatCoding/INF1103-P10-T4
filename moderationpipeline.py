@@ -6,6 +6,7 @@ from ai_manager import AIManager
 from logic_manager_oop import LogicManager
 from weightedriskscorer import WeightedRiskScorer
 from moderation_policy import ModerationPolicy
+from progresstracker import ProgressTracker
 
 
 class ModerationPipeline:
@@ -29,20 +30,31 @@ class ModerationPipeline:
         )
 
 
-    def process(self, cleaned_df, csv_path):
-        """Moderates every row of cleaned_df, saves the reports to csv_path and returns them."""
+    def process(self, cleaned_df, csv_path, progress: ProgressTracker | None = None):
+        """Moderates every row of cleaned_df, saves the reports to csv_path and returns them.
+        Runs in the worker thread and checks `progress` between comments so it can stop early."""
+        progress = progress or ProgressTracker()
+
         rows = cleaned_df.to_dict("records")
+        progress.start(len(rows))
         records_for_logic_manager = []
 
         # AI Analysis
-        for record in rows:
+        for index, record in enumerate(rows):
+            if progress.stop_requested: # check if user pressed Ctrl+C
+                break
+
             result = self.__ai_manager.analyse_record(record)
             if result:
                 records_for_logic_manager.append(result)
             else:
                 records_for_logic_manager.append(record)
+            progress.record_done() # update progress
 
-            time.sleep(self.__delay_seconds)  # Prevent overloading AI API rate limits
+            is_last = index == len(rows) - 1
+            # Wait for the rate limit, pause() returns True if the CTRL+C is pressed
+            if not is_last and progress.pause(self.__delay_seconds):
+                break
 
         # LOGIC Processing
         reports = self.__logic_manager.process_records(records_for_logic_manager)
