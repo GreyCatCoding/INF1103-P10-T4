@@ -1,8 +1,8 @@
 import pandas as pd
-from pathlib import Path
+#from pathlib import Path
 from PySide6.QtWidgets import (QMainWindow, QPushButton, QVBoxLayout, QHBoxLayout, 
                                QWidget, QFileDialog, QTableWidget, QTableWidgetItem, 
-                               QLabel, QLineEdit, QMessageBox)
+                               QLabel, QLineEdit, QMessageBox, QInputDialog)
 from PySide6.QtCore import QThread, Signal
 
 from commentfileprocessor import CommentFileProcessor
@@ -165,16 +165,41 @@ class GUIView(QMainWindow):
         self.btn_apply_filter.setEnabled(enabled)
         self.btn_clear_filter.setEnabled(enabled)
 
+    # def handle_load_file(self):
+    #     file_path, _ = QFileDialog.getOpenFileName(self, "Select Cleaned CSV", "cleaned", "CSV Files (*.csv)")
+    #     if file_path:
+    #         try:
+    #             filename = Path(file_path).name
+    #             df = self.data_manager.load_report(filename)
+    #             self.current_df = df
+    #             self.display_data(self.current_df)
+    #         except Exception as e:
+    #             QMessageBox.critical(self, "Error", f"Failed to load file: {str(e)}")
+
     def handle_load_file(self):
-        file_path, _ = QFileDialog.getOpenFileName(self, "Select Cleaned CSV", "cleaned", "CSV Files (*.csv)")
-        if file_path:
-            try:
-                filename = Path(file_path).name
-                df = self.data_manager.load_report(filename)
-                self.current_df = df
-                self.display_data(self.current_df)
-            except Exception as e:
-                QMessageBox.critical(self, "Error", f"Failed to load file: {str(e)}")
+        """Lets the user pick a saved report from the store and displays it."""
+        # Ask the store which reports exist, so the list matches what was actually saved
+        report_names = self.data_manager.list_reports()
+        if not report_names:
+            QMessageBox.information(self, "No Reports", "No saved reports found. Cleanse a file first.")
+            return
+
+        # A dropdown of saved report names to switch between different saved reports
+        report_name, chosen = QInputDialog.getItem(
+
+            self, "Select Report", "Saved reports:", report_names, 0, False
+        )
+        if not chosen:
+            return  # The user pressed Cancel
+
+        try:
+            df = self.data_manager.load_report(report_name)
+            self.current_df = df
+            self.display_data(self.current_df)
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to load report: {str(e)}")
+
+
 
     def handle_filter(self):
         if self.current_df is None:
