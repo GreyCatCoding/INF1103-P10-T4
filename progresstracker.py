@@ -29,11 +29,11 @@ class ProgressTracker:
 
     def request_stop(self) -> None:
         """Called by the main thread when the user presses Ctrl+C."""
-        self.__stop_event.set
+        self.__stop_event.set()
 
     @property
     def stop_requested(self) -> bool:
-        return self.__stop_event.is_set
+        return self.__stop_event.is_set()
 
     def pause(self, seconds: float) -> bool:
         """Returns True if it woke because of a stop, False if the full duration passed."""
