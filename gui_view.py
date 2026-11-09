@@ -218,6 +218,77 @@ class GUIView(QMainWindow):
             self.filter_action.clear()
             self.display_dataframe(self.current_df)
 
+    
+    # ==========================================
+    # DATABASE UPDATE & DELETE HANDLERS
+    # ==========================================
+    def handle_update_row(self):
+        if not self.current_report_name or self.current_df is None:
+            QMessageBox.warning(self, "Error", "No report loaded. Please load or cleanse a file first.")
+            return
+
+        current_row = self.table.currentRow()
+        if current_row < 0:
+            QMessageBox.warning(self, "Error", "Please select a row from the table to update.")
+            return
+
+        user_id = self.table.item(current_row, 0).text()
+        current_priority = self.table.item(current_row, 5).text().strip().upper()
+
+        allowed_priorities = ["P1", "P2", "P3", "P4"]
+        
+        # Set default dropdown index to the row's current priority if valid, otherwise default to P1 (index 0)
+        default_index = allowed_priorities.index(current_priority) if current_priority in allowed_priorities else 0
+
+        # Use getItem with editable=False to force selection strictly from the allowed_priorities list
+        new_priority, ok = QInputDialog.getItem(
+            self, 
+            "Update Row", 
+            "Select new priority:", 
+            allowed_priorities, 
+            default_index, 
+            False
+        )
+
+        if ok and new_priority:
+            try:
+                # Update backend payload to modify the 'priority' field
+                updated_data = {"priority": new_priority}
+                self.data_manager.update_record(self.current_report_name, user_id, updated_data)
+                
+                # Refresh local DataFrame and Table
+                self.current_df = self.data_manager.load_report(self.current_report_name)
+                self.display_data(self.current_df)
+                QMessageBox.information(self, "Success", f"Updated User ID {user_id} to priority: {new_priority}")
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"Update failed: {str(e)}")
+
+    def handle_delete_row(self):
+        if not self.current_report_name or self.current_df is None:
+            QMessageBox.warning(self, "Error", "No report loaded. Please load or cleanse a file first.")
+            return
+
+        current_row = self.table.currentRow()
+        if current_row < 0:
+            QMessageBox.warning(self, "Error", "Please select a row from the table to delete.")
+            return
+
+        user_id = self.table.item(current_row, 0).text()
+        username = self.table.item(current_row, 1).text()
+
+        reply = QMessageBox.question(self, "Confirm Delete", f"Are you sure you want to delete user '{username}' (ID: {user_id})?", QMessageBox.Yes | QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            try:
+                # Delete from backend
+                self.data_manager.delete_record(self.current_report_name, user_id)
+                
+                # Refresh local DataFrame and Table
+                self.current_df = self.data_manager.load_report(self.current_report_name)
+                self.display_data(self.current_df)
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"Delete failed: {str(e)}")
+
+
     # ==========================================
     # DISPLAY HELPERS
     # ==========================================
