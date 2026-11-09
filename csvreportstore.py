@@ -43,6 +43,39 @@ class CsvReportStore(ReportStore):
         except PermissionError:
             logging.error("Permission denied: '%s' is currently open in another program (e.g., Excel).", file_path.name)
             raise
+        
+    def update_row(self, report_name: str, row_id: str, updated_data: dict) -> None:
+        """Changes the given fields of the row with this User ID, then saves the report.
+
+        Raises ValueError if no row has that User ID.
+        """
+        df = self.load(report_name)
+
+        # True for the row whose User ID matches, False for every other row
+        matching_rows = df["User ID"] == int(row_id)
+        if not matching_rows.any():
+            raise ValueError(f"No row found with User ID {row_id} in {report_name}")
+
+        # Overwrite only the fields that were passed in, e.g. {"priority": "P1"}
+        for column, new_value in updated_data.items():
+            df.loc[matching_rows, column] = new_value
+
+        self.save(df, report_name)
+
+    def delete_row(self, report_name: str, row_id: str) -> None:
+        """Removes the row with this User ID, then saves the report.
+
+        Raises ValueError if no row has that User ID.
+        """
+        df = self.load(report_name)
+
+        matching_rows = df["User ID"] == int(row_id)
+        if not matching_rows.any():
+            raise ValueError(f"No row found with User ID {row_id} in {report_name}")
+
+        # Keep every row except the matching one (~ means "not")
+        remaining_df = df[~matching_rows]
+        self.save(remaining_df, report_name)
 
     def __path_for(self, name: str | Path) -> Path:
         """Returns the file's path, respecting absolute paths while forcing relative traversal attempts inside the folder."""
