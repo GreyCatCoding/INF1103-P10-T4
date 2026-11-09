@@ -41,7 +41,7 @@ class DataManager:
     def filter_reports(self, df: pd.DataFrame, category: str | None = None, action: str | None = None) -> pd.DataFrame:
         """Filters a report table by category and/or priority action."""
         return self.__query.filter(df, category=category, action=action)
-
+    
     # === UPDATE & DELETE METHODS ===
     def update_record(self, report_name: str, user_id: str, updated_data: dict) -> None:
         """Delegates row updates to the configured report store."""

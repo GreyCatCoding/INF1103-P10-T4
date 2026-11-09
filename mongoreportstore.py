@@ -1,6 +1,5 @@
 """Stores moderation reports as documents in a MongoDB collection."""
 from pathlib import Path
-
 import pandas as pd
 from pymongo.collection import Collection # allows type hinting in python for MongoDB collections
 from reportstore import ReportStore
@@ -22,7 +21,8 @@ class MongoReportStore(ReportStore):
         # get the documents with the requested report_name field
         names = self.__collection.distinct("report_name")
         return sorted(names)
-
+    
+    # === SAVE & LOAD METHODS ===
     def save(self, df: pd.DataFrame, name: str | Path) -> None:
         """Saves df under the given name, replacing any report with that name."""
 
@@ -64,7 +64,7 @@ class MongoReportStore(ReportStore):
         df = pd.DataFrame(documents)
         return df.fillna("")
 
-      # === UPDATE & DELETE METHODS ===
+    # === UPDATE & DELETE METHODS ===
     def update_row(self, report_name: str, user_id: str, updated_data: dict) -> None:
         """Finds a document by report_name and User ID, and updates its fields."""
         formatted_name = self.__name_for(report_name)
