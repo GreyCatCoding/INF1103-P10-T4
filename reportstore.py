@@ -23,3 +23,13 @@ class ReportStore(ABC):
     def save(self, df: pd.DataFrame, name: str) -> None:
         """Saves df under the given name, replacing any report with that name."""
         pass
+    
+    @abstractmethod
+    def update_row(self, report_name: str, row_id: str, updated_data: dict) -> None:
+        """Updates a specific row within a specific report based on its unique User ID."""
+        pass
+
+    @abstractmethod
+    def delete_row(self, report_name: str, row_id: str) -> None:
+        """Deletes a specific row within a specific report based on its unique User ID."""
+        pass
