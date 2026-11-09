@@ -2,4 +2,5 @@ requests
 python-dotenv
 pandas
 pytest
-PySide6
+pymongo
+Pyside6

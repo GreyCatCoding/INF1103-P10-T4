@@ -1,11 +1,12 @@
 import logging
+import os
 import sys
 from dotenv import load_dotenv
 
 from data_manager import DataManager
 from moderationpipeline import ModerationPipeline
 from providerfactory import ProviderFactory
-from csvreportstore import CsvReportStore
+from mongoreportstore import MongoReportStore
 from ai_manager import AIManager
 
 
@@ -32,6 +33,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(__name__)
 
+    # Initialize AI Provider
     try:
         provider = ProviderFactory.from_env()
     except ValueError as err:
