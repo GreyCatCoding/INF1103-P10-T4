@@ -1,7 +1,7 @@
-from riskscorer import RiskScorer
-from moderationrecord import ModerationRecord
-from moderation_policy import ModerationPolicy
-from moderation_decision import ModerationDecision
+from logic_manager.riskscorer import RiskScorer
+from logic_manager.moderationrecord import ModerationRecord
+from logic_manager.moderation_policy import ModerationPolicy
+from logic_manager.moderation_decision import ModerationDecision
 
 class LogicManager:
     """Coordinates risk scoring and moderation decisions."""

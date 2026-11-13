@@ -3,19 +3,19 @@
 # =============================================================
 import time
 from concurrent.futures import ThreadPoolExecutor, wait
-from progresstracker import ProgressTracker
+from ai_manager.progresstracker import ProgressTracker
 from pathlib import Path
 import pandas as pd
-from data_manager import DataManager
-from commentfileprocessor import CommentFileProcessor
-from console_view import ConsoleView
-from file_selector import FileSelector
-from uncleaned_file_selector import UncleanedFileSelector
-from cleaned_file_selector import CleanedFileSelector
+from data_manager.data_manager import DataManager
+from io_manager.commentfileprocessor import CommentFileProcessor
+from io_manager.console_view import ConsoleView
+from io_manager.file_selector import FileSelector
+from io_manager.uncleaned_file_selector import UncleanedFileSelector
+from io_manager.cleaned_file_selector import CleanedFileSelector
 
 
 
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 UNCLEANED_DIR = BASE_DIR / "uncleaned"
 CLEANED_DIR = BASE_DIR / "cleaned"
 class IOManager:

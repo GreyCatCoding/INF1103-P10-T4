@@ -1,8 +1,8 @@
 import pytest
 
-from moderationrecord import ModerationRecord
-from riskscorer import RiskScorer
-from weightedriskscorer import WeightedRiskScorer
+from logic_manager.moderationrecord import ModerationRecord
+from logic_manager.riskscorer import RiskScorer
+from logic_manager.weightedriskscorer import WeightedRiskScorer
 
 KAI = {"User ID": 10, "username": "kai", "processed_comments": "know where you live. watch yourself.", "harmful": True, "category": "violence", "severity": 4, "target": "individual", "confidence": 0.94, "reason": "Implied threat of violence."}
 CAL = {"User ID": 2, "username": "cal", "processed_comments": "earn $500 a day, DM me now", "harmful": True, "category": "spam", "severity": 1, "target": "none", "confidence": 0.95, "reason": "Unsolicited money-making offer."}

@@ -1,7 +1,7 @@
 
 import pytest
 
-from moderation_decision import ModerationDecision
+from logic_manager.moderation_decision import ModerationDecision
 
 
 @pytest.fixture

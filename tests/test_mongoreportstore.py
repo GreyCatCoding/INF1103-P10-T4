@@ -18,8 +18,8 @@ from dotenv import load_dotenv
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
 
-from mongoreportstore import MongoReportStore
-from reportstore import ReportStore
+from data_manager.mongoreportstore import MongoReportStore
+from data_manager.reportstore import ReportStore
 
 load_dotenv()  
 

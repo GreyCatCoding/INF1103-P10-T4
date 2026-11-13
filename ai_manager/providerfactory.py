@@ -2,10 +2,10 @@
 import logging
 import os
 
-from aiprovider import AIProvider
-from fallbackprovider import FallbackProvider
-from groqprovider import GroqProvider
-from openrouterprovider import OpenRouterProvider
+from ai_manager.aiprovider import AIProvider
+from ai_manager.fallbackprovider import FallbackProvider
+from ai_manager.groqprovider import GroqProvider
+from ai_manager.openrouterprovider import OpenRouterProvider
 
 logger = logging.getLogger(__name__)
 

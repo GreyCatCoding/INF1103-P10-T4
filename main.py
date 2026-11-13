@@ -7,17 +7,17 @@ from dotenv import load_dotenv
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
 
-from data_manager import DataManager
-from moderationpipeline import ModerationPipeline
-from providerfactory import ProviderFactory
-from mongoreportstore import MongoReportStore
-from ai_manager import AIManager
+from data_manager.data_manager import DataManager
+from logic_manager.moderationpipeline import ModerationPipeline
+from ai_manager.providerfactory import ProviderFactory
+from data_manager.mongoreportstore import MongoReportStore
+from ai_manager.ai_manager import AIManager
 
 
 def run_console(data_manager, pipeline):
     """Text menu in the terminal (used by Docker)."""
     logging.getLogger().setLevel(logging.WARNING)   # Hide INFO logs
-    from io_manager import IOManager
+    from io_manager.io_manager import IOManager
     io_manager = IOManager(data_manager)
     io_manager.main_menu(process_callback=pipeline.process)
 
@@ -25,7 +25,7 @@ def run_console(data_manager, pipeline):
 def run_gui(data_manager, pipeline):
     """PySide6 window (used when running on your own laptop)."""
     from PySide6.QtWidgets import QApplication
-    from gui_view import GUIView
+    from io_manager.gui_view import GUIView
     app = QApplication(sys.argv)
     window = GUIView(data_manager=data_manager, process_callback=pipeline.process)
     window.show()

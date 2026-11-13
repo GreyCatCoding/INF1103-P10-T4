@@ -1,11 +1,11 @@
 import pandas as pd
 
-from ai_manager import AIManager
+from ai_manager.ai_manager import AIManager
 from fakeprovider import FakeProvider
-from moderationpipeline import ModerationPipeline
-from logic_manager_oop import LogicManager
-from moderation_policy import ModerationPolicy
-from weightedriskscorer import WeightedRiskScorer
+from logic_manager.moderationpipeline import ModerationPipeline
+from logic_manager.logic_manager_oop import LogicManager
+from logic_manager.moderation_policy import ModerationPolicy
+from logic_manager.weightedriskscorer import WeightedRiskScorer
 
 GOOD_REPLY = '{"harmful": true, "category": "harassment", "severity": 2, "target": "individual", "confidence": 0.9, "reason": "Test reply."}'
 RECORD = {"User ID": 1, "username": "ben", "processed_comments": "u r a l0ser"}

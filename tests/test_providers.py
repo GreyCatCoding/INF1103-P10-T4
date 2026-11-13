@@ -5,10 +5,10 @@ import pytest
 import requests
 
 from fakeprovider import FakeProvider
-from fallbackprovider import FallbackProvider
-from groqprovider import GroqProvider
-from openrouterprovider import OpenRouterProvider
-from providerfactory import ProviderFactory
+from ai_manager.fallbackprovider import FallbackProvider
+from ai_manager.groqprovider import GroqProvider
+from ai_manager.openrouterprovider import OpenRouterProvider
+from ai_manager.providerfactory import ProviderFactory
 
 API_REPLY = {"model": "test-model", "choices": [{"message": {"content": "hello"}}]}
 

@@ -1,7 +1,7 @@
 """Tries the primary provider first and resorts to fallback provider only if the primary fails."""
 import logging
 
-from aiprovider import AIProvider
+from ai_manager.aiprovider import AIProvider
 
 logger = logging.getLogger(__name__)
 

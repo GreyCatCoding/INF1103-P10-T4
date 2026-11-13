@@ -1,9 +1,9 @@
 """Selects and loads a raw (uncleaned) comments CSV from the 'uncleaned' folder."""
 from pathlib import Path
 import pandas as pd
-from file_selector import FileSelector
+from io_manager.file_selector import FileSelector
 
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 UNCLEANED_DIR = BASE_DIR / "uncleaned"  # Default folder for uncleaned CSV files
 
 REQUIRED_COLUMNS = ["username", "comments"]

@@ -1,9 +1,9 @@
 """Tests for PromptBuilder, ResponseParser, ResponseValidator and AIManager's retry logic, using FakeProvider instead of a real API."""
-from ai_manager import AIManager
+from ai_manager.ai_manager import AIManager
 from fakeprovider import FakeProvider
-from promptbuilder import PromptBuilder
-from responseparser import ResponseParser
-from responsevalidator import ResponseValidator
+from ai_manager.promptbuilder import PromptBuilder
+from logic_manager.responseparser import ResponseParser
+from logic_manager.responsevalidator import ResponseValidator
 
 GOOD_REPLY = '{"harmful": true, "category": "harassment", "severity": 2, "target": "individual", "confidence": 0.9, "reason": "Test reply."}'
 RECORD = {"User ID": 1, "username": "ben", "processed_comments": "u r a l0ser"}

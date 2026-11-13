@@ -2,10 +2,10 @@
 from pathlib import Path
 from typing import TYPE_CHECKING
 import pandas as pd
-from file_selector import FileSelector
+from io_manager.file_selector import FileSelector
 
 if TYPE_CHECKING:
-    from data_manager import DataManager
+    from data_manager.data_manager import DataManager
 
 
 class CleanedFileSelector(FileSelector):

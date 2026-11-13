@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from moderationrecord import ModerationRecord
+from logic_manager.moderationrecord import ModerationRecord
 
 
 class RiskScorer(ABC):

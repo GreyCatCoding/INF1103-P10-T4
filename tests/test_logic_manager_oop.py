@@ -1,9 +1,9 @@
 import pytest
 
-from logic_manager_oop import LogicManager
-from weightedriskscorer import WeightedRiskScorer
-from moderationrecord import ModerationRecord
-from moderation_policy import ModerationPolicy
+from logic_manager.logic_manager_oop import LogicManager
+from logic_manager.weightedriskscorer import WeightedRiskScorer
+from logic_manager.moderationrecord import ModerationRecord
+from logic_manager.moderation_policy import ModerationPolicy
 
 
 @pytest.fixture

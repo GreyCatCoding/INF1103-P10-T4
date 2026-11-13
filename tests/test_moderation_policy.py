@@ -1,4 +1,4 @@
-from moderation_policy import ModerationPolicy
+from logic_manager.moderation_policy import ModerationPolicy
 
 import logging
 

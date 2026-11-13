@@ -1,5 +1,5 @@
-from moderationrecord import ModerationRecord
-from riskscorer import RiskScorer
+from logic_manager.moderationrecord import ModerationRecord
+from logic_manager.riskscorer import RiskScorer
 
 
 class WeightedRiskScorer(RiskScorer):
