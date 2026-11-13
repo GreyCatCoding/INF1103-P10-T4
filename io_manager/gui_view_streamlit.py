@@ -1,3 +1,8 @@
+import time
+from concurrent.futures import ThreadPoolExecutor, wait
+
+from ai_manager.progresstracker import ProgressTracker
+
 import os
 import tempfile
 from pathlib import Path
@@ -34,17 +39,34 @@ def render_streamlit_ui(data_manager, pipeline):
                 tmp_path = tmp.name
             
             try:
-                # Spinner replaces the QThread - it automatically handles the loading state
-                with st.spinner("Processing file with AI... This will take a while due to rate limits."):
+                # Cleaning is quick, so a spinner is fine here
+                with st.spinner("Cleaning file..."):
                     cleaned_df, csv_path, json_path = processor.process(tmp_path)
                     st.session_state.current_report_name = Path(csv_path).name
-                    
-                    if pipeline:
-                        final_df = pipeline.process(cleaned_df, csv_path)
-                        st.session_state.current_df = final_df
-                    else:
-                        st.session_state.current_df = cleaned_df
-                        
+
+                if pipeline:
+                    progress = ProgressTracker()
+                    bar = st.progress(0.0, text="Starting AI moderation...")
+                    start = time.monotonic()
+
+                    with ThreadPoolExecutor(max_workers=1, thread_name_prefix="moderation") as pool:
+                        future = pool.submit(pipeline.process, cleaned_df, csv_path, progress)
+
+                        while not future.done():
+                            done, total = progress.snapshot()
+                            fraction = done / total if total else 0.0
+                            elapsed = int(time.monotonic() - start)
+                            bar.progress(fraction, text=f"{done} of {total} comments | {elapsed // 60:02d}:{elapsed % 60:02d}")
+                            wait([future], timeout=0.5)
+
+                        st.session_state.current_df = future.result()
+
+                    done, total = progress.snapshot()
+                    elapsed = int(time.monotonic() - start)
+                    bar.progress(1.0, text=f"{done} of {total} comments | {elapsed // 60:02d}:{elapsed % 60:02d} | Done")
+                else:
+                    st.session_state.current_df = cleaned_df
+
                 st.success("File processed successfully!")
             except Exception as e:
                 st.error(f"An error occurred: {e}")
