@@ -66,8 +66,7 @@ jobs:
         run: docker build -t moderation:ci .
 
       - name: Check the app code is inside the image
-        run: docker run --rm moderation:ci ls main.py io_manager/io_manager.py ai_manager/ai_manager.py logic_manager/logic_manager.py data_manager/data_manager.py logic_manager/moderationpipeline.py
-      - name: Run the tests inside the container (no API key needed)
+        run: docker run --rm moderation:ci ls main.py io_manager/io_manager.py ai_manager/ai_manager.py logic_manager/logic_manager_oop.py data_manager/data_manager.py logic_manager/moderationpipeline.py      - name: Run the tests inside the container (no API key needed)
         run: docker run --rm moderation:ci python -m pytest -v
 
   # ---------------------------------------------------------
