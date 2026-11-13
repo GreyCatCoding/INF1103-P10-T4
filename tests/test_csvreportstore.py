@@ -2,8 +2,8 @@
 import pandas as pd
 import pytest
 
-from csvreportstore import CsvReportStore
-from reportstore import ReportStore
+from data_manager.csvreportstore import CsvReportStore
+from data_manager.reportstore import ReportStore
 
 
 

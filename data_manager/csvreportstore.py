@@ -3,9 +3,9 @@ import logging
 from pathlib import Path
 
 import pandas as pd
-from reportstore import ReportStore
+from data_manager.reportstore import ReportStore
 
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 CLEANED_DIR = BASE_DIR / "cleaned"  # Default folder for saved reports
 
 

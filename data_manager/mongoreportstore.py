@@ -2,7 +2,7 @@
 from pathlib import Path
 import pandas as pd
 from pymongo.collection import Collection # allows type hinting in python for MongoDB collections
-from reportstore import ReportStore
+from data_manager.reportstore import ReportStore
 
 
 class MongoReportStore(ReportStore):

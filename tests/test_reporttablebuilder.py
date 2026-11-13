@@ -1,5 +1,5 @@
 """Tests for ReportTableBuilder, which gives every report table the same fixed columns."""
-from reporttablebuilder import ReportTableBuilder
+from data_manager.reporttablebuilder import ReportTableBuilder
 
 
 def test_build_uses_standard_columns_and_drops_extras():

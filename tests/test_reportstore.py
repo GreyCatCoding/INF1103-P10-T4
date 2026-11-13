@@ -1,6 +1,6 @@
 import pytest
 
-from reportstore import ReportStore
+from data_manager.reportstore import ReportStore
 
 
 def test_report_store_cannot_be_instantiated():

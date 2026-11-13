@@ -2,10 +2,10 @@
 from pathlib import Path
 import pandas as pd
 
-from reportquery import ReportQuery
-from reportstore import ReportStore
-from reportsummary import ReportSummary
-from reporttablebuilder import ReportTableBuilder
+from data_manager.reportquery import ReportQuery
+from data_manager.reportstore import ReportStore
+from data_manager.reportsummary import ReportSummary
+from data_manager.reporttablebuilder import ReportTableBuilder
 
 
 class DataManager:

@@ -4,10 +4,10 @@ import time
 
 import pandas as pd
 
-from ai_manager import AIManager
+from ai_manager.ai_manager import AIManager
 from fakeprovider import FakeProvider
-from moderationpipeline import ModerationPipeline
-from progresstracker import ProgressTracker
+from logic_manager.moderationpipeline import ModerationPipeline
+from ai_manager.progresstracker import ProgressTracker
 
 GOOD_REPLY = '{"harmful": true, "category": "harassment", "severity": 2, "target": "individual", "confidence": 0.9, "reason": "Test reply."}'
 

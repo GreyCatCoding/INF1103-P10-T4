@@ -1,6 +1,6 @@
 import pytest
 
-from moderationrecord import ModerationRecord
+from logic_manager.moderationrecord import ModerationRecord
 
 CAL = {"User ID": 2, "username": "cal", "processed_comments": "earn $500 a day, DM me now", "harmful": True, "category": "spam", "severity": 1, "target": "none", "confidence": 0.95, "reason": "Unsolicited money-making offer."}
 

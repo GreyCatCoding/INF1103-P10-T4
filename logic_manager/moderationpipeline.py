@@ -1,10 +1,10 @@
-from csvreportstore import CsvReportStore
-from data_manager import DataManager
-from ai_manager import AIManager
-from logic_manager_oop import LogicManager
-from weightedriskscorer import WeightedRiskScorer
-from moderation_policy import ModerationPolicy
-from progresstracker import ProgressTracker
+from data_manager.csvreportstore import CsvReportStore
+from data_manager.data_manager import DataManager
+from ai_manager.ai_manager import AIManager
+from logic_manager.logic_manager_oop import LogicManager
+from logic_manager.weightedriskscorer import WeightedRiskScorer
+from logic_manager.moderation_policy import ModerationPolicy
+from ai_manager.progresstracker import ProgressTracker
 
 
 class ModerationPipeline:

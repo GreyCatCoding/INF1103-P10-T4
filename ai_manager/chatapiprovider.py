@@ -5,7 +5,7 @@ from abc import abstractmethod
 
 import requests
 
-from aiprovider import AIProvider
+from ai_manager.aiprovider import AIProvider
 
 logger = logging.getLogger(__name__)
 

@@ -4,8 +4,8 @@ from PySide6.QtWidgets import (QMainWindow, QPushButton, QVBoxLayout, QHBoxLayou
                                QLabel, QLineEdit, QMessageBox, QInputDialog)
 from PySide6.QtCore import QThread, Signal
 
-from commentfileprocessor import CommentFileProcessor
-from data_manager import DataManager
+from io_manager.commentfileprocessor import CommentFileProcessor
+from data_manager.data_manager import DataManager
 
 # ==========================================
 # THREADING WORKER (to prevent GUI freezing during long-running AI moderation)
