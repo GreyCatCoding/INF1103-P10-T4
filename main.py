@@ -8,10 +8,39 @@ from pymongo import MongoClient
 from pymongo.errors import PyMongoError
 
 from data_manager.data_manager import DataManager
+from data_manager.reportstore import ReportStore
+from data_manager.mongoreportstore import MongoReportStore
+from data_manager.csvreportstore import CsvReportStore
 from logic_manager.moderationpipeline import ModerationPipeline
 from ai_manager.providerfactory import ProviderFactory
-from data_manager.mongoreportstore import MongoReportStore
 from ai_manager.ai_manager import AIManager
+
+
+def build_report_store(logger) -> ReportStore:
+    """Returns a MongoReportStore if MongoDB is reachable, otherwise a CsvReportStore."""
+    # 1. Read the MongoDB settings from .env
+    mongo_uri = os.getenv("MONGO_URI")          # Where the MongoDB server runs
+    db_name = os.getenv("MONGO_DB_NAME")        # Which database to use
+
+    # No MongoDB settings -> fall back to CSV files in cleaned/
+    if not mongo_uri or not db_name:
+        logger.warning("MongoDB not configured - saving reports as CSV in cleaned/")
+        return CsvReportStore()
+
+    # 2. Settings exist, so try to connect
+    # The 5-second timeout stops the app hanging for the default 30 seconds.
+    client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)
+
+    # ping the MongoDB server to check the connection works
+    try:
+        client.admin.command("ping")
+    except PyMongoError as err:
+        logger.warning("Cannot connect to MongoDB (%s) - saving reports as CSV in cleaned/", err)
+        return CsvReportStore()
+
+    # 3. Connected: use the reports collection in the chosen database
+    logger.info("Connected to MongoDB database '%s'", db_name)
+    return MongoReportStore(client[db_name]["reports"])
 
 
 def run_console(data_manager, pipeline):
@@ -44,37 +73,14 @@ if __name__ == "__main__":
         logger.error("Cannot start: %s", err)
         sys.exit(1)
 
-    # 1. Read the MongoDB settings from .env
-    mongo_uri = os.getenv("MONGO_URI")          # Where the MongoDB server runs
-    db_name = os.getenv("MONGO_DB_NAME")        # Which database to use
+    # Pick where reports are saved: MongoDB if available, otherwise CSV
+    report_store = build_report_store(logger)
 
-    # Stop early with a clear message if either setting is missing
-    if not mongo_uri or not db_name:
-        logger.error("Cannot start: MONGO_URI and MONGO_DB_NAME must be set in .env")
-        sys.exit(1)
-
-    # 2. Connect to MongoDB and stop early if it is unreachable
-    # The 5-second timeout stops the app hanging for the default 30 seconds.
-    client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)
-
-    # ping the MongoDB server to ensure the connection is valid
-    try:
-        client.admin.command("ping")
-    except PyMongoError as err:
-        logger.error("Cannot connect to MongoDB: %s", err)
-        sys.exit(1)
-
-    # show on startup if successfully connected to MongoDB
-    logger.info("Connected to MongoDB database '%s'", db_name)
-
-    # Access the specified database and the reports collection within it
-    report_store = MongoReportStore(client[db_name]["reports"])
-
-    # 3. Build the backend managers once using the MongoReportStore
+    # Build the backend managers once using the chosen report store
     data_manager = DataManager(report_store)
     pipeline = ModerationPipeline(AIManager(provider), data_manager)
 
-    # 4. Route execution to either Console or GUI based on arguments
+    # Route execution to either Console or GUI based on arguments
     if "--console" in sys.argv:
         run_console(data_manager, pipeline)
     else:

@@ -1,0 +1,18 @@
+services:
+  mongo:
+    image: mongo:7
+    volumes:
+      - mongo-data:/data/db
+
+  app:
+    build: .
+    env_file: .env
+    environment:
+      MONGO_URI: mongodb://mongo:27017
+    depends_on:
+      - mongo
+    stdin_open: true
+    tty: true
+
+volumes:
+  mongo-data:
