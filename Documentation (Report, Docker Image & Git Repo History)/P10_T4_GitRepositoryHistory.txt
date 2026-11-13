@@ -1,0 +1,1374 @@
+commit ad276e49a6e1e5423c00dc5dce331a1ef6eae70e
+Merge: 510f053 a496c2e
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Wed Oct 14 14:23:46 2026 +0800
+
+    Merge pull request #56 from GreyCatCoding/removing-redundant-projectinitials-file
+    
+    Removed redundant ProjectInitialDetails.md file
+
+commit a496c2ed741f57d462689aa7adba5028c8f24aef
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Wed Oct 14 14:21:32 2026 +0800
+
+    Removed redundant ProjectInitialDetails.md file
+
+commit 510f053d5d37a48a79bb6a7198fe1313303624b0
+Merge: f6037ec 8520f53
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Wed Oct 14 14:13:59 2026 +0800
+
+    Merge pull request #55 from GreyCatCoding/removing-redundant-files
+    
+    Removed data_manager_test.json as it is no longer being used
+
+commit 8520f538f3ecd9b7406a48eca9d31ad9598b259f
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Wed Oct 14 14:10:09 2026 +0800
+
+    Removed data_manager_test.json as it is no longer being used
+
+commit f6037ecbaa4fa686d2b0a8f3cc2afcfcf616eef0
+Merge: 58331df 3bfc8b1
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Wed Oct 14 10:32:47 2026 +0800
+
+    Merge pull request #54 from GreyCatCoding/Luis-2602477-readme-patch
+    
+    Revise README for clarity and updated features
+
+commit 3bfc8b1c4655c500c448c54885cc2310622ee73b
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Wed Oct 14 10:29:56 2026 +0800
+
+    Revise README for clarity and updated features
+    
+    Updated README to reflect changes in functionality and clarify user interaction with the application.
+
+commit 58331df580d20c9bfc270f3bb181954cd9047b4e
+Merge: 2257e4f fa5cc0c
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Wed Oct 14 10:09:12 2026 +0800
+
+    Merge pull request #53 from GreyCatCoding/crash-handling-io-manager-input
+    
+    Added crash handling to get_input_file function
+
+commit fa5cc0cff83708d2df5b7f1040fce585bc6e81b4
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Wed Oct 14 10:06:01 2026 +0800
+
+    Added crash handling to get_input_file function to prompt user to select valid file if comments and username header is wrong
+
+commit 2257e4fd551ebdec5ef688157d2cfdd8c03a43ef
+Merge: 69c7004 6ade3d8
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Wed Oct 14 10:02:32 2026 +0800
+
+    Merge pull request #52 from GreyCatCoding/crash-handling-io-manager
+    
+    Added crash handling to io-manager main_menu function
+
+commit 6ade3d876f13089fbf956a1bf4b0e613c4cd674a
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Wed Oct 14 09:56:49 2026 +0800
+
+    Updated main_menu function such that system does not crash if output CSV is open in excel
+
+commit 69c70040b9e1f7576ab40225894808b460ba4079
+Merge: bdeea80 058f8fd
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Wed Oct 14 09:53:13 2026 +0800
+
+    Merge pull request #51 from GreyCatCoding/crash-handling-data-manager
+    
+    Updating query function to handle crash case
+
+commit 058f8fda724669b1573793d59d895b8f3bb2fddd
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Wed Oct 14 09:50:00 2026 +0800
+
+    query function now returns no matches instead of crashing if file has no category/priority columns after moderation
+
+commit bdeea807c8dce87b345910e9830efd31d3cc8c87
+Merge: 7131039 91c0305
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Wed Oct 14 09:27:41 2026 +0800
+
+    Merge pull request #47 from GreyCatCoding/fix-test-logic-manager
+    
+    Rename Logic Manager module to lowercase
+
+commit 71310399e2ad77a00929ce6ebcea3c7e4333630e
+Merge: 22fdf16 0ddfae0
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Wed Oct 14 09:27:26 2026 +0800
+
+    Merge pull request #50 from GreyCatCoding/fix/file-lock-error-handling
+    
+    Add PermissionError handling in data_manager save_reports function
+
+commit 0ddfae064abd1ecd7b1bb2b5f5cde6d8cac53f7f
+Author: glenden <glendenbeast@gmail.com>
+Date:   Wed Oct 14 07:08:17 2026 +0800
+
+    Add PermissionError handling in data_manager save_reports function
+
+commit 22fdf16c8103555921595e51278cb96332339cd0
+Merge: d246893 ff86593
+Author: BrianLowDeQuan <132840000+BrianLowDeQuan@users.noreply.github.com>
+Date:   Wed Oct 14 02:33:06 2026 +0800
+
+    Merge pull request #49 from GreyCatCoding/add_summary_table
+    
+    Add summary table
+
+commit ff8659369797f4e1adf26a5fa79abcd3004849ef
+Author: Brian <2603204@sit.singaporetech.edu.sg>
+Date:   Wed Oct 14 02:27:27 2026 +0800
+
+    added a summary table for statistic tracking of what need to be reviewed
+
+commit cee406b293781c4ac8defb1bc8cf35692c6a18ae
+Author: Brian <2603204@sit.singaporetech.edu.sg>
+Date:   Wed Oct 14 01:48:28 2026 +0800
+
+    added a comprehensive table listing each comment
+
+commit 91c0305b181684b0b14aaa868265da71e5cbf29e
+Author: YiXiang2603205 <2603205@sit.singaporetech.edu.sg>
+Date:   Wed Oct 14 01:43:20 2026 +0800
+
+    Rename Logic Manager module and update imports and CI
+
+commit d24689316e537e4bf83c933fd6b814d90166409d
+Merge: 77ab71d 84a6a21
+Author: BrianLowDeQuan <132840000+BrianLowDeQuan@users.noreply.github.com>
+Date:   Wed Oct 14 01:04:18 2026 +0800
+
+    Merge pull request #46 from GreyCatCoding/io_and_data_manager_correction
+    
+    Updating the code structure of io and data manager
+
+commit 77ab71dc666c81ff18c736888ae4196eee4d0fd4
+Merge: c742887 96f2f34
+Author: Zane <2603186@sit.singaporetech.edu.sg>
+Date:   Wed Oct 14 01:02:09 2026 +0800
+
+    Merge pull request #45 from GreyCatCoding/fix-test-logic-manager
+    
+    Improve Logic Manager functionality and test coverage
+
+commit 84a6a21b2da89bca7e595fe7d41263052c5df451
+Author: Brian <2603204@sit.singaporetech.edu.sg>
+Date:   Wed Oct 14 00:58:24 2026 +0800
+
+    Updating the code structure of io and data manager
+
+commit c74288731488b0752d58ce7da82229620fe4d321
+Merge: 357cfeb 4067231
+Author: BrianLowDeQuan <132840000+BrianLowDeQuan@users.noreply.github.com>
+Date:   Wed Oct 14 00:46:26 2026 +0800
+
+    Merge pull request #44 from GreyCatCoding/io_and_data_load_fn_swap
+    
+    Swapping initial Load function from io_manager to data_manager
+
+commit 96f2f34bbd04e25b3e96e27bf56e8d29985f7262
+Author: YiXiang2603205 <2603205@sit.singaporetech.edu.sg>
+Date:   Wed Oct 14 00:43:52 2026 +0800
+
+    Expand Logic Manager test coverage for priorities and invalid inputs
+
+commit 4067231a41bf3cca4f17629223c0bfa754a70088
+Author: Brian <2603204@sit.singaporetech.edu.sg>
+Date:   Wed Oct 14 00:42:17 2026 +0800
+
+    Swapping initial Load function from io_manager to data_manager
+
+commit d21e8d27c28831c4e1a2714a3c9e6c985d013746
+Author: YiXiang2603205 <2603205@sit.singaporetech.edu.sg>
+Date:   Wed Oct 14 00:34:11 2026 +0800
+
+    Add routing and invalid record handling tests
+
+commit 92b45196b6a986592c1a68c6c24c6b6326a390dc
+Author: YiXiang2603205 <2603205@sit.singaporetech.edu.sg>
+Date:   Wed Oct 14 00:16:57 2026 +0800
+
+    Remove unused import and add Logic Manager type hints
+
+commit 37db2a8433db63a5b24e2dca7588854785d0ad89
+Author: YiXiang2603205 <2603205@sit.singaporetech.edu.sg>
+Date:   Wed Oct 14 00:00:55 2026 +0800
+
+    Update routing interface and add moderation queue
+
+commit 6370c963b616a86256cdff385c663f07f79ffce2
+Author: YiXiang2603205 <2603205@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 23:49:50 2026 +0800
+
+    Add weighted risk scoring and report ranking
+
+commit 763886c6818c275dfb858fd4e5dc0edad98894c8
+Author: YiXiang2603205 <2603205@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 23:24:53 2026 +0800
+
+    Update evaluate to return moderation decision dictionary
+
+commit 357cfeba045da388f660535e676f328b21880ba1
+Merge: 824edee 6cebd4a
+Author: BrianLowDeQuan <132840000+BrianLowDeQuan@users.noreply.github.com>
+Date:   Tue Oct 13 23:17:35 2026 +0800
+
+    Merge pull request #42 from GreyCatCoding/io_manager_Validation_Structure_return_menu
+    
+    Added validation check for returning back to mainmenu
+
+commit 824edee6ddf56eedb59f2609c1f256d5a78707d3
+Merge: d4c3d85 f3dffc9
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 22:28:20 2026 +0800
+
+    Merge pull request #43 from GreyCatCoding/creating-readme-file
+    
+    Create README.md for AI Content Moderation System
+
+commit f3dffc9730147d19d17845a791101bd48cc25bb5
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 22:21:08 2026 +0800
+
+    Create README.md for AI Content Moderation System
+    
+    Add detailed README for AI Content Moderation System, including architecture, usage, setup, and error handling.
+
+commit 6cebd4a8b90a00653ca613e3a3c3f0849d2fdf1f
+Author: Brian <2603204@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 22:05:15 2026 +0800
+
+    Added validation check for returning back to mainmenu
+
+commit d4c3d8503f9325153bd2c286856f756856c395b9
+Merge: 7dff5cf 6c5db46
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 21:57:26 2026 +0800
+
+    Merge pull request #41 from GreyCatCoding/update-regex-io-manager
+    
+    Updated URL_EMAIL_PUNCT to keep letters and digits and @! in disguised words
+
+commit 6c5db469e28de8638811368c53ff35dd123317d1
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 21:55:36 2026 +0800
+
+    Updated URL_EMAIL_PUNCT to keep letters and digits and @! in disguised words
+
+commit 7dff5cf6e5581337754efcd4c7861a8acd904db8
+Merge: 9af0637 9de26ca
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 21:42:07 2026 +0800
+
+    Merge pull request #40 from GreyCatCoding/optimise-ai-wait-time
+    
+    Updated time.sleep to 40s for more optimised ai token usage
+
+commit 9de26cab3dce7f0130c8ebd8bfc9c60f32b83e4d
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 21:39:29 2026 +0800
+
+    Updated time.sleep to 40s for more optimised ai token usage
+
+commit 9af0637e4d6a8fa137c43210d09e038e64974708
+Merge: 27049a4 e3e1fba
+Author: BrianLowDeQuan <132840000+BrianLowDeQuan@users.noreply.github.com>
+Date:   Tue Oct 13 19:09:19 2026 +0800
+
+    Merge pull request #39 from GreyCatCoding/io_manager_Validation_Structure
+    
+    Added validation check for no content in file
+
+commit e3e1fba90af2de6a5e42cb117f695c48966e7320
+Author: Brian <2603204@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 19:07:30 2026 +0800
+
+    Added validation check for no content in file
+
+commit 27049a4bc8cef648fc7ff341a1b80f3754fbc1c1
+Merge: f19f3c0 4cca529
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 18:43:22 2026 +0800
+
+    Merge pull request #38 from GreyCatCoding/dockerfile_update
+    
+    Checking Dockerfile for dockerisation
+
+commit 4cca529c37a0f68610fb4aca8a653633b60d338e
+Author: GreyCatCoding <2603186@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 18:41:12 2026 +0800
+
+    Checking Dockerfile for dockerisation
+
+commit f8e88d9708f60516442ff1e63708d7a7b90c6b93
+Author: YiXiang2603205 <2603205@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 18:28:45 2026 +0800
+
+    Revert Logic Manager filename to original
+
+commit 83db6e809e07881908afe7be75589ba62abd8929
+Author: YiXiang2603205 <2603205@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 18:09:26 2026 +0800
+
+    Rename Logic Manager module and update imports
+
+commit f19f3c091dad57581c0dfaee8e8d6c3c171face1
+Merge: b74ad2f a521047
+Author: BrianLowDeQuan <132840000+BrianLowDeQuan@users.noreply.github.com>
+Date:   Tue Oct 13 17:55:16 2026 +0800
+
+    Merge pull request #36 from GreyCatCoding/data_manager_display_update
+    
+    Added More display columns for context analysis
+
+commit a521047c1ca5023155ce488c9631dd562479129b
+Author: Brian <2603204@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 17:51:43 2026 +0800
+
+    Added More display columns for context analysis
+
+commit b74ad2f41bc0967c01fb369f2b42d2bef0dc6527
+Merge: c842ae0 0399bee
+Author: YiXiang2603205 <2603205@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 17:08:01 2026 +0800
+
+    Merge pull request #35 from GreyCatCoding/fix-test-logic-manager
+    
+    Fix test logic manager
+
+commit 0399bee9ee217aacca6bd7388ba63158fbe333cf
+Merge: 01250f2 c842ae0
+Author: YiXiang2603205 <2603205@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 17:02:45 2026 +0800
+
+    Merge branch 'main' of https://github.com/GreyCatCoding/INF1103-P10-T4
+    
+    # Conflicts:
+    #       tests/test_logic_manager.py
+
+commit 01250f2591bf00c0a419d00ef27b55b7ffc3621f
+Author: YiXiang2603205 <2603205@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 16:54:47 2026 +0800
+
+    Updated test logic manager workflow
+
+commit c28f149c0122a4ec9647e468d9a6d1412a1cc1ed
+Author: YiXiang2603205 <2603205@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 16:50:07 2026 +0800
+
+    Updated workflow for logic manager test
+
+commit c842ae0a70846b80fa02e491cd250bee0437d5a3
+Merge: 96043f6 881fc98
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 16:42:16 2026 +0800
+
+    Merge pull request #34 from GreyCatCoding/Updating_Dockerfile
+    
+    Updating dockerfile
+
+commit 881fc98c150c132cec4942882aeb0baabc4a54eb
+Author: GreyCatCoding <2603186@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 16:40:15 2026 +0800
+
+    Updating Dockerfile for dockerisation
+
+commit 96043f61966af252681e979895fca03dcb343884
+Merge: 0cbc683 621d8e4
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 16:35:48 2026 +0800
+
+    Merge pull request #32 from GreyCatCoding/test-logic-manager
+    
+    Test logic manager
+
+commit 20df14e18419b2c0cd2ebb3733433c8308ab42f4
+Author: GreyCatCoding <2603186@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 16:35:14 2026 +0800
+
+    updated .dockerignore clear clean folder
+
+commit 0cbc683c3d0ada8beb3be875b5505a37f0746ada
+Merge: adf2883 94f1052
+Author: BrianLowDeQuan <132840000+BrianLowDeQuan@users.noreply.github.com>
+Date:   Tue Oct 13 15:07:43 2026 +0800
+
+    Merge pull request #31 from GreyCatCoding/IO_manager_Output_MainMenu_Display
+    
+    Io manager output main menu display
+    
+    Updated Filter Display Function for better navigation
+
+commit 94f10524e6518b716a487c4318f00f35d2e6ba0c
+Author: Brian <2603204@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 15:03:56 2026 +0800
+
+    Added Main Menu Interface and Updated output display for better usability
+
+commit bbd1ada214cfdfd6f05586eab8738598e77a7342
+Author: Brian <2603204@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 15:00:25 2026 +0800
+
+    Updated Output workflow with clear interface
+
+commit adf2883d27c90272f58830069c8648ad826da90c
+Merge: 35f509d 6292c85
+Author: BrianLowDeQuan <132840000+BrianLowDeQuan@users.noreply.github.com>
+Date:   Tue Oct 13 14:59:10 2026 +0800
+
+    Merge pull request #30 from GreyCatCoding/IO_manager_display_input_workflow
+    
+    Added display existing file function with an updated input workflow function
+
+commit 6292c85cd5dba5242872d25b2f504d9775ceece3
+Author: Brian <2603204@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 14:55:21 2026 +0800
+
+    Added display existing file function with an updated input workflow function
+
+commit 621d8e4a549177eb686fcafee1a104a33a99da0f
+Author: YiXiang2603205 <2603205@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 14:53:24 2026 +0800
+
+    Recreate the test logic workflow. Added function into it for testing
+
+commit 35f509dce6c43a30781cf0cfcc62a2faf990f3d3
+Merge: 33e5c8a 228074c
+Author: BrianLowDeQuan <132840000+BrianLowDeQuan@users.noreply.github.com>
+Date:   Tue Oct 13 14:51:08 2026 +0800
+
+    Merge pull request #29 from GreyCatCoding/IO_manager_get_clean_file
+    
+    Added get_cleaned_file() function to retrieve clean file for displaying
+
+commit 228074ce16742fba5a777a214533239f8ee46651
+Author: Brian <2603204@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 14:46:17 2026 +0800
+
+    Added get_cleaned_file() function to retrieve clean file for displaying
+
+commit 33e5c8a0dc9c51c4eade5e9d5f6d821901786137
+Merge: 895d9c2 4dfe5b0
+Author: BrianLowDeQuan <132840000+BrianLowDeQuan@users.noreply.github.com>
+Date:   Tue Oct 13 14:42:09 2026 +0800
+
+    Merge pull request #28 from GreyCatCoding/Workflow_Update
+    
+    Workflow update
+
+commit 4dfe5b0835190cfe374b9e05186746adf93e58e7
+Author: Brian <2603204@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 14:38:30 2026 +0800
+
+    Redirected file output from save_report() to cleaned folder
+
+commit c52af312500264ebda833b1f14880420390972ab
+Author: Brian <2603204@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 14:29:46 2026 +0800
+
+    New Structural Workflow for main.py
+
+commit d4b243997f8569a1c1600d3ec79eff762060ea0c
+Author: Brian <2603204@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 14:26:53 2026 +0800
+
+    New Structural Workflow for main.py
+
+commit 895d9c21c9fc1907b56f0c16f6210d55777d2fa5
+Merge: dd35e1d cbcbc08
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 13:51:07 2026 +0800
+
+    Merge pull request #26 from GreyCatCoding/add-ci-pipeline
+    
+    add GitHub Actions CI/CD: rule checks, tests, Docker build, image publish
+    updated ai manager test file to align with IO manager output
+    updated docker CI to drop in-container test step
+    stopped excluding .py files form docker image
+
+commit cbcbc0889a3d778cf8134df762949ee5e7c4aca2
+Merge: b91f691 dd35e1d
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 13:48:17 2026 +0800
+
+    Merge branch 'main' into add-ci-pipeline
+
+commit b91f691e5fbe2f95620b73adbc64757e30460913
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 13:45:46 2026 +0800
+
+    Stop excluding .py files from Docker image
+
+commit 6d65a6df4be398cb16892117192f150149827ed3
+Author: YiXiang2603205 <2603205@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 13:41:23 2026 +0800
+
+    Add Logic Manager test cases
+
+commit ee40110d7a8e58b77a7e927779fee1956a81bf11
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 13:40:05 2026 +0800
+
+    updated docker CI to drop in-container test step
+
+commit dd35e1d8e6c289082b27524acc0f85dc95198822
+Merge: e44e7d0 d46460e
+Author: Zane <2603186@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 13:23:24 2026 +0800
+
+    Merge pull request #27 from GreyCatCoding/Zanes_ai_manager
+    
+    remove *py from dockerignore file, add pandas mandatory lib req
+
+commit 84d6780eade960caaeae9d74dc23c5888c9258a4
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 13:22:08 2026 +0800
+
+    Updated build_prompt test to align with IO manager output
+
+commit d46460ebfade7f17ee965e62e08f3b1c912cfa8b
+Author: GreyCatCoding <2603186@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 13:11:24 2026 +0800
+
+    added pandas to mandatory library requirements
+
+commit 46a5b48a801b60026a6f11e22861ed40cd598888
+Author: GreyCatCoding <2603186@sit.singaporetech.edu.sg>
+Date:   Tue Oct 13 13:09:45 2026 +0800
+
+    remove *py from dockerignore file
+
+commit bd105fff1949939a59e846c0496d451aa5f78d6e
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Mon Oct 12 22:08:06 2026 +0800
+
+    add GitHub Actions CI/CD: rule checks, tests, Docker build, image publish
+
+commit e44e7d09297b2ca3862d698b80b0e89ecf33ac45
+Merge: 74157d4 596e30e
+Author: Zane <2603186@sit.singaporetech.edu.sg>
+Date:   Mon Oct 12 21:04:17 2026 +0800
+
+    Merge pull request #25 from GreyCatCoding/Zanes_ai_manager
+    
+    cleaned up logic manager
+
+commit 596e30e45cc18841032e50fd1054ef3a8ffcd566
+Author: GreyCatCoding <2603186@sit.singaporetech.edu.sg>
+Date:   Mon Oct 12 21:02:21 2026 +0800
+
+    cleaned up logic manager
+
+commit 74157d4e2ad53f181df26c54c232f7daf698d223
+Merge: 2342c48 74981ca
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Mon Oct 12 21:02:12 2026 +0800
+
+    Merge pull request #24 from GreyCatCoding/Zanes_ai_manager
+    
+    add structure for csv,save and load func,func to filter dataframe
+
+commit 74981ca5d8dd54f61eae87e8564a40fef9db2108
+Author: GreyCatCoding <2603186@sit.singaporetech.edu.sg>
+Date:   Mon Oct 12 20:58:19 2026 +0800
+
+    function to filter dataframe
+
+commit 823822b1b4f82d5ed7ef150973b2926d26400e45
+Author: GreyCatCoding <2603186@sit.singaporetech.edu.sg>
+Date:   Mon Oct 12 20:54:28 2026 +0800
+
+    added save and load function
+
+commit c8064b5b545f451e762f0733b721d4747f0cfc0b
+Author: GreyCatCoding <2603186@sit.singaporetech.edu.sg>
+Date:   Mon Oct 12 20:46:58 2026 +0800
+
+    added the structure for CSV
+
+commit 2342c486d8975f1ec2b9dc28f707b3fd78fc40b3
+Merge: 41d7ec4 18a5196
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Mon Oct 12 20:40:11 2026 +0800
+
+    Merge pull request #23 from GreyCatCoding/Zanes_ai_manager
+    
+    implemented output interface for io manager for edits
+
+commit 18a51962be75b889ebd984442310f50a7fe6104b
+Author: GreyCatCoding <2603186@sit.singaporetech.edu.sg>
+Date:   Mon Oct 12 20:38:53 2026 +0800
+
+    implemented output interface for io manager for edits
+
+commit 41d7ec4b8ac1dec25d415d2de2aa94db10050123
+Merge: ae18287 76979cf
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Mon Oct 12 20:37:39 2026 +0800
+
+    Merge pull request #22 from GreyCatCoding/Zanes_ai_manager
+    
+    completing linkage of all managers in main.py
+
+commit 76979cfbbd18a639e7224e6685bad4d89e0889ca
+Author: GreyCatCoding <2603186@sit.singaporetech.edu.sg>
+Date:   Mon Oct 12 20:36:39 2026 +0800
+
+    completing linkage of all managers in main.py
+
+commit ae182878284de451590b49b776bdd0a90f3df3a6
+Merge: 4598e18 ec79c4a
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Mon Oct 12 14:25:06 2026 +0800
+
+    Merge pull request #21 from GreyCatCoding/ai-manager-luis
+    
+    Added exception for handling model replies that are not text in call_api function
+
+commit ec79c4a2181682959569031ca3ba514917be0857
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Mon Oct 12 14:23:35 2026 +0800
+
+    Added exception for handling model replies that are not text in call_api function
+
+commit 4598e18a597a55d8fd898d9666f204945c5fd9d4
+Merge: 9104cc3 5f6d787
+Author: Zane <2603186@sit.singaporetech.edu.sg>
+Date:   Mon Oct 12 14:20:41 2026 +0800
+
+    Merge pull request #20 from GreyCatCoding/Zanes_ai_manager
+    
+    link from logic to data manager
+
+commit 5f6d787a5cf1601d59992c140b006d3400efaf91
+Author: GreyCatCoding <2603186@sit.singaporetech.edu.sg>
+Date:   Mon Oct 12 14:19:26 2026 +0800
+
+    added the link from logic to data manager with some added comments for readability
+
+commit 9104cc32d4483ad9322ed43c81fa8af63cf2858e
+Merge: 823566b 3d4a8b5
+Author: Zane <2603186@sit.singaporetech.edu.sg>
+Date:   Mon Oct 12 00:25:51 2026 +0800
+
+    Merge pull request #19 from GreyCatCoding/new_logic_manager
+    
+    Organising the Flow, Removing Mock Test and print()
+
+commit 823566b04cc9e36acc39211bc02161a27f2cd954
+Merge: 14daaae 4a5f349
+Author: Zane <2603186@sit.singaporetech.edu.sg>
+Date:   Mon Oct 12 00:13:20 2026 +0800
+
+    Merge pull request #18 from GreyCatCoding/Zanes_ai_manager
+    
+    refactored the link for ai and logic manager in main.
+
+commit 4a5f3490a7add4198b09f21ec6d384fd63771b5e
+Author: GreyCatCoding <2603186@sit.singaporetech.edu.sg>
+Date:   Mon Oct 12 00:11:04 2026 +0800
+
+    refactored the link for output from ai manager to logic manager
+
+commit 14daaae6bbfaef007e039a64611b927fcd5f2410
+Merge: 74b666e ecdefc0
+Author: Zane <2603186@sit.singaporetech.edu.sg>
+Date:   Mon Oct 12 00:00:51 2026 +0800
+
+    Merge pull request #17 from GreyCatCoding/Zanes_ai_manager
+    
+    merging ai_manager and logic_manager onto main.py
+
+commit 19ad8ad9ae1acd94be0d66fe56a24642abdac2fc
+Merge: b2204ff 3841381
+Author: GreyCatCoding <2603186@sit.singaporetech.edu.sg>
+Date:   Sun Oct 11 23:01:18 2026 +0800
+
+    Merge branch 'data_manager' of https://github.com/GreyCatCoding/INF1103-P10-T4 into Zanes_ai_manager
+
+commit 3841381a28f4008ffd98d794fb58d8fd88c84c21
+Author: Brian <2603204@sit.singaporetech.edu.sg>
+Date:   Sun Oct 11 18:19:14 2026 +0800
+
+    commented out test print statement
+
+commit 2ee4cdddf275dadf556752896457480fccc41b9f
+Author: Brian <2603204@sit.singaporetech.edu.sg>
+Date:   Sun Oct 11 17:39:42 2026 +0800
+
+    added user input to test on query function usability
+
+commit 2cdf22b4c3005e96a6f6a3be0adf26f125d9b3ae
+Author: Brian <2603204@sit.singaporetech.edu.sg>
+Date:   Sun Oct 11 17:38:40 2026 +0800
+
+    extract json file and added query function to filter data
+
+commit b2204ffa09497571e9ff4ddf4043540a583f2e3a
+Merge: ecdefc0 30cd10b
+Author: GreyCatCoding <2603186@sit.singaporetech.edu.sg>
+Date:   Sun Oct 11 16:45:11 2026 +0800
+
+    Merge remote-tracking branch 'origin/data_manager' into Zanes_ai_manager
+
+commit 30cd10b4afccbcc74cd1cd825e13c1aec19ae75c
+Author: glenden <glendenbeast@gmail.com>
+Date:   Sun Oct 11 15:53:03 2026 +0800
+
+    Added load() function to load the csv file
+
+commit 58ff0ee7971e3c9e8b5a9120e77c8ed983b1e71e
+Author: glenden <glendenbeast@gmail.com>
+Date:   Sun Oct 11 15:50:57 2026 +0800
+
+    Adding save() function to save the json file into csv
+
+commit ecdefc0e65dc03116385a97be04d4751acf04ddb
+Author: GreyCatCoding <2603186@sit.singaporetech.edu.sg>
+Date:   Sun Oct 11 15:16:50 2026 +0800
+
+    added the link for output from ai manager to logic manager for processing
+
+commit 05b6b7c834932f41cdc03575b31446145aa340b1
+Author: Brian <2603204@sit.singaporetech.edu.sg>
+Date:   Sun Oct 11 13:38:13 2026 +0800
+
+    added comments for groundwork & sample json file for testing
+
+commit 3d4a8b5e56c88a01ce129ebe912337d42da57ac0
+Author: YiXiang2603205 <2603205@sit.singaporetech.edu.sg>
+Date:   Sun Oct 11 00:21:33 2026 +0800
+
+    Organising the Flow, Removing Mock Test and print()
+
+commit e814ae895b886107f7f4afd639b13993ba4a4b4f
+Merge: 74b666e 32bd0de
+Author: GreyCatCoding <2603186@sit.singaporetech.edu.sg>
+Date:   Sat Oct 10 11:07:17 2026 +0800
+
+    Merge branch 'new_logic_manager' of https://github.com/GreyCatCoding/INF1103-P10-T4 into Zanes_ai_manager
+
+commit 32bd0de4022c72e20e2270e558b54926a051ab3c
+Author: YiXiang2603205 <2603205@sit.singaporetech.edu.sg>
+Date:   Sat Oct 10 03:36:37 2026 +0800
+
+    Organising the code
+
+commit ed1cc98a26640270867427a3f6d16573ef779b64
+Author: YiXiang2603205 <2603205@sit.singaporetech.edu.sg>
+Date:   Sat Oct 10 03:05:21 2026 +0800
+
+    Restore Category Description feature
+
+commit e638c09b46696aaa0fb861160e755afabe49e50b
+Author: YiXiang2603205 <2603205@sit.singaporetech.edu.sg>
+Date:   Sat Oct 10 02:00:50 2026 +0800
+
+    Changes made on human_review. Instead of true/false, change to Review Required/Review not Required
+
+commit 5fed378774282a1942f7c88c1bbd9622aecf53e2
+Author: YiXiang2603205 <2603205@sit.singaporetech.edu.sg>
+Date:   Sat Oct 10 01:51:22 2026 +0800
+
+    Added user.id in output
+
+commit 74b666eb73038fa569efaaf13795a760b319e7a5
+Merge: ae84999 36fb825
+Author: Zane <2603186@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 18:19:23 2026 +0800
+
+    Merge pull request #16 from GreyCatCoding/Zanes_ai_manager
+    
+    initialising main.py
+
+commit 83ad6821b74b1ff9413cf3a69462e313e8c9044e
+Author: Brian <2603204@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 18:18:17 2026 +0800
+
+    added test statement
+
+commit 36fb8256c2cb4b8ffe4591afa1d457b07a6c0f38
+Author: GreyCatCoding <2603186@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 18:17:15 2026 +0800
+
+    processing io manager output for ai manager to start analyzing and give context
+
+commit ab2a90443a50d830b6fc67223b5b4ba6b52dfe3c
+Author: GreyCatCoding <2603186@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 18:15:51 2026 +0800
+
+    assigning io manager output to rows
+
+commit 34c04df64ff3a78a5ddeea9b0bbf72b2df3bde26
+Author: GreyCatCoding <2603186@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 18:13:24 2026 +0800
+
+    restructure main.py for integration
+
+commit a67170cf7d5ca985ccf167acbee7320983110397
+Author: glenden <glendenbeast@gmail.com>
+Date:   Fri Oct 9 18:10:53 2026 +0800
+
+    initialised data_manager.py
+
+commit ae84999413d9d178270a1aae589c6bf1e1d4d486
+Merge: 63984a1 f6259cf
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 17:50:51 2026 +0800
+
+    Merge pull request #15 from GreyCatCoding/ai-manager-luis
+    
+    Updating ai_manager to handle output from io_manager
+
+commit 63984a1910628b5f72ecf5007ce7463905cf296a
+Merge: 8db204f d3a7abb
+Author: Zane <2603186@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 17:38:37 2026 +0800
+
+    Merge pull request #14 from GreyCatCoding/Zanes_ai_manager
+    
+    files for docker setup
+
+commit dc9896719bc79b9e6c3c7ae0d9f9827203d12889
+Author: YiXiang2603205 <2603205@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 17:33:51 2026 +0800
+
+    Added Final Report. Output each and individual info. Ending it off with Total Reports
+
+commit f6259cf298b8273181b3a39619ec637450d35897
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 17:33:18 2026 +0800
+
+    Updated fake_records to be tested on to match the current output of io_manager
+
+commit d3a7abb493d4540548040ad8ce2cff7f927a35b6
+Author: GreyCatCoding <2603186@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 17:28:09 2026 +0800
+
+    files for docker setup
+
+commit 3591e2e1b3b382a2561a0a1b4d7cec1d7359fd69
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 17:19:35 2026 +0800
+
+    Updated type hints in build_prompt and analyse_records
+
+commit 8db204fe628ebec3669a448f359d255a97797df2
+Merge: 7feada1 99c396b
+Author: Zane <2603186@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 17:10:49 2026 +0800
+
+    Merge pull request #13 from Zane/io_manager
+    
+    Updates made to finalize IO Manager
+
+commit dd9a9224cea7b7f8768e2f01bba47771a282ae1e
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 17:05:30 2026 +0800
+
+    Updated analyse_record to get comments field from io_manager and skip record if it does not have a usable comment
+
+commit c06b98867341355147bb931db02c977d5020f1d6
+Author: Yap Yison <2605764@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 17:05:15 2026 +0800
+
+    added process multiple report function
+
+commit 0566cdec80aaef4cf3a92914fd9f9ee2026e8a53
+Author: Yap Yison <2605764@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 17:04:23 2026 +0800
+
+    added gennerate report function
+
+commit 99c396b41b2ac01ef90b6ea632c437ba55623c99
+Author: glenden <glendenbeast@gmail.com>
+Date:   Fri Oct 9 17:03:44 2026 +0800
+
+    editing main workflow logic
+
+commit 73e40783617ad1a81d37b67bf57799753d74391e
+Author: Yap Yison <2605764@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 17:03:07 2026 +0800
+
+    added recoimmended action function
+
+commit 254f3b01efc9625a3c3cb4f36bd4df2e27751d6c
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 17:02:53 2026 +0800
+
+    Initialised COMMENTS_FIELD and ID_FIELD to retrieve comments and user id from io_manager
+
+commit 5105d74b66f301e03c62abbf770680e793614f52
+Author: glenden <glendenbeast@gmail.com>
+Date:   Fri Oct 9 17:02:48 2026 +0800
+
+    refracting printing table logic
+
+commit 910bf81c3b1352dfe942b4d94813d1c694cae400
+Author: YiXiang2603205 <2603205@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 16:59:52 2026 +0800
+
+    Added needs_human_review function. Reviews required by human moderator
+
+commit 6bbf5416222ae0a03e811aaa06ddd04cbe497787
+Author: glenden <glendenbeast@gmail.com>
+Date:   Fri Oct 9 16:58:00 2026 +0800
+
+    Refractoring csv & json processing and added comments
+
+commit 3d8c6d9d94eff315a00084a46c2da19331534270
+Author: Brian <2603204@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 16:56:39 2026 +0800
+
+    Refactoring Text Cleaning, Standardization & Added Comments
+
+commit 8edd47e67ecbe4d71acfda5ef52d6a220ba9f5d3
+Author: Brian <2603204@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 16:54:19 2026 +0800
+
+    added username column
+
+commit 4ee5e9f07c492696560b59425d50c4587b5ac084
+Author: YiXiang2603205 <2603205@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 16:51:47 2026 +0800
+
+    Update logic manager on validate_data & get_priority function according to the output given
+
+commit 8c72821b0bf13e736d4705d48bd6403c1cd8a11e
+Author: Brian <2603204@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 16:51:27 2026 +0800
+
+    Refactoring Slang Dictionary, Regex Pre-Compiler & Added Comments
+
+commit 71932ef8eaec4fb3f4abbd88666aa1342e609df7
+Author: glenden <glendenbeast@gmail.com>
+Date:   Fri Oct 9 16:49:11 2026 +0800
+
+    refracting user input & file selection with added comments
+
+commit 8c8e225fc7b34feb908ee635e853fdab0c366604
+Author: Brian <2603204@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 16:46:30 2026 +0800
+
+    Refactoring Libraries, Directory Setup & Added Comments
+
+commit b0b5d2080dfb8148213ec671585a01e7719b28c8
+Author: Brian <2603204@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 14:55:39 2026 +0800
+
+    Implementing json file as a output for AI & Logic Manager
+
+commit d87f3907bc4cf6df4cee3e2d38958e82970a0940
+Author: Yap Yison <2605764@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 14:22:19 2026 +0800
+
+    improve how the output looks
+
+commit c64ace3d80b180967f879796bd13f5510f55f139
+Author: YiXiang2603205 <2603205@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 13:02:05 2026 +0800
+
+    Update logic manager with generate report
+
+commit 7feada1ea832d426887d329ed790899703a76a68
+Merge: be0ad19 780655a
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 12:33:36 2026 +0800
+
+    Merge pull request #12 from GreyCatCoding/ai-manager-luis
+    
+    Add OpenRouter fallback to AI manager
+
+commit 9195efb50a8aa9858c12fd58856a5234ddb25d63
+Author: YiXiang2603205 <2603205@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 12:30:56 2026 +0800
+
+    Update logic manager with previous_violations, this helps to keep track repeated offenders
+
+commit 780655a1f2e2fc0366110347fa73931e28bc5cd4
+Merge: a0e013d be0ad19
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 12:28:10 2026 +0800
+
+    Merge branch 'main' of https://github.com/GreyCatCoding/INF1103-P10-T4 into ai-manager-luis
+
+commit 94ebca40e34aa05a9c04fdee555817e41d651e07
+Author: YiXiang2603205 <2603205@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 12:11:26 2026 +0800
+
+    Update logic manager with data validation
+
+commit a0e013d5fe25b18ebad5f2a3756cd7017ff1e8dc
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 10:38:05 2026 +0800
+
+    Updated model placeholders with proper configurations
+
+commit f08cf49db8b33c573bb730ec05296f69b3b8d6a0
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 10:21:40 2026 +0800
+
+    Adjusted analyse_record to use openrouter models if main provider fails
+
+commit a1e65016ddddbd8b7fd6d6401b86a912108bd038
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 10:16:31 2026 +0800
+
+    Created call_with_fallback to use openrouter free models if default provider fails
+
+commit a37bbbf08f5291598f0b2e270555ac0369412f61
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 10:09:07 2026 +0800
+
+    Adjusted call_api to handle openrouter api and added additional logging
+
+commit 48c149b8ccc6a56b5608d07cd8783f0a6f90d113
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 10:03:10 2026 +0800
+
+    Adjusted get_provider_config to handle fallback and defafult to DEFAULT_PROvIDER
+
+commit 8b89b94f7d406255e72ebbad7f9b12cae759b55e
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 09:58:58 2026 +0800
+
+    Added openrouter api in providers and adjusted config to accomodate
+
+commit bdc23a6aff4d674c3b2b9098566ddbe41dd4562c
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 09:54:18 2026 +0800
+
+    Updated .env and .env.example with openrouter api
+
+commit ce148c10c94047e2ee8649b22ddaa6794849e5f0
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 09:51:09 2026 +0800
+
+    Removed openAI and deepseek providers to avoid cloud costs
+
+commit 88c99c02a8d80f99d3300747fbe58a0f21d92a8e
+Author: Yap Yison <2605764@sit.singaporetech.edu.sg>
+Date:   Fri Oct 9 02:03:27 2026 +0800
+
+    Skeleton for logic manager codes
+
+commit be0ad198b952298858c97353bdd78a371c19b419
+Merge: bb752ab 60d9b7e
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Mon Oct 5 22:47:21 2026 +0800
+
+    Merge pull request #11 from GreyCatCoding/ai-manager-luis
+    
+    Ai manager luis
+
+commit 60d9b7ea6f15d622c1ac1349648e2ea223f43ff8
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Mon Oct 5 22:44:03 2026 +0800
+
+    Added additional check for validate_response, and added more logging capabailities
+
+commit e3bc4d602ffb7329766cb323bf5e1769e2411ff8
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Mon Oct 5 22:39:33 2026 +0800
+
+    Made adjustments to parse_response to handle markdown fences
+
+commit bb752ab35f47a551a348de23ec79040e747e173c
+Merge: 67f0c47 b532c3d
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Mon Oct 5 22:22:33 2026 +0800
+
+    Merge pull request #10 from GreyCatCoding/Zanes_ai_manager
+    
+    added formatting for loggers
+
+commit b532c3d90b124e625335f212a1a566edc4b27269
+Merge: 0940a7c 67f0c47
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Mon Oct 5 21:55:24 2026 +0800
+
+    Merge branch 'main' into Zanes_ai_manager
+
+commit 0940a7cb63e9c1e918dc237c4e0295c05bf03c9d
+Merge: c7b43d5 c85bf20
+Author: GreyCatCoding <2603186@sit.singaporetech.edu.sg>
+Date:   Mon Oct 5 20:35:26 2026 +0800
+
+    Merge remote-tracking branch origin/Zanes_ai_manager
+
+commit c7b43d58afd3089de414307fca700b69a51311f7
+Author: GreyCatCoding <2603186@sit.singaporetech.edu.sg>
+Date:   Mon Oct 5 12:25:45 2026 +0800
+
+    added formatting for loggers
+
+commit 67f0c471239cf7176587daf8eda9ba08412bb89a
+Merge: 1a062df ecad5e9
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Mon Oct 5 08:48:40 2026 +0800
+
+    Merge pull request #9 from GreyCatCoding/ai-manager-luis
+    
+    Refined call_api to catch more error types
+
+commit ecad5e96f115f91feafdd223122c501b1ada2c62
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Mon Oct 5 08:43:42 2026 +0800
+
+    Modified call_api to log unexpected API response shapes
+
+commit 9e1e1cbd8b1bb06fecb985b17d7db7d455a648bf
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Mon Oct 5 08:39:31 2026 +0800
+
+    Modified ai providers and default provider to deepseek
+
+commit 1a062dfafadafb2215559cbad05188911142f2b3
+Merge: 33f4f5c 702b905
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Mon Oct 5 08:37:43 2026 +0800
+
+    Merge pull request #8 from GreyCatCoding/ai-manager-luis
+    
+    Made changes to validate_response to handle boolean values
+
+commit 702b9058ebb63c11b01b5e65f40470c6af2c7306
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Mon Oct 5 08:36:03 2026 +0800
+
+    Made changes to validate_response to handle boolean values
+
+commit 33f4f5c3db4bc2be1530d166aa1def2c8abff546
+Merge: 0c31832 c85bf20
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Mon Oct 5 08:25:46 2026 +0800
+
+    Merge pull request #7 from GreyCatCoding/Zanes_ai_manager
+    
+    completed functions for build_prompt , parse_response , validate resp…
+
+commit c85bf20f88cf938148578a383d4b355549f9d930
+Merge: 618981e 0c31832
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Mon Oct 5 08:25:03 2026 +0800
+
+    Merge branch 'main' into Zanes_ai_manager
+
+commit 618981e79fde4cac28a291cf9567653100b33fbe
+Author: GreyCatCoding <2603186@sit.singaporetech.edu.sg>
+Date:   Sun Oct 4 13:02:57 2026 +0800
+
+    completed functions for build_prompt , parse_response , validate response , awaiting merge with luis
+
+commit 0c31832137acd559c5fc6cb64be7475b17efe338
+Merge: 1de64c3 fd2d815
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Sun Oct 4 09:52:38 2026 +0800
+
+    Merge pull request #6 from GreyCatCoding/ai-manager-luis
+    
+    Completed analyse_record function, with minor adjustments to comments
+
+commit fd2d8152f375fd67abb6fbd1742bba04b9b8b4c8
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Sun Oct 4 09:51:02 2026 +0800
+
+    Completed analyse_record function, with minor adjustments to comments
+
+commit 1de64c3707017810ae6b448a0dfc42c4789bda75
+Merge: 3f345fb c97c396
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Sat Oct 3 15:09:29 2026 +0800
+
+    Merge pull request #5 from GreyCatCoding/ai-manager-luis
+    
+    Completed call_api function
+
+commit c97c396dfad96593f3986135b0cec2f0701e8b3a
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Sat Oct 3 15:08:02 2026 +0800
+
+    Completed call_api function
+
+commit 3f345fb2b79b47d7fef6bdec45a279e6c8d2028b
+Merge: ddbec86 8f4fc90
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Sat Oct 3 12:14:33 2026 +0800
+
+    Merge pull request #4 from GreyCatCoding/ai-manager-luis
+    
+    Completed get_provider_config() function
+
+commit 8f4fc902fa1f4b6404fec63881073e5239b081ea
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Sat Oct 3 12:01:35 2026 +0800
+
+    Completed get_provider_config() function
+
+commit ddbec867cf818faecb36185f3dee8ca0cc93b05b
+Merge: 990ccf5 903549c
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Fri Oct 2 21:32:11 2026 +0800
+
+    Merge pull request #3 from GreyCatCoding/ai-manager-luis
+    
+    Remove pycache from repo
+
+commit 903549cc74dcaa4126cc57a7d9b050a747823653
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Fri Oct 2 21:24:12 2026 +0800
+
+    Remove pycache from repo
+
+commit 990ccf54c94c72b8bbff4bb5705ba0f1f67677ef
+Merge: 1f87d3e c15f02e
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Fri Oct 2 17:50:45 2026 +0800
+
+    Merge pull request #2 from GreyCatCoding/ai-manager-luis
+    
+    Ai manager luis
+
+commit f3e14fe19f6b475ea50cc525b63aae2ecf11b032
+Author: glenden <glendenbeast@gmail.com>
+Date:   Fri Oct 2 17:41:22 2026 +0800
+
+    added error handling for get_input_file function
+
+commit e7b8f59ff4868d0d0d1851b2fecd458f2d21c22d
+Author: glenden <glendenbeast@gmail.com>
+Date:   Fri Oct 2 17:38:34 2026 +0800
+
+    edited workflow logic due to new collected input logic
+
+commit 01ea781f6e94013dbb5746dd21c5542548f65318
+Author: glenden <glendenbeast@gmail.com>
+Date:   Fri Oct 2 17:37:48 2026 +0800
+
+    added csv file processing logic {new}
+
+commit 9a4b3de6ce0b30896b2220e15ac3a063be6b3d44
+Author: glenden <glendenbeast@gmail.com>
+Date:   Fri Oct 2 17:36:42 2026 +0800
+
+    Edited collect user input logic due to original collect input logic not fulfiling task
+
+commit 38667e0f149403b37ace025a3a1f30592cb1c718
+Author: glenden <glendenbeast@gmail.com>
+Date:   Fri Oct 2 17:32:19 2026 +0800
+
+    Removed Contractions due to conflicting issues with other compiler and edited file handling logic
+
+commit c485375f35068d46721a122dc262ab788b5a69b4
+Author: Brian <2603204@sit.singaporetech.edu.sg>
+Date:   Fri Oct 2 14:45:01 2026 +0800
+
+    Added file save and print upon successful
+
+commit 86e16a0ce10ad9ca1a9772fdb73a48316a2cb50c
+Author: Brian <2603204@sit.singaporetech.edu.sg>
+Date:   Fri Oct 2 14:33:01 2026 +0800
+
+    Added Processed Comment on workflow & application of pre-processing
+
+commit 9b9efaeac1a42ec30cd2682607e743be93db0013
+Author: Brian <2603204@sit.singaporetech.edu.sg>
+Date:   Fri Oct 2 14:19:04 2026 +0800
+
+    Function for text cleansing & standardization
+
+commit 7b9cdf7c1ce66252d00eca41f0c9117b5515135e
+Author: Brian <2603204@sit.singaporetech.edu.sg>
+Date:   Fri Oct 2 14:17:19 2026 +0800
+
+    pre-compiling the remaining regex patterns
+
+commit e09e40747d89e6c5bdcde890264685703e3121bd
+Author: glenden <glendenbeast@gmail.com>
+Date:   Fri Oct 2 13:42:49 2026 +0800
+
+    Creating a workflow function
+
+commit 9b9f7e1aac79c7bcf6c38df1ff063e1444305939
+Author: glenden <glendenbeast@gmail.com>
+Date:   Fri Oct 2 12:17:24 2026 +0800
+
+    Creating User Input Function
+
+commit 9f2a9a46a9f38d3ff6bed5b585a8d608d00114bc
+Author: glenden <glendenbeast@gmail.com>
+Date:   Fri Oct 2 12:00:02 2026 +0800
+
+    Adding necessary libraries and creating a user id function
+
+commit c15f02e3865466984783a35c97326d35a7126ea4
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Fri Oct 2 11:14:59 2026 +0800
+
+    Add requirements and env example
+
+commit 5eea591af6e8f1ef62322a47ab880f1f2c933478
+Merge: 6ae9339 1f87d3e
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Fri Oct 2 11:14:08 2026 +0800
+
+    Merge branch 'main' of https://github.com/GreyCatCoding/INF1103-P10-T4 into ai-manager-luis
+
+commit 1f87d3e3fb591630278a6d79361820e2c863c6fb
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Fri Oct 2 11:09:16 2026 +0800
+
+    Initialise .gitignore
+    
+    Keep API keys (.env), the local virtual environment (.venv) and
+    Python/pytest cache folders out of the repo.
+
+commit 6ae9339ca12c97980dd48a934bd6ab91cac7493b
+Author: Luis-2602477 <2602477@sit.singaporetech.edu.sg>
+Date:   Fri Oct 2 11:02:40 2026 +0800
+
+    Add ai_manager skeleton
+
+commit 53b1e187db040d0b83774fea6764cb4c6f1c259c
+Author: Brian <2603204@sit.singaporetech.edu.sg>
+Date:   Tue Sep 29 16:20:14 2026 +0800
+
+    pre-compiling of slang pattern for slang mapping
+
+commit 46bbd686662e05fffb2c867b984040b2da0aa766
+Author: Brian <2603204@sit.singaporetech.edu.sg>
+Date:   Tue Sep 29 16:14:19 2026 +0800
+
+    add necessary libraries for pre-processing of comment
+
+commit 37c897ea0dbb336806979dbf4b5eafc9867d6965
+Author: Brian <2603204@sit.singaporetech.edu.sg>
+Date:   Tue Sep 29 16:08:37 2026 +0800
+
+    add slang dictionary for understanding of slangs
+
+commit 6951a01c8ec9c2ec521023b63c0383ce1a7c7289
+Author: Brian <2603204@sit.singaporetech.edu.sg>
+Date:   Tue Sep 29 00:25:04 2026 +0800
+
+    add test_processed.csv for load dataset and testings
+
+commit 5eca08f537d4c80e5da01404859d2cd65438e3a3
+Author: GreyCatCoding <2603186@sit.singaporetech.edu.sg>
+Date:   Fri Sep 25 17:34:29 2026 +0800
+
+    Initialising main.py
+
+commit c02b4e8b1ffec491f2586c49af1a7d921d56005a
+Author: GreyCatCoding <2603186@sit.singaporetech.edu.sg>
+Date:   Tue Sep 15 21:29:59 2026 +0800
+
+    Added initial project details

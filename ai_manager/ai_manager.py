@@ -4,8 +4,8 @@ import logging
 
 from ai_manager.aiprovider import AIProvider
 from ai_manager.promptbuilder import PromptBuilder
-from logic_manager.responseparser import ResponseParser
-from logic_manager.responsevalidator import ResponseValidator
+from ai_manager.responseparser import ResponseParser
+from ai_manager.responsevalidator import ResponseValidator
 
 logger = logging.getLogger(__name__)
 
