@@ -4,3 +4,4 @@ pandas
 pytest
 pymongo
 Pyside6
+streamlit
