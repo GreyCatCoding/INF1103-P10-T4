@@ -69,14 +69,15 @@ def run_console():
 def run_streamlit():
     """Streamlit web UI (only called once inside an active ScriptRunContext)."""
     import streamlit as st
-    from io_manager.gui_view_streamlit import render_streamlit_ui
+    from io_manager.gui_view_streamlit import StreamlitGUI
 
     @st.cache_resource
     def get_cached_backend():
         return init_backend()
 
     data_manager, pipeline = get_cached_backend()
-    render_streamlit_ui(data_manager, pipeline)
+    gui = StreamlitGUI(data_manager, pipeline)
+    gui.render()
 
 
 if __name__ == "__main__":
