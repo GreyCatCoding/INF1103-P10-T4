@@ -13,6 +13,14 @@ from io_manager.commentfileprocessor import CommentFileProcessor
 class StreamlitGUI:
     """Streamlit web presentation layer for the Content Moderation System."""
 
+    DEFAULT_ACTIONS = [
+        "Immediate removal & ban",
+        "Remove comment & warn user",
+        "Flag for human review",
+        "Monitor user",
+        "No action required",
+    ]
+
     def __init__(self, data_manager, pipeline):
         self.data_manager = data_manager
         self.pipeline = pipeline
@@ -53,27 +61,27 @@ class StreamlitGUI:
             self._render_report_loader()
 
     def _handle_file_upload(self, uploaded_file):
-        """Writes uploaded CSV to a temp file, cleans it, and runs the AI pipeline."""
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".csv") as tmp:
-            tmp.write(uploaded_file.getvalue())
-            tmp_path = tmp.name
+        """Saves the upload with its original filename in a temp folder, cleans it, and runs AI moderation."""
+        original_filename = Path(uploaded_file.name).name
 
         try:
-            with st.spinner("Cleaning file..."):
-                cleaned_df, csv_path, json_path = self.processor.process(tmp_path)
-                st.session_state.current_report_name = Path(csv_path).name
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                tmp_path = os.path.join(tmp_dir, original_filename)
+                with open(tmp_path, "wb") as f:
+                    f.write(uploaded_file.getvalue())
 
-            if self.pipeline:
-                st.session_state.current_df = self._run_moderation_pipeline(cleaned_df, csv_path)
-            else:
-                st.session_state.current_df = cleaned_df
+                with st.spinner("Cleaning file..."):
+                    cleaned_df, csv_path, json_path = self.processor.process(tmp_path)
+                    st.session_state.current_report_name = Path(csv_path).name
 
-            st.success("File processed successfully!")
+                if self.pipeline:
+                    st.session_state.current_df = self._run_moderation_pipeline(cleaned_df, csv_path)
+                else:
+                    st.session_state.current_df = cleaned_df
+
+            st.success(f"File processed and saved as {st.session_state.current_report_name}!")
         except Exception as e:
             st.error(f"An error occurred: {e}")
-        finally:
-            if os.path.exists(tmp_path):
-                os.remove(tmp_path)
 
     def _run_moderation_pipeline(self, cleaned_df, csv_path):
         """Runs AI moderation in a background thread while updating the progress bar."""
@@ -173,29 +181,65 @@ class StreamlitGUI:
         st.divider()
 
     def _render_crud_controls(self, display_df):
-        """Renders controls to update priority or delete records by User ID."""
+        """Renders controls to update priority/recommended action or delete records by User ID."""
         st.write("### Manage Records")
         c_col1, c_col2 = st.columns(2)
 
         # Assuming User ID is the first column
         user_ids = display_df.iloc[:, 0].astype(str).tolist() if not display_df.empty else []
+        action_col = "recommended_action" if "recommended_action" in display_df.columns else "action"
+
+        existing_actions = (
+            display_df[action_col].dropna().astype(str).unique().tolist()
+            if action_col in display_df.columns
+            else []
+        )
+        action_options = list(dict.fromkeys(existing_actions + self.DEFAULT_ACTIONS))
+        priority_options = ["P1", "P2", "P3", "P4"]
 
         with c_col1:
-            st.markdown("**Update Priority**")
+            st.markdown("**Update Record**")
             update_user = st.selectbox("Select User ID to Update", user_ids, key="update_uid")
-            new_priority = st.selectbox("Select new priority", ["P1", "P2", "P3", "P4"])
+
+            # Pre-select the selected user's current priority and action if available
+            default_prio_idx = 0
+            default_act_idx = 0
+            if update_user and not display_df.empty:
+                matching_rows = display_df[display_df.iloc[:, 0].astype(str) == update_user]
+                if not matching_rows.empty:
+                    row = matching_rows.iloc[0]
+                    if "priority" in display_df.columns and str(row["priority"]) in priority_options:
+                        default_prio_idx = priority_options.index(str(row["priority"]))
+                    if action_col in display_df.columns and str(row[action_col]) in action_options:
+                        default_act_idx = action_options.index(str(row[action_col]))
+
+            new_priority = st.selectbox(
+                "Select new priority",
+                priority_options,
+                index=default_prio_idx,
+                key="new_prio",
+            )
+            new_action = st.selectbox(
+                "Select recommended action",
+                action_options,
+                index=default_act_idx,
+                key="new_action",
+            )
 
             if st.button("Edit Row"):
                 try:
                     self.data_manager.update_record(
                         st.session_state.current_report_name,
                         update_user,
-                        {"priority": new_priority},
+                        {
+                            "priority": new_priority,
+                            action_col: new_action,
+                        },
                     )
                     st.session_state.current_df = self.data_manager.load_report(
                         st.session_state.current_report_name
                     )
-                    st.success(f"Updated User {update_user} to {new_priority}")
+                    st.success(f"Updated User {update_user} ({new_priority} - {new_action})")
                     st.rerun()
                 except Exception as e:
                     st.error(f"Update failed: {e}")
